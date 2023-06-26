@@ -89,7 +89,7 @@ async function setUpAutoCache() {
   var runEnv;
   if (core.isDebug()) {
     runEnv = {
-      RUST_LOG: "trace,nix_actions_cache=debug,gha_cache=debug",
+      RUST_LOG: "trace,magic_nix_cache=debug,gha_cache=debug",
       RUST_BACKTRACE: "full",
       ...process.env
     };
