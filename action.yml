@@ -1,0 +1,38 @@
+name: Magic Nix Cache
+branding:
+  icon: "box"
+  color: "purple"
+description: "Free, no-configuration Nix cache. Cut CI time by 50% or more by caching to GitHub Actions' cache."
+inputs:
+  listen:
+    description: The host and port to listen on.
+    default: 127.0.0.1:37515
+  upstream-cache:
+    description: Your preferred upstream cache. Store paths in this store will not be cached in GitHub Actions' cache.
+    default: https://cache.nixos.org
+  source-binary:
+    description: Run a version of the cache binary from somewhere already on disk. Conflicts with all other `source-*` options.
+  source-branch:
+    description: The branch of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
+    required: false
+    default: main
+  source-pr:
+    description: The PR of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
+    required: false
+  source-revision:
+    description: The revision of `nix-magic-nix-cache` to use. Conflicts with all other `source-*` options.
+    required: false
+  source-tag:
+    description: The tag of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
+    required: false
+  source-url:
+    description: A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options.
+    required: false
+  diagnostic-endpoint:
+    description: "Diagnostic endpoint url where diagnostics and performance data is sent. To disable set this to an empty string."
+    default: "https://install.determinate.systems/magic-nix-cache/perf"
+
+runs:
+  using: "node16"
+  main: "./dist/index.js"
+  post: "./dist/index.js"

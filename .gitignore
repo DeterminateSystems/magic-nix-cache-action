@@ -1,0 +1,8 @@
+.direnv
+result*
+
+node_modules
+
+# magic-nix-cache
+creds.env
+creds.json
