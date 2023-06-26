@@ -127,6 +127,7 @@ async function setUpAutoCache() {
   await fs.mkdir(`${process.env["HOME"]}/.config/nix`, { recursive: true });
   const nixConf = openSync(`${process.env["HOME"]}/.config/nix/nix.conf`, 'a');
   writeSync(nixConf, `${"\n"}extra-substituters = http://${core.getInput('listen')}/?trusted=1&compression=zstd&parallel-compression=true${"\n"}`);
+  writeSync(nixConf, `fallback = true${"\n"}`);
   close(nixConf);
 
   core.debug('Launched Magic Nix Cache');
