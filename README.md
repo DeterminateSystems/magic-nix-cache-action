@@ -84,3 +84,16 @@ cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Requir
 | `source-tag` | The tag of `magic-nix-cache` to use. Conflicts with all other `source-*` options. |  |  |
 | `source-url` | A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options. |  |  |
 | `upstream-cache` | Your preferred upstream cache. Store paths in this store will not be cached in GitHub Actions' cache. |  | https://cache.nixos.org |
+
+[detsys]: https://determinate.systems/
+[action]: https://github.com/DeterminateSystems/magic-nix-cache-action/
+[installer]: https://github.com/DeterminateSystems/nix-installer/
+[ghacache]: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows
+[privacy]: https://determinate.systems/privacy
+[telemetry]: https://github.com/DeterminateSystems/magic-nix-cache/blob/main/magic-nix-cache/src/telemetry.rs
+[semantics]: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache
+[z2ncache]: https://zero-to-nix.com/concepts/caching#binary-caches
+[zhaofeng]: https://github.com/zhaofengli/
+[attic]: https://github.com/zhaofengli/attic
+[colmena]: https://github.com/zhaofengli/colmena
+[z2n]: https://zero-to-nix.com
