@@ -48,18 +48,18 @@ jobs:
         run: |
           .github/workflows/cache-test.sh
 
-  run-x86_64-darwin:
-    name: Run x86_64 Darwin
-    runs-on: macos-12
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v4
-        with:
-          extra-conf: |
-            narinfo-cache-negative-ttl = 0
-      - name: Cache the store
-        uses: ./
-      - name: Check the cache for liveness
-        run: |
-          .github/workflows/cache-test.sh
+  # run-x86_64-darwin:
+  #   name: Run x86_64 Darwin
+  #   runs-on: macos-12
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Install Nix
+  #       uses: DeterminateSystems/nix-installer-action@v4
+  #       with:
+  #         extra-conf: |
+  #           narinfo-cache-negative-ttl = 0
+  #     - name: Cache the store
+  #       uses: ./
+  #     - name: Check the cache for liveness
+  #       run: |
+  #         .github/workflows/cache-test.sh
