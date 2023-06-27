@@ -7,12 +7,28 @@ import { spawn } from 'node:child_process';
 import { createWriteStream, openSync, writeSync, close } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { setTimeout } from 'timers/promises';
+import { inspect } from 'node:util';
 
 import * as core from '@actions/core';
 import { Tail } from 'tail';
 import got from "got";
 
 const ENV_CACHE_DAEMONDIR = 'MAGIC_NIX_CACHE_DAEMONDIR';
+
+const gotClient = got.extend({
+  retry: {
+    limit: 5,
+    methods: [ 'POST', 'GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE' ],
+  },
+  hooks: {
+    beforeRetry: [
+      (error, retryCount) => {
+        core.info(`Retrying after error ${error.code}, retry #: ${retryCount}`);
+      }
+    ],
+  },
+});
+
 
 function getCacherUrl() : string {
   const runnerArch = process.env.RUNNER_ARCH;
@@ -53,7 +69,7 @@ async function fetchAutoCacher(destination: string) {
   core.debug(`Fetching the Magic Nix Cache from ${binary_url}`);
 
   return pipeline(
-    got.stream(binary_url),
+    gotClient.stream(binary_url),
     stream
   );
 }
@@ -141,8 +157,16 @@ async function notifyAutoCache() {
     return;
   }
 
-  const res: any = await got.post(`http://${core.getInput('listen')}/api/workflow-start`).json();
-  core.debug(res);
+  try {
+    core.debug(`Indicating workflow start`);
+    const res: any = await gotClient.post(`http://${core.getInput('listen')}/api/workflow-start`).json();
+    core.debug(`back from post`);
+    core.debug(res);
+  } catch (e) {
+    core.info(`Error marking the workflow as started:`);
+    core.info(inspect(e));
+    core.info(`Magic Nix Cache may not be running for this workflow.`);
+  }
 }
 
 async function tearDownAutoCache() {
@@ -170,7 +194,7 @@ async function tearDownAutoCache() {
 
   try {
     core.debug(`about to post to localhost`);
-    const res: any = await got.post(`http://${core.getInput('listen')}/api/workflow-finish`).json();
+    const res: any = await gotClient.post(`http://${core.getInput('listen')}/api/workflow-finish`).json();
     core.debug(`back from post`);
     core.debug(res);
   } finally {

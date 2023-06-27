@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import { openSync, writeSync, close, createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { setTimeout as setTimeout$1 } from 'timers/promises';
+import { promisify as promisify$1, inspect } from 'node:util';
 import require$$0 from 'os';
 import require$$1 from 'fs';
 import crypto from 'crypto';
@@ -27,7 +28,6 @@ import crypto$1 from 'node:crypto';
 import require$$0$4 from 'buffer';
 import require$$0$3 from 'stream';
 import require$$1$3 from 'zlib';
-import { promisify as promisify$1, inspect } from 'node:util';
 import net from 'node:net';
 import { checkServerIdentity } from 'node:tls';
 import https$4 from 'node:https';
@@ -12103,6 +12103,19 @@ var got$1 = got;
 
 // Main
 const ENV_CACHE_DAEMONDIR = 'MAGIC_NIX_CACHE_DAEMONDIR';
+const gotClient = got$1.extend({
+    retry: {
+        limit: 5,
+        methods: ['POST', 'GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE'],
+    },
+    hooks: {
+        beforeRetry: [
+            (error, retryCount) => {
+                coreExports.info(`Retrying after error ${error.code}, retry #: ${retryCount}`);
+            }
+        ],
+    },
+});
 function getCacherUrl() {
     const runnerArch = process.env.RUNNER_ARCH;
     const runnerOs = process.env.RUNNER_OS;
@@ -12132,7 +12145,7 @@ async function fetchAutoCacher(destination) {
     });
     const binary_url = getCacherUrl();
     coreExports.debug(`Fetching the Magic Nix Cache from ${binary_url}`);
-    return pipeline(got$1.stream(binary_url), stream);
+    return pipeline(gotClient.stream(binary_url), stream);
 }
 async function setUpAutoCache() {
     const tmpdir = process.env['RUNNER_TEMP'] || os$2.tmpdir();
@@ -12204,8 +12217,17 @@ async function notifyAutoCache() {
     if (!daemonDir) {
         return;
     }
-    const res = await got$1.post(`http://${coreExports.getInput('listen')}/api/workflow-start`).json();
-    coreExports.debug(res);
+    try {
+        coreExports.debug(`Indicating workflow start`);
+        const res = await gotClient.post(`http://${coreExports.getInput('listen')}/api/workflow-start`).json();
+        coreExports.debug(`back from post`);
+        coreExports.debug(res);
+    }
+    catch (e) {
+        coreExports.info(`Error marking the workflow as started:`);
+        coreExports.info(inspect(e));
+        coreExports.info(`Magic Nix Cache may not be running for this workflow.`);
+    }
 }
 async function tearDownAutoCache() {
     const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
@@ -12227,7 +12249,7 @@ async function tearDownAutoCache() {
     });
     try {
         coreExports.debug(`about to post to localhost`);
-        const res = await got$1.post(`http://${coreExports.getInput('listen')}/api/workflow-finish`).json();
+        const res = await gotClient.post(`http://${coreExports.getInput('listen')}/api/workflow-finish`).json();
         coreExports.debug(`back from post`);
         coreExports.debug(res);
     }
