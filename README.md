@@ -77,7 +77,7 @@ The default is `https://cache.nixos.org` but you can set a different upstream:
 ```yaml
 - uses: DeterminateSystems/magic-nix-cache-action@main
   with:
-    upstream-cache: my-binary-cache.com
+    upstream-cache: https://my-binary-cache.com
 ```
 
 ## Action Options
