@@ -67,8 +67,20 @@ The caching daemon and Nix both handle this gracefully, and won't cause your CI 
 When the rate limit is exceeded while pulling dependencies, your workflow may perform more builds than usual.
 When the rate limit is exceeded while uploading to the cache, the remainder of those store paths will be uploaded on the next run of the workflow.
 
+## Concepts
 
-# Action Options
+### Upstream cache
+
+When you configure an upstream cache for the Magic Nix Cache, any store paths fetched from that source are *not* cached because they are known to be fetchable on future workflow runs.
+The default is `https://cache.nixos.org` but you can set a different upstream:
+
+```yaml
+- uses: DeterminateSystems/magic-nix-cache-action@main
+  with:
+    upstream-cache: my-binary-cache.com
+```
+
+## Action Options
 <!--
 cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Required", "Default" ], ["-", "-", "-", "-"]] + [.inputs | to_entries | sort_by(.key) | .[] | ["`" + .key + "`", .value.description, .value.required // "", .value.default // ""]] | map(join(" | ")) | .[] | "| " + . + " |"' -r
 -->
@@ -83,8 +95,9 @@ cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Requir
 | `source-revision` | The revision of `nix-magic-nix-cache` to use. Conflicts with all other `source-*` options. |  |  |
 | `source-tag` | The tag of `magic-nix-cache` to use. Conflicts with all other `source-*` options. |  |  |
 | `source-url` | A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options. |  |  |
-| `upstream-cache` | Your preferred upstream cache. Store paths in this store will not be cached in GitHub Actions' cache. |  | https://cache.nixos.org |
+| `upstream-cache` | Your preferred [upstream cache](#upstream-cache). Store paths fetched from this store will not be cached in the [GitHub Actions Cache][gha-cache]. |  | https://cache.nixos.org |
 
+[gha-cache]: https://docs.github.com/en/rest/actions/cache
 [detsys]: https://determinate.systems/
 [action]: https://github.com/DeterminateSystems/magic-nix-cache-action/
 [installer]: https://github.com/DeterminateSystems/nix-installer/
