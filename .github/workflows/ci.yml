@@ -12,7 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v4
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Enable magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Record existing bundle hash
         run: |
           echo "BUNDLE_HASH=$(sha256sum <dist/index.js | sed 's/  -//')" >>$GITHUB_ENV
@@ -38,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v4
+        uses: DeterminateSystems/nix-installer-action@main
         with:
           extra-conf: |
             narinfo-cache-negative-ttl = 0
@@ -54,7 +56,7 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@v3
   #     - name: Install Nix
-  #       uses: DeterminateSystems/nix-installer-action@v4
+  #       uses: DeterminateSystems/nix-installer-action@main
   #       with:
   #         extra-conf: |
   #           narinfo-cache-negative-ttl = 0
