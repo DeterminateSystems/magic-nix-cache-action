@@ -4,6 +4,10 @@ branding:
   color: "purple"
 description: "Free, no-configuration Nix cache. Cut CI time by 50% or more by caching to GitHub Actions' cache."
 inputs:
+  use-gha-cache:
+    description: "Whether to upload build results to the GitHub Actions cache."
+    default: true
+    required: false
   listen:
     description: The host and port to listen on.
     default: 127.0.0.1:37515
@@ -31,6 +35,16 @@ inputs:
   diagnostic-endpoint:
     description: "Diagnostic endpoint url where diagnostics and performance data is sent. To disable set this to an empty string."
     default: "https://install.determinate.systems/magic-nix-cache/perf"
+  use-flakehub:
+    description: "Whether to upload build results to FlakeHub."
+    default: true
+    required: false
+  attic-server:
+    description: "The Attic binary cache server."
+    default: "https://attic-test.fly.dev"
+  flakehub-api-server:
+    description: "The FlakeHub API server."
+    default: "https://api.flakehub.com"
 
 runs:
   using: "node16"

@@ -3,10 +3,11 @@ import * as os$2 from 'node:os';
 import os__default from 'node:os';
 import * as path$1 from 'node:path';
 import { spawn } from 'node:child_process';
-import { openSync, writeSync, close, createWriteStream } from 'node:fs';
+import { openSync, createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { setTimeout as setTimeout$1 } from 'timers/promises';
 import { promisify as promisify$1, inspect } from 'node:util';
+import require$$0$5, { fileURLToPath } from 'url';
 import require$$0 from 'os';
 import require$$1 from 'fs';
 import crypto from 'crypto';
@@ -33,7 +34,6 @@ import { checkServerIdentity } from 'node:tls';
 import https$4 from 'node:https';
 import { lookup, V4MAPPED, ALL, ADDRCONFIG, promises } from 'node:dns';
 import require$$3 from 'http2';
-import require$$0$5 from 'url';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -12147,6 +12147,15 @@ async function fetchAutoCacher(destination) {
     coreExports.debug(`Fetching the Magic Nix Cache from ${binary_url}`);
     return pipeline(gotClient.stream(binary_url), stream);
 }
+async function fileExists(path) {
+    try {
+        await fs$2.access(path, fs$2.constants.F_OK);
+        return true;
+    }
+    catch (err) {
+        return false;
+    }
+}
 async function setUpAutoCache() {
     const tmpdir = process.env['RUNNER_TEMP'] || os$2.tmpdir();
     const required_env = ['ACTIONS_CACHE_URL', 'ACTIONS_RUNTIME_URL', 'ACTIONS_RUNTIME_TOKEN'];
@@ -12162,8 +12171,11 @@ async function setUpAutoCache() {
     }
     coreExports.debug(`GitHub Action Cache URL: ${process.env['ACTIONS_CACHE_URL']}`);
     const daemonDir = await fs$2.mkdtemp(path$1.join(tmpdir, 'magic-nix-cache-'));
-    var daemonBin;
-    if (coreExports.getInput('source-binary')) {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path$1.dirname(__filename);
+    var daemonBin = path$1.join(__dirname, "../bin/X64-Linux");
+    if (await fileExists(daemonBin)) ;
+    else if (coreExports.getInput('source-binary')) {
         daemonBin = coreExports.getInput('source-binary');
     }
     else {
@@ -12181,35 +12193,41 @@ async function setUpAutoCache() {
     else {
         runEnv = process.env;
     }
-    const output = openSync(`${daemonDir}/parent.log`, 'a');
+    const outputPath = `${daemonDir}/parent.log`;
+    const output = openSync(outputPath, 'a');
     const launch = spawn(daemonBin, [
         '--daemon-dir', daemonDir,
         '--listen', coreExports.getInput('listen'),
         '--upstream', coreExports.getInput('upstream-cache'),
-        '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint')
-    ], {
+        '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint'),
+        '--nix-conf', `${process.env["HOME"]}/.config/nix/nix.conf`
+    ].concat(coreExports.getInput('use-flakehub') === 'true' ? [
+        '--use-flakehub',
+        '--attic-server', coreExports.getInput('attic-server'),
+        '--flakehub-api-server', coreExports.getInput('flakehub-api-server'),
+        '--flakehub-api-server-netrc', path$1.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc'),
+    ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
+        '--use-gha-cache'
+    ] : []), {
         stdio: ['ignore', output, output],
         env: runEnv
     });
     await new Promise((resolve, reject) => {
-        launch.on('exit', (code, signal) => {
+        launch.on('exit', async (code, signal) => {
+            const log = await fs$2.readFile(outputPath, 'utf-8');
+            console.log(log);
             if (signal) {
-                reject(new Error(`Daemon was killed by signal ${signal}`));
+                reject(new Error(`Daemon was killed by signal ${signal}: ${log}`));
             }
             else if (code) {
-                reject(new Error(`Daemon exited with code ${code}`));
+                reject(new Error(`Daemon exited with code ${code}: ${log}`));
             }
             else {
                 resolve();
             }
         });
     });
-    await fs$2.mkdir(`${process.env["HOME"]}/.config/nix`, { recursive: true });
-    const nixConf = openSync(`${process.env["HOME"]}/.config/nix/nix.conf`, 'a');
-    writeSync(nixConf, `${"\n"}extra-substituters = http://${coreExports.getInput('listen')}/?trusted=1&compression=zstd&parallel-compression=true${"\n"}`);
-    writeSync(nixConf, `fallback = true${"\n"}`);
-    close(nixConf);
-    coreExports.debug('Launched Magic Nix Cache');
+    coreExports.info('Launched Magic Nix Cache');
     coreExports.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
 }
 async function notifyAutoCache() {
