@@ -12181,7 +12181,7 @@ async function setUpAutoCache() {
     else {
         runEnv = process.env;
     }
-    const output = openSync(`${daemonDir}/parent.log`, 'a');
+    const output = openSync(`${daemonDir}/daemon.log`, 'a');
     const launch = spawn(daemonBin, [
         '--daemon-dir', daemonDir,
         '--listen', coreExports.getInput('listen'),

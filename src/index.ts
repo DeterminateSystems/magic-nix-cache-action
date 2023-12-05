@@ -113,7 +113,7 @@ async function setUpAutoCache() {
     runEnv = process.env;
   }
 
-  const output = openSync(`${daemonDir}/parent.log`, 'a');
+  const output = openSync(`${daemonDir}/daemon.log`, 'a');
   const launch = spawn(
     daemonBin,
     [
