@@ -4,9 +4,8 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { spawn } from 'node:child_process';
-import { createWriteStream, openSync, writeSync, close } from 'node:fs';
+import { createWriteStream, openSync, writeSync, close, readFileSync } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
-import { setTimeout } from 'timers/promises';
 import { inspect } from 'node:util';
 
 import * as core from '@actions/core';
@@ -187,7 +186,6 @@ async function tearDownAutoCache() {
   const log = new Tail(path.join(daemonDir, 'daemon.log'));
   core.debug(`tailing daemon.log...`);
   log.on('line', (line) => {
-    core.debug(`got a log line`);
     core.info(line);
   });
 
@@ -198,8 +196,6 @@ async function tearDownAutoCache() {
     core.debug(`back from post`);
     core.debug(res);
   } finally {
-    await setTimeout(5000);
-
     core.debug(`unwatching the daemon log`);
     log.unwatch();
   }
@@ -210,6 +206,12 @@ async function tearDownAutoCache() {
   } catch (e) {
     if (e.code !== 'ESRCH') {
       throw e;
+    }
+  } finally {
+    if (core.isDebug()) {
+      core.info("Entire log:");
+      const log = readFileSync(path.join(daemonDir, 'daemon.log'));
+      core.info(log.toString());
     }
   }
 }
