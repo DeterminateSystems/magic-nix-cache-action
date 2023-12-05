@@ -17,7 +17,7 @@ const ENV_CACHE_DAEMONDIR = 'MAGIC_NIX_CACHE_DAEMONDIR';
 
 const gotClient = got.extend({
   retry: {
-    limit: 5,
+    limit: 1,
     methods: [ 'POST', 'GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE' ],
   },
   hooks: {
