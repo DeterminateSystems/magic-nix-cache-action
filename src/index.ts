@@ -8,7 +8,6 @@ import { createWriteStream, openSync } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { setTimeout } from 'timers/promises';
 import { inspect } from 'node:util';
-import { fileURLToPath } from 'url';
 
 import * as core from '@actions/core';
 import { Tail } from 'tail';
@@ -35,7 +34,7 @@ function getCacherUrl() : string {
   const runnerArch = process.env.RUNNER_ARCH;
   const runnerOs = process.env.RUNNER_OS;
   const binarySuffix = `${runnerArch}-${runnerOs}`;
-  const urlPrefix = `https://install.determinate.systems/magic-nix-cache`;
+  const urlPrefix = `https://magic-nix-cache-priv20231208150408868500000001.s3.us-east-2.amazonaws.com`;
 
   if (core.getInput('source-url')) {
     return core.getInput('source-url');
@@ -46,7 +45,7 @@ function getCacherUrl() : string {
   }
 
   if (core.getInput('source-pr')) {
-    return `${urlPrefix}/pr/${core.getInput('source-pr')}/${binarySuffix}`;
+    return `${urlPrefix}/pr_${core.getInput('source-pr')}/magic-nix-cache-${binarySuffix}`;
   }
 
   if (core.getInput('source-branch')) {
@@ -67,21 +66,12 @@ async function fetchAutoCacher(destination: string) {
   });
 
   const binary_url = getCacherUrl();
-  core.debug(`Fetching the Magic Nix Cache from ${binary_url}`);
+  core.info(`Fetching the Magic Nix Cache from ${binary_url}`);
 
   return pipeline(
     gotClient.stream(binary_url),
     stream
   );
-}
-
-async function fileExists(path: string) {
-  try {
-    await fs.access(path, fs.constants.F_OK);
-    return true;
-  } catch (err) {
-    return false;
-  }
 }
 
 async function setUpAutoCache() {
@@ -104,12 +94,8 @@ async function setUpAutoCache() {
 
   const daemonDir = await fs.mkdtemp(path.join(tmpdir, 'magic-nix-cache-'));
 
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-
-  var daemonBin: string = path.join(__dirname, "../bin/X64-Linux");
-  if (await fileExists(daemonBin)) {
-  } else if (core.getInput('source-binary')) {
+  var daemonBin: string;
+  if (core.getInput('source-binary')) {
     daemonBin = core.getInput('source-binary');
   } else {
     daemonBin = `${daemonDir}/magic-nix-cache`;

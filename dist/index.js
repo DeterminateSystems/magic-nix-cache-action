@@ -7,7 +7,6 @@ import { openSync, createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { setTimeout as setTimeout$1 } from 'timers/promises';
 import { promisify as promisify$1, inspect } from 'node:util';
-import require$$0$5, { fileURLToPath } from 'url';
 import require$$0 from 'os';
 import require$$1 from 'fs';
 import crypto from 'crypto';
@@ -34,6 +33,7 @@ import { checkServerIdentity } from 'node:tls';
 import https$4 from 'node:https';
 import { lookup, V4MAPPED, ALL, ADDRCONFIG, promises } from 'node:dns';
 import require$$3 from 'http2';
+import require$$0$5 from 'url';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -12120,7 +12120,7 @@ function getCacherUrl() {
     const runnerArch = process.env.RUNNER_ARCH;
     const runnerOs = process.env.RUNNER_OS;
     const binarySuffix = `${runnerArch}-${runnerOs}`;
-    const urlPrefix = `https://install.determinate.systems/magic-nix-cache`;
+    const urlPrefix = `https://magic-nix-cache-priv20231208150408868500000001.s3.us-east-2.amazonaws.com`;
     if (coreExports.getInput('source-url')) {
         return coreExports.getInput('source-url');
     }
@@ -12128,7 +12128,7 @@ function getCacherUrl() {
         return `${urlPrefix}/tag/${coreExports.getInput('source-tag')}/${binarySuffix}`;
     }
     if (coreExports.getInput('source-pr')) {
-        return `${urlPrefix}/pr/${coreExports.getInput('source-pr')}/${binarySuffix}`;
+        return `${urlPrefix}/pr_${coreExports.getInput('source-pr')}/magic-nix-cache-${binarySuffix}`;
     }
     if (coreExports.getInput('source-branch')) {
         return `${urlPrefix}/branch/${coreExports.getInput('source-branch')}/${binarySuffix}`;
@@ -12144,17 +12144,8 @@ async function fetchAutoCacher(destination) {
         mode: 0o755,
     });
     const binary_url = getCacherUrl();
-    coreExports.debug(`Fetching the Magic Nix Cache from ${binary_url}`);
+    coreExports.info(`Fetching the Magic Nix Cache from ${binary_url}`);
     return pipeline(gotClient.stream(binary_url), stream);
-}
-async function fileExists(path) {
-    try {
-        await fs$2.access(path, fs$2.constants.F_OK);
-        return true;
-    }
-    catch (err) {
-        return false;
-    }
 }
 async function setUpAutoCache() {
     const tmpdir = process.env['RUNNER_TEMP'] || os$2.tmpdir();
@@ -12171,11 +12162,8 @@ async function setUpAutoCache() {
     }
     coreExports.debug(`GitHub Action Cache URL: ${process.env['ACTIONS_CACHE_URL']}`);
     const daemonDir = await fs$2.mkdtemp(path$1.join(tmpdir, 'magic-nix-cache-'));
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path$1.dirname(__filename);
-    var daemonBin = path$1.join(__dirname, "../bin/X64-Linux");
-    if (await fileExists(daemonBin)) ;
-    else if (coreExports.getInput('source-binary')) {
+    var daemonBin;
+    if (coreExports.getInput('source-binary')) {
         daemonBin = coreExports.getInput('source-binary');
     }
     else {
@@ -12203,7 +12191,7 @@ async function setUpAutoCache() {
         '--nix-conf', `${process.env["HOME"]}/.config/nix/nix.conf`
     ].concat(coreExports.getInput('use-flakehub') === 'true' ? [
         '--use-flakehub',
-        '--attic-server', coreExports.getInput('attic-server'),
+        '--flakehub-cache-server', coreExports.getInput('flakehub-cache-server'),
         '--flakehub-api-server', coreExports.getInput('flakehub-api-server'),
         '--flakehub-api-server-netrc', path$1.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc'),
     ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
