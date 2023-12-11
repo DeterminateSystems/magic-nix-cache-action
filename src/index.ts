@@ -140,7 +140,7 @@ async function setUpAutoCache() {
     ].concat(
       core.getInput('use-flakehub') === 'true' ? [
         '--use-flakehub',
-        '--attic-server', core.getInput('attic-server'),
+        '--flakehub-cache-server', core.getInput('flakehub-cache-server'),
         '--flakehub-api-server', core.getInput('flakehub-api-server'),
         '--flakehub-api-server-netrc', path.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc'),
       ] : []).concat(

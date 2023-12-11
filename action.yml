@@ -39,8 +39,8 @@ inputs:
     description: "Whether to upload build results to FlakeHub."
     default: true
     required: false
-  attic-server:
-    description: "The Attic binary cache server."
+  flakehub-cache-server:
+    description: "The FlakeHub binary cache server."
     default: "https://attic-test.fly.dev"
   flakehub-api-server:
     description: "The FlakeHub API server."
