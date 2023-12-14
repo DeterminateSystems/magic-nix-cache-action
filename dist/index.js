@@ -12181,10 +12181,11 @@ async function setUpAutoCache() {
     else {
         runEnv = process.env;
     }
-    const outputPath = `${daemonDir}/parent.log`;
+    // Start the server.
+    const outputPath = `${daemonDir}/daemon.log`;
     const output = openSync(outputPath, 'a');
-    const launch = spawn(daemonBin, [
-        '--daemon-dir', daemonDir,
+    const daemon = spawn(daemonBin, [
+        '--notify-fd', '3',
         '--listen', coreExports.getInput('listen'),
         '--upstream', coreExports.getInput('upstream-cache'),
         '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint'),
@@ -12197,13 +12198,20 @@ async function setUpAutoCache() {
     ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
         '--use-gha-cache'
     ] : []), {
-        stdio: ['ignore', output, output],
-        env: runEnv
+        stdio: ['ignore', output, output, 'pipe'],
+        env: runEnv,
+        detached: true
     });
+    const pidFile = path$1.join(daemonDir, 'daemon.pid');
+    await fs$2.writeFile(pidFile, `${daemon.pid}`);
     await new Promise((resolve, reject) => {
-        launch.on('exit', async (code, signal) => {
+        daemon.stdio[3].on('data', (data) => {
+            if (data.toString().trim() == 'INIT') {
+                resolve();
+            }
+        });
+        daemon.on('exit', async (code, signal) => {
             const log = await fs$2.readFile(outputPath, 'utf-8');
-            console.log(log);
             if (signal) {
                 reject(new Error(`Daemon was killed by signal ${signal}: ${log}`));
             }
@@ -12211,10 +12219,11 @@ async function setUpAutoCache() {
                 reject(new Error(`Daemon exited with code ${code}: ${log}`));
             }
             else {
-                resolve();
+                reject(new Error(`Daemon unexpectedly exited: ${log}`));
             }
         });
     });
+    daemon.unref();
     coreExports.info('Launched Magic Nix Cache');
     coreExports.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
 }
@@ -12224,6 +12233,7 @@ async function notifyAutoCache() {
         return;
     }
     try {
+        // FIXME: remove this
         coreExports.debug(`Indicating workflow start`);
         const res = await gotClient.post(`http://${coreExports.getInput('listen')}/api/workflow-start`).json();
         coreExports.debug(`back from post`);
