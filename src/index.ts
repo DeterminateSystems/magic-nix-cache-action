@@ -113,13 +113,14 @@ async function setUpAutoCache() {
     runEnv = process.env;
   }
 
-  // Start the server.
+  // Start the server. Once it is ready, it will notify us via file descriptor 3.
   const outputPath = `${daemonDir}/daemon.log`;
   const output = openSync(outputPath, 'a');
+  const notifyFd = 3;
   const daemon = spawn(
     daemonBin,
     [
-      '--notify-fd', '3',
+      '--notify-fd', String(notifyFd),
       '--listen', core.getInput('listen'),
       '--upstream', core.getInput('upstream-cache'),
       '--diagnostic-endpoint', core.getInput('diagnostic-endpoint'),
@@ -145,7 +146,7 @@ async function setUpAutoCache() {
   await fs.writeFile(pidFile, `${daemon.pid}`);
 
   await new Promise<void>((resolve, reject) => {
-    daemon.stdio[3].on('data', (data) => {
+    daemon.stdio[notifyFd].on('data', (data) => {
       if (data.toString().trim() == 'INIT') {
         resolve();
       }
@@ -177,7 +178,6 @@ async function notifyAutoCache() {
   }
 
   try {
-    // FIXME: remove this
     core.debug(`Indicating workflow start`);
     const res: any = await gotClient.post(`http://${core.getInput('listen')}/api/workflow-start`).json();
     core.debug(`back from post`);
