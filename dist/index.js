@@ -3,7 +3,7 @@ import * as os$2 from 'node:os';
 import os__default from 'node:os';
 import * as path$1 from 'node:path';
 import { spawn } from 'node:child_process';
-import { openSync, writeSync, close, createWriteStream } from 'node:fs';
+import { openSync, createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { setTimeout as setTimeout$1 } from 'timers/promises';
 import { promisify as promisify$1, inspect } from 'node:util';
@@ -12120,7 +12120,7 @@ function getCacherUrl() {
     const runnerArch = process.env.RUNNER_ARCH;
     const runnerOs = process.env.RUNNER_OS;
     const binarySuffix = `${runnerArch}-${runnerOs}`;
-    const urlPrefix = `https://install.determinate.systems/magic-nix-cache`;
+    const urlPrefix = `https://magic-nix-cache-priv20231208150408868500000001.s3.us-east-2.amazonaws.com`;
     if (coreExports.getInput('source-url')) {
         return coreExports.getInput('source-url');
     }
@@ -12128,7 +12128,7 @@ function getCacherUrl() {
         return `${urlPrefix}/tag/${coreExports.getInput('source-tag')}/${binarySuffix}`;
     }
     if (coreExports.getInput('source-pr')) {
-        return `${urlPrefix}/pr/${coreExports.getInput('source-pr')}/${binarySuffix}`;
+        return `${urlPrefix}/pr_${coreExports.getInput('source-pr')}/magic-nix-cache-${binarySuffix}`;
     }
     if (coreExports.getInput('source-branch')) {
         return `${urlPrefix}/branch/${coreExports.getInput('source-branch')}/${binarySuffix}`;
@@ -12144,7 +12144,7 @@ async function fetchAutoCacher(destination) {
         mode: 0o755,
     });
     const binary_url = getCacherUrl();
-    coreExports.debug(`Fetching the Magic Nix Cache from ${binary_url}`);
+    coreExports.info(`Fetching the Magic Nix Cache from ${binary_url}`);
     return pipeline(gotClient.stream(binary_url), stream);
 }
 async function setUpAutoCache() {
@@ -12181,35 +12181,41 @@ async function setUpAutoCache() {
     else {
         runEnv = process.env;
     }
-    const output = openSync(`${daemonDir}/parent.log`, 'a');
+    const outputPath = `${daemonDir}/parent.log`;
+    const output = openSync(outputPath, 'a');
     const launch = spawn(daemonBin, [
         '--daemon-dir', daemonDir,
         '--listen', coreExports.getInput('listen'),
         '--upstream', coreExports.getInput('upstream-cache'),
-        '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint')
-    ], {
+        '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint'),
+        '--nix-conf', `${process.env["HOME"]}/.config/nix/nix.conf`
+    ].concat(coreExports.getInput('use-flakehub') === 'true' ? [
+        '--use-flakehub',
+        '--flakehub-cache-server', coreExports.getInput('flakehub-cache-server'),
+        '--flakehub-api-server', coreExports.getInput('flakehub-api-server'),
+        '--flakehub-api-server-netrc', path$1.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc'),
+    ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
+        '--use-gha-cache'
+    ] : []), {
         stdio: ['ignore', output, output],
         env: runEnv
     });
     await new Promise((resolve, reject) => {
-        launch.on('exit', (code, signal) => {
+        launch.on('exit', async (code, signal) => {
+            const log = await fs$2.readFile(outputPath, 'utf-8');
+            console.log(log);
             if (signal) {
-                reject(new Error(`Daemon was killed by signal ${signal}`));
+                reject(new Error(`Daemon was killed by signal ${signal}: ${log}`));
             }
             else if (code) {
-                reject(new Error(`Daemon exited with code ${code}`));
+                reject(new Error(`Daemon exited with code ${code}: ${log}`));
             }
             else {
                 resolve();
             }
         });
     });
-    await fs$2.mkdir(`${process.env["HOME"]}/.config/nix`, { recursive: true });
-    const nixConf = openSync(`${process.env["HOME"]}/.config/nix/nix.conf`, 'a');
-    writeSync(nixConf, `${"\n"}extra-substituters = http://${coreExports.getInput('listen')}/?trusted=1&compression=zstd&parallel-compression=true${"\n"}`);
-    writeSync(nixConf, `fallback = true${"\n"}`);
-    close(nixConf);
-    coreExports.debug('Launched Magic Nix Cache');
+    coreExports.info('Launched Magic Nix Cache');
     coreExports.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
 }
 async function notifyAutoCache() {

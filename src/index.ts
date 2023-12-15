@@ -4,7 +4,7 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { spawn } from 'node:child_process';
-import { createWriteStream, openSync, writeSync, close } from 'node:fs';
+import { createWriteStream, openSync } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { setTimeout } from 'timers/promises';
 import { inspect } from 'node:util';
@@ -34,7 +34,7 @@ function getCacherUrl() : string {
   const runnerArch = process.env.RUNNER_ARCH;
   const runnerOs = process.env.RUNNER_OS;
   const binarySuffix = `${runnerArch}-${runnerOs}`;
-  const urlPrefix = `https://install.determinate.systems/magic-nix-cache`;
+  const urlPrefix = `https://magic-nix-cache-priv20231208150408868500000001.s3.us-east-2.amazonaws.com`;
 
   if (core.getInput('source-url')) {
     return core.getInput('source-url');
@@ -45,7 +45,7 @@ function getCacherUrl() : string {
   }
 
   if (core.getInput('source-pr')) {
-    return `${urlPrefix}/pr/${core.getInput('source-pr')}/${binarySuffix}`;
+    return `${urlPrefix}/pr_${core.getInput('source-pr')}/magic-nix-cache-${binarySuffix}`;
   }
 
   if (core.getInput('source-branch')) {
@@ -66,7 +66,7 @@ async function fetchAutoCacher(destination: string) {
   });
 
   const binary_url = getCacherUrl();
-  core.debug(`Fetching the Magic Nix Cache from ${binary_url}`);
+  core.info(`Fetching the Magic Nix Cache from ${binary_url}`);
 
   return pipeline(
     gotClient.stream(binary_url),
@@ -113,15 +113,26 @@ async function setUpAutoCache() {
     runEnv = process.env;
   }
 
-  const output = openSync(`${daemonDir}/parent.log`, 'a');
+  const outputPath = `${daemonDir}/parent.log`;
+  const output = openSync(outputPath, 'a');
   const launch = spawn(
     daemonBin,
     [
       '--daemon-dir', daemonDir,
       '--listen', core.getInput('listen'),
       '--upstream', core.getInput('upstream-cache'),
-      '--diagnostic-endpoint', core.getInput('diagnostic-endpoint')
-    ],
+      '--diagnostic-endpoint', core.getInput('diagnostic-endpoint'),
+      '--nix-conf', `${process.env["HOME"]}/.config/nix/nix.conf`
+    ].concat(
+      core.getInput('use-flakehub') === 'true' ? [
+        '--use-flakehub',
+        '--flakehub-cache-server', core.getInput('flakehub-cache-server'),
+        '--flakehub-api-server', core.getInput('flakehub-api-server'),
+        '--flakehub-api-server-netrc', path.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc'),
+      ] : []).concat(
+        core.getInput('use-gha-cache') === 'true' ? [
+          '--use-gha-cache'
+        ] : []),
     {
       stdio: ['ignore', output, output],
       env: runEnv
@@ -129,24 +140,20 @@ async function setUpAutoCache() {
   );
 
   await new Promise<void>((resolve, reject) => {
-    launch.on('exit', (code, signal) => {
+    launch.on('exit', async (code, signal) => {
+      const log: string = await fs.readFile(outputPath, 'utf-8');
+      console.log(log);
       if (signal) {
-        reject(new Error(`Daemon was killed by signal ${signal}`));
+        reject(new Error(`Daemon was killed by signal ${signal}: ${log}`));
       } else if (code) {
-        reject(new Error(`Daemon exited with code ${code}`));
+        reject(new Error(`Daemon exited with code ${code}: ${log}`));
       } else {
         resolve();
       }
     });
   });
 
-  await fs.mkdir(`${process.env["HOME"]}/.config/nix`, { recursive: true });
-  const nixConf = openSync(`${process.env["HOME"]}/.config/nix/nix.conf`, 'a');
-  writeSync(nixConf, `${"\n"}extra-substituters = http://${core.getInput('listen')}/?trusted=1&compression=zstd&parallel-compression=true${"\n"}`);
-  writeSync(nixConf, `fallback = true${"\n"}`);
-  close(nixConf);
-
-  core.debug('Launched Magic Nix Cache');
+  core.info('Launched Magic Nix Cache');
   core.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
 }
 
