@@ -113,12 +113,14 @@ async function setUpAutoCache() {
     runEnv = process.env;
   }
 
-  const outputPath = `${daemonDir}/parent.log`;
+  // Start the server. Once it is ready, it will notify us via file descriptor 3.
+  const outputPath = `${daemonDir}/daemon.log`;
   const output = openSync(outputPath, 'a');
-  const launch = spawn(
+  const notifyFd = 3;
+  const daemon = spawn(
     daemonBin,
     [
-      '--daemon-dir', daemonDir,
+      '--notify-fd', String(notifyFd),
       '--listen', core.getInput('listen'),
       '--upstream', core.getInput('upstream-cache'),
       '--diagnostic-endpoint', core.getInput('diagnostic-endpoint'),
@@ -134,24 +136,35 @@ async function setUpAutoCache() {
           '--use-gha-cache'
         ] : []),
     {
-      stdio: ['ignore', output, output],
-      env: runEnv
+      stdio: ['ignore', output, output, 'pipe'],
+      env: runEnv,
+      detached: true
     }
   );
 
+  const pidFile = path.join(daemonDir, 'daemon.pid');
+  await fs.writeFile(pidFile, `${daemon.pid}`);
+
   await new Promise<void>((resolve, reject) => {
-    launch.on('exit', async (code, signal) => {
+    daemon.stdio[notifyFd].on('data', (data) => {
+      if (data.toString().trim() == 'INIT') {
+        resolve();
+      }
+    });
+
+    daemon.on('exit', async (code, signal) => {
       const log: string = await fs.readFile(outputPath, 'utf-8');
-      console.log(log);
       if (signal) {
         reject(new Error(`Daemon was killed by signal ${signal}: ${log}`));
       } else if (code) {
         reject(new Error(`Daemon exited with code ${code}: ${log}`));
       } else {
-        resolve();
+        reject(new Error(`Daemon unexpectedly exited: ${log}`));
       }
     });
   });
+
+  daemon.unref();
 
   core.info('Launched Magic Nix Cache');
   core.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
