@@ -3,11 +3,10 @@
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { spawn } from 'node:child_process';
-import { createWriteStream, openSync } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
+import { spawn, exec } from 'node:child_process';
+import { openSync } from 'node:fs';
 import { setTimeout } from 'timers/promises';
-import { inspect } from 'node:util';
+import { inspect, promisify } from 'node:util';
 
 import * as core from '@actions/core';
 import { Tail } from 'tail';
@@ -59,19 +58,19 @@ function getCacherUrl() : string {
   return `${urlPrefix}/latest/${binarySuffix}`;
 }
 
-async function fetchAutoCacher(destination: string) {
-  const stream = createWriteStream(destination, {
-    encoding: "binary",
-    mode: 0o755,
-  });
-
+async function fetchAutoCacher() {
   const binary_url = getCacherUrl();
   core.info(`Fetching the Magic Nix Cache from ${binary_url}`);
 
-  return pipeline(
-    gotClient.stream(binary_url),
-    stream
-  );
+  const { stdout } = await promisify(exec)(`curl "${binary_url}" | xz -d | nix-store --import`);
+
+  const paths = stdout.split(os.EOL);
+
+  const last_path = paths.at(-2);
+
+  console.log(`stdout: ${last_path}`);
+
+  return `${last_path}/bin/magic-nix-cache`;
 }
 
 async function setUpAutoCache() {
@@ -98,8 +97,7 @@ async function setUpAutoCache() {
   if (core.getInput('source-binary')) {
     daemonBin = core.getInput('source-binary');
   } else {
-    daemonBin = `${daemonDir}/magic-nix-cache`;
-    await fetchAutoCacher(daemonBin);
+    daemonBin = await fetchAutoCacher();
   }
 
   var runEnv;
