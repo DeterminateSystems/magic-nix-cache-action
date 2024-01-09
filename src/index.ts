@@ -66,6 +66,7 @@ async function fetchAutoCacher() {
 
   const paths = stdout.split(os.EOL);
 
+  // Since the export is in reverse topologically sorted order, magic-nix-cache is always the penultimate entry in the list (the empty string left by split being the last).
   const last_path = paths.at(-2);
 
   console.log(`stdout: ${last_path}`);
