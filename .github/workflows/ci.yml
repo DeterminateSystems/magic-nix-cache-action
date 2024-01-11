@@ -40,6 +40,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
+          flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
@@ -56,6 +57,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
+          flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
@@ -73,6 +75,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
+          flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
