@@ -12150,7 +12150,6 @@ function tailLog(daemonDir) {
     const log = new Tail_1(path$1.join(daemonDir, 'daemon.log'));
     coreExports.debug(`tailing daemon.log...`);
     log.on('line', (line) => {
-        //core.debug(`got a log line`);
         coreExports.info(line);
     });
     return log;

@@ -76,7 +76,6 @@ function tailLog(daemonDir) {
   const log = new Tail(path.join(daemonDir, 'daemon.log'));
   core.debug(`tailing daemon.log...`);
   log.on('line', (line) => {
-    //core.debug(`got a log line`);
     core.info(line);
   });
   return log;
