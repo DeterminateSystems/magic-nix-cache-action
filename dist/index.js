@@ -12146,6 +12146,14 @@ async function fetchAutoCacher() {
     const last_path = paths.at(-2);
     return `${last_path}/bin/magic-nix-cache`;
 }
+function tailLog(daemonDir) {
+    const log = new Tail_1(path$1.join(daemonDir, 'daemon.log'));
+    coreExports.debug(`tailing daemon.log...`);
+    log.on('line', (line) => {
+        coreExports.info(line);
+    });
+    return log;
+}
 async function setUpAutoCache() {
     const tmpdir = process.env['RUNNER_TEMP'] || os$2.tmpdir();
     const required_env = ['ACTIONS_CACHE_URL', 'ACTIONS_RUNTIME_URL', 'ACTIONS_RUNTIME_TOKEN'];
@@ -12182,6 +12190,7 @@ async function setUpAutoCache() {
     // Start the server. Once it is ready, it will notify us via file descriptor 3.
     const outputPath = `${daemonDir}/daemon.log`;
     const output = openSync(outputPath, 'a');
+    const log = tailLog(daemonDir);
     const notifyFd = 3;
     const daemon = spawn(daemonBin, [
         '--notify-fd', String(notifyFd),
@@ -12210,21 +12219,21 @@ async function setUpAutoCache() {
             }
         });
         daemon.on('exit', async (code, signal) => {
-            const log = await fs$2.readFile(outputPath, 'utf-8');
             if (signal) {
-                reject(new Error(`Daemon was killed by signal ${signal}: ${log}`));
+                reject(new Error(`Daemon was killed by signal ${signal}`));
             }
             else if (code) {
-                reject(new Error(`Daemon exited with code ${code}: ${log}`));
+                reject(new Error(`Daemon exited with code ${code}`));
             }
             else {
-                reject(new Error(`Daemon unexpectedly exited: ${log}`));
+                reject(new Error(`Daemon unexpectedly exited`));
             }
         });
     });
     daemon.unref();
     coreExports.info('Launched Magic Nix Cache');
     coreExports.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
+    log.unwatch();
 }
 async function notifyAutoCache() {
     const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
@@ -12255,12 +12264,7 @@ async function tearDownAutoCache() {
     if (!pid) {
         throw new Error("magic-nix-cache did not start successfully");
     }
-    const log = new Tail_1(path$1.join(daemonDir, 'daemon.log'));
-    coreExports.debug(`tailing daemon.log...`);
-    log.on('line', (line) => {
-        coreExports.debug(`got a log line`);
-        coreExports.info(line);
-    });
+    const log = tailLog(daemonDir);
     try {
         coreExports.debug(`about to post to localhost`);
         const res = await gotClient.post(`http://${coreExports.getInput('listen')}/api/workflow-finish`).json();

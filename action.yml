@@ -23,7 +23,7 @@ inputs:
   source-pr:
     description: The PR of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
     required: false
-    default: 8
+    default: 10
   source-revision:
     description: The revision of `nix-magic-nix-cache` to use. Conflicts with all other `source-*` options.
     required: false

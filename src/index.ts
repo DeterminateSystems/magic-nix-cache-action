@@ -72,6 +72,15 @@ async function fetchAutoCacher() {
   return `${last_path}/bin/magic-nix-cache`;
 }
 
+function tailLog(daemonDir) {
+  const log = new Tail(path.join(daemonDir, 'daemon.log'));
+  core.debug(`tailing daemon.log...`);
+  log.on('line', (line) => {
+    core.info(line);
+  });
+  return log;
+}
+
 async function setUpAutoCache() {
   const tmpdir = process.env['RUNNER_TEMP'] || os.tmpdir();
   const required_env = ['ACTIONS_CACHE_URL', 'ACTIONS_RUNTIME_URL', 'ACTIONS_RUNTIME_TOKEN'];
@@ -113,6 +122,7 @@ async function setUpAutoCache() {
   // Start the server. Once it is ready, it will notify us via file descriptor 3.
   const outputPath = `${daemonDir}/daemon.log`;
   const output = openSync(outputPath, 'a');
+  const log = tailLog(daemonDir);
   const notifyFd = 3;
   const daemon = spawn(
     daemonBin,
@@ -150,13 +160,12 @@ async function setUpAutoCache() {
     });
 
     daemon.on('exit', async (code, signal) => {
-      const log: string = await fs.readFile(outputPath, 'utf-8');
       if (signal) {
-        reject(new Error(`Daemon was killed by signal ${signal}: ${log}`));
+        reject(new Error(`Daemon was killed by signal ${signal}`));
       } else if (code) {
-        reject(new Error(`Daemon exited with code ${code}: ${log}`));
+        reject(new Error(`Daemon exited with code ${code}`));
       } else {
-        reject(new Error(`Daemon unexpectedly exited: ${log}`));
+        reject(new Error(`Daemon unexpectedly exited`));
       }
     });
   });
@@ -165,6 +174,8 @@ async function setUpAutoCache() {
 
   core.info('Launched Magic Nix Cache');
   core.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
+
+  log.unwatch();
 }
 
 async function notifyAutoCache() {
@@ -201,13 +212,7 @@ async function tearDownAutoCache() {
     throw new Error("magic-nix-cache did not start successfully");
   }
 
-  const log = new Tail(path.join(daemonDir, 'daemon.log'));
-  core.debug(`tailing daemon.log...`);
-  log.on('line', (line) => {
-    core.debug(`got a log line`);
-    core.info(line);
-  });
-
+  const log = tailLog(daemonDir);
 
   try {
     core.debug(`about to post to localhost`);
