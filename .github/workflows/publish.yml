@@ -11,6 +11,9 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v3
       - run: |
