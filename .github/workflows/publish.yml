@@ -26,5 +26,5 @@ jobs:
           bucket: ${{ secrets.AWS_S3_UPLOAD_BUCKET }}
           directory: ./artifacts
           ids_project_name: magic-nix-cache-action-priv
-          ids_binary_prefix: action.tar.gz
+          ids_binary_prefix: magic-nix-cache-action-priv
           allowed_branches: '["main", "grahamc-patch-1"]'
