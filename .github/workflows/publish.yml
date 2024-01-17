@@ -3,7 +3,9 @@ name: Publish
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+      - grahamc-patch-1
 
 jobs:
   publish:
