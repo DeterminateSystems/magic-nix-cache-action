@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - grahamc-patch-1
 
 jobs:
   publish:
