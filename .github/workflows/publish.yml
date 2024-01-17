@@ -1,0 +1,28 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          mkdir artifacts
+          git archive --format=tar.gz HEAD -o ./artifacts/universal.tar.gz
+        
+      - uses: DeterminateSystems/push-artifact-ids@main
+        with:
+          s3_upload_role: ${{ secrets.AWS_S3_UPLOAD_ROLE }}
+          bucket: ${{ secrets.AWS_S3_UPLOAD_BUCKET }}
+          directory: ./artifacts
+          ids_project_name: magic-nix-cache-action-priv
+          ids_binary_prefix: magic-nix-cache-action-priv
