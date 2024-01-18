@@ -32,7 +32,7 @@ const gotClient = got.extend({
 function getCacherUrl() : string {
   const runnerArch = process.env.RUNNER_ARCH;
   const runnerOs = process.env.RUNNER_OS;
-  const binarySuffix = `magic-nix-cache-${runnerArch}-${runnerOs}`;
+  const binarySuffix = `${runnerArch}-${runnerOs}`;
   const urlPrefix = `https://install.determinate.systems/magic-nix-cache-priv`;
   if (core.getInput('source-url')) {
     return core.getInput('source-url');
