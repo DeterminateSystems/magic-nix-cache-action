@@ -32,7 +32,7 @@ const gotClient = got.extend({
 function getCacherUrl() : string {
   const runnerArch = process.env.RUNNER_ARCH;
   const runnerOs = process.env.RUNNER_OS;
-  const binarySuffix = `${runnerArch}-${runnerOs}`;
+  const binarySuffix = `magic-nix-cache-${runnerArch}-${runnerOs}`;
   const urlPrefix = `https://magic-nix-cache-priv20231208150408868500000001.s3.us-east-2.amazonaws.com`;
 
   if (core.getInput('source-url')) {
@@ -44,7 +44,7 @@ function getCacherUrl() : string {
   }
 
   if (core.getInput('source-pr')) {
-    return `${urlPrefix}/pr_${core.getInput('source-pr')}/magic-nix-cache-${binarySuffix}`;
+    return `${urlPrefix}/pr_${core.getInput('source-pr')}/${binarySuffix}`;
   }
 
   if (core.getInput('source-branch')) {
