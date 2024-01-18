@@ -7,7 +7,7 @@ seed=$(date)
 
 log=$MAGIC_NIX_CACHE_DAEMONDIR/daemon.log
 
-binary_cache=https://attic-test.fly.dev
+binary_cache=https://flakehub-cache-prod.fly.dev
 
 # Check that the action initialized correctly.
 grep 'FlakeHub cache is enabled' $log
