@@ -42,7 +42,7 @@ inputs:
     required: false
   flakehub-cache-server:
     description: "The FlakeHub binary cache server."
-    default: "https://attic-test.fly.dev"
+    default: "https://flakehub-cache-prod.fly.dev"
   flakehub-api-server:
     description: "The FlakeHub API server."
     default: "https://api.flakehub.com"
