@@ -33,8 +33,7 @@ function getCacherUrl() : string {
   const runnerArch = process.env.RUNNER_ARCH;
   const runnerOs = process.env.RUNNER_OS;
   const binarySuffix = `magic-nix-cache-${runnerArch}-${runnerOs}`;
-  const urlPrefix = `https://magic-nix-cache-priv20231208150408868500000001.s3.us-east-2.amazonaws.com`;
-
+  const urlPrefix = `https://install.determinate.systems/magic-nix-cache-priv`;
   if (core.getInput('source-url')) {
     return core.getInput('source-url');
   }
@@ -44,7 +43,7 @@ function getCacherUrl() : string {
   }
 
   if (core.getInput('source-pr')) {
-    return `${urlPrefix}/pr_${core.getInput('source-pr')}/${binarySuffix}`;
+    return `${urlPrefix}/pr/${core.getInput('source-pr')}/${binarySuffix}`;
   }
 
   if (core.getInput('source-branch')) {
