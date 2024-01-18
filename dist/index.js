@@ -12118,8 +12118,8 @@ const gotClient = got$1.extend({
 function getCacherUrl() {
     const runnerArch = process.env.RUNNER_ARCH;
     const runnerOs = process.env.RUNNER_OS;
-    const binarySuffix = `magic-nix-cache-${runnerArch}-${runnerOs}`;
-    const urlPrefix = `https://magic-nix-cache-priv20231208150408868500000001.s3.us-east-2.amazonaws.com`;
+    const binarySuffix = `${runnerArch}-${runnerOs}`;
+    const urlPrefix = `https://install.determinate.systems/magic-nix-cache-priv`;
     if (coreExports.getInput('source-url')) {
         return coreExports.getInput('source-url');
     }
@@ -12127,7 +12127,7 @@ function getCacherUrl() {
         return `${urlPrefix}/tag/${coreExports.getInput('source-tag')}/${binarySuffix}`;
     }
     if (coreExports.getInput('source-pr')) {
-        return `${urlPrefix}/pr_${coreExports.getInput('source-pr')}/${binarySuffix}`;
+        return `${urlPrefix}/pr/${coreExports.getInput('source-pr')}/${binarySuffix}`;
     }
     if (coreExports.getInput('source-branch')) {
         return `${urlPrefix}/branch/${coreExports.getInput('source-branch')}/${binarySuffix}`;
@@ -12140,7 +12140,7 @@ function getCacherUrl() {
 async function fetchAutoCacher() {
     const binary_url = getCacherUrl();
     coreExports.info(`Fetching the Magic Nix Cache from ${binary_url}`);
-    const { stdout } = await promisify$1(exec)(`curl "${binary_url}" | xz -d | nix-store --import`);
+    const { stdout } = await promisify$1(exec)(`curl -L "${binary_url}" | xz -d | nix-store --import`);
     const paths = stdout.split(os$2.EOL);
     // Since the export is in reverse topologically sorted order, magic-nix-cache is always the penultimate entry in the list (the empty string left by split being the last).
     const last_path = paths.at(-2);
