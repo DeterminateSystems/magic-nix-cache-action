@@ -12119,7 +12119,7 @@ function getCacherUrl() {
     const runnerArch = process.env.RUNNER_ARCH;
     const runnerOs = process.env.RUNNER_OS;
     const binarySuffix = `magic-nix-cache-${runnerArch}-${runnerOs}`;
-    const urlPrefix = `https://magic-nix-cache-priv20231208150408868500000001.s3.us-east-2.amazonaws.com`;
+    const urlPrefix = `https://install.determinate.systems/magic-nix-cache-priv`;
     if (coreExports.getInput('source-url')) {
         return coreExports.getInput('source-url');
     }
@@ -12127,7 +12127,7 @@ function getCacherUrl() {
         return `${urlPrefix}/tag/${coreExports.getInput('source-tag')}/${binarySuffix}`;
     }
     if (coreExports.getInput('source-pr')) {
-        return `${urlPrefix}/pr_${coreExports.getInput('source-pr')}/${binarySuffix}`;
+        return `${urlPrefix}/pr/${coreExports.getInput('source-pr')}/${binarySuffix}`;
     }
     if (coreExports.getInput('source-branch')) {
         return `${urlPrefix}/branch/${coreExports.getInput('source-branch')}/${binarySuffix}`;
