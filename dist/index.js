@@ -12140,7 +12140,7 @@ function getCacherUrl() {
 async function fetchAutoCacher() {
     const binary_url = getCacherUrl();
     coreExports.info(`Fetching the Magic Nix Cache from ${binary_url}`);
-    const { stdout } = await promisify$1(exec)(`curl "${binary_url}" | xz -d | nix-store --import`);
+    const { stdout } = await promisify$1(exec)(`curl -L "${binary_url}" | xz -d | nix-store --import`);
     const paths = stdout.split(os$2.EOL);
     // Since the export is in reverse topologically sorted order, magic-nix-cache is always the penultimate entry in the list (the empty string left by split being the last).
     const last_path = paths.at(-2);

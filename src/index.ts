@@ -61,7 +61,7 @@ async function fetchAutoCacher() {
   const binary_url = getCacherUrl();
   core.info(`Fetching the Magic Nix Cache from ${binary_url}`);
 
-  const { stdout } = await promisify(exec)(`curl "${binary_url}" | xz -d | nix-store --import`);
+  const { stdout } = await promisify(exec)(`curl -L "${binary_url}" | xz -d | nix-store --import`);
 
   const paths = stdout.split(os.EOL);
 
