@@ -3,9 +3,8 @@ import * as os$2 from 'node:os';
 import os__default from 'node:os';
 import * as path$1 from 'node:path';
 import { spawn } from 'node:child_process';
-import { openSync, writeSync, close, createWriteStream } from 'node:fs';
+import { openSync, writeSync, close, readFileSync, createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
-import { setTimeout as setTimeout$1 } from 'timers/promises';
 import { promisify as promisify$1, inspect } from 'node:util';
 import require$$0 from 'os';
 import require$$1 from 'fs';
@@ -12105,7 +12104,7 @@ var got$1 = got;
 const ENV_CACHE_DAEMONDIR = 'MAGIC_NIX_CACHE_DAEMONDIR';
 const gotClient = got$1.extend({
     retry: {
-        limit: 5,
+        limit: 1,
         methods: ['POST', 'GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE'],
     },
     hooks: {
@@ -12181,7 +12180,7 @@ async function setUpAutoCache() {
     else {
         runEnv = process.env;
     }
-    const output = openSync(`${daemonDir}/parent.log`, 'a');
+    const output = openSync(`${daemonDir}/daemon.log`, 'a');
     const launch = spawn(daemonBin, [
         '--daemon-dir', daemonDir,
         '--listen', coreExports.getInput('listen'),
@@ -12244,7 +12243,6 @@ async function tearDownAutoCache() {
     const log = new Tail_1(path$1.join(daemonDir, 'daemon.log'));
     coreExports.debug(`tailing daemon.log...`);
     log.on('line', (line) => {
-        coreExports.debug(`got a log line`);
         coreExports.info(line);
     });
     try {
@@ -12254,7 +12252,6 @@ async function tearDownAutoCache() {
         coreExports.debug(res);
     }
     finally {
-        await setTimeout$1(5000);
         coreExports.debug(`unwatching the daemon log`);
         log.unwatch();
     }
@@ -12265,6 +12262,13 @@ async function tearDownAutoCache() {
     catch (e) {
         if (e.code !== 'ESRCH') {
             throw e;
+        }
+    }
+    finally {
+        if (coreExports.isDebug()) {
+            coreExports.info("Entire log:");
+            const log = readFileSync(path$1.join(daemonDir, 'daemon.log'));
+            coreExports.info(log.toString());
         }
     }
 }
