@@ -33,6 +33,6 @@ inputs:
     default: "https://install.determinate.systems/magic-nix-cache/perf"
 
 runs:
-  using: "node16"
+  using: "node20"
   main: "./dist/index.js"
   post: "./dist/index.js"
