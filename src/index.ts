@@ -123,6 +123,8 @@ async function setUpAutoCache() {
   const output = openSync(outputPath, 'a');
   const log = tailLog(daemonDir);
   const notifyFd = 3;
+  const netrc = await netrcPath();
+
   const daemon = spawn(
     daemonBin,
     [
@@ -136,7 +138,7 @@ async function setUpAutoCache() {
         '--use-flakehub',
         '--flakehub-cache-server', core.getInput('flakehub-cache-server'),
         '--flakehub-api-server', core.getInput('flakehub-api-server'),
-        '--flakehub-api-server-netrc', path.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc'),
+        '--flakehub-api-server-netrc', netrc,
       ] : []).concat(
         core.getInput('use-gha-cache') === 'true' ? [
           '--use-gha-cache'
@@ -193,6 +195,46 @@ async function notifyAutoCache() {
     core.info(`Error marking the workflow as started:`);
     core.info(inspect(e));
     core.info(`Magic Nix Cache may not be running for this workflow.`);
+  }
+}
+
+
+async function netrcPath() {
+  const expectedNetrcPath = path.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc')
+  try {
+    await fs.access(expectedNetrcPath)
+    return expectedNetrcPath;
+  } catch {
+    // `nix-installer` was not used, the user may be registered with FlakeHub though.
+    const destinedNetrcPath = path.join(process.env['RUNNER_TEMP'], 'magic-nix-cache-netrc')
+    try {
+      await flakehub_login(destinedNetrcPath);
+    } catch {
+      core.info("FlakeHub cache disabled.")
+    }
+    return destinedNetrcPath;
+  }
+}
+
+async function flakehub_login(netrc: string) {
+  const jwt = await core.getIDToken("api.flakehub.com");
+
+  await fs.writeFile(
+    netrc,
+    [
+      `machine api.flakehub.com login flakehub password ${jwt}`,
+      `machine flakehub.com login flakehub password ${jwt}`,
+    ].join("\n"),
+  );
+
+  core.info("Logging in to FlakeHub.");
+
+  // the join followed by a match on ^... looks silly, but extra_config
+  // could contain multi-line values
+  if (this.extra_conf?.join("\n").match(/^netrc-file/m)) {
+    core.warning(
+      "Logging in to FlakeHub conflicts with the Nix option `netrc-file`.",
+    );
   }
 }
 
@@ -258,4 +300,3 @@ try {
   }}
 
 core.debug(`rip`);
-
