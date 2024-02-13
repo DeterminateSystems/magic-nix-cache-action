@@ -12279,11 +12279,6 @@ async function flakehub_login(netrc) {
         `machine flakehub.com login flakehub password ${jwt}`,
     ].join("\n"));
     coreExports.info("Logged in to FlakeHub.");
-    // the join followed by a match on ^... looks silly, but extra_config
-    // could contain multi-line values
-    if (this.extra_conf?.join("\n").match(/^netrc-file/m)) {
-        coreExports.warning("Logging in to FlakeHub conflicts with the Nix option `netrc-file`.");
-    }
 }
 async function tearDownAutoCache() {
     const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
