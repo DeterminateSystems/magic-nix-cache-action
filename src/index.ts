@@ -209,8 +209,9 @@ async function netrcPath() {
     const destinedNetrcPath = path.join(process.env['RUNNER_TEMP'], 'magic-nix-cache-netrc')
     try {
       await flakehub_login(destinedNetrcPath);
-    } catch {
-      core.info("FlakeHub cache disabled.")
+    } catch (e) {
+      core.info("FlakeHub cache disabled.");
+      core.debug(`Error while logging into FlakeHub: ${e}`)
     }
     return destinedNetrcPath;
   }
@@ -227,7 +228,7 @@ async function flakehub_login(netrc: string) {
     ].join("\n"),
   );
 
-  core.info("Logging in to FlakeHub.");
+  core.info("Logged in to FlakeHub.");
 
   // the join followed by a match on ^... looks silly, but extra_config
   // could contain multi-line values

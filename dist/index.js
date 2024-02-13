@@ -12265,8 +12265,9 @@ async function netrcPath() {
         try {
             await flakehub_login(destinedNetrcPath);
         }
-        catch {
+        catch (e) {
             coreExports.info("FlakeHub cache disabled.");
+            coreExports.debug(`Error while logging into FlakeHub: ${e}`);
         }
         return destinedNetrcPath;
     }
@@ -12277,7 +12278,7 @@ async function flakehub_login(netrc) {
         `machine api.flakehub.com login flakehub password ${jwt}`,
         `machine flakehub.com login flakehub password ${jwt}`,
     ].join("\n"));
-    coreExports.info("Logging in to FlakeHub.");
+    coreExports.info("Logged in to FlakeHub.");
     // the join followed by a match on ^... looks silly, but extra_config
     // could contain multi-line values
     if (this.extra_conf?.join("\n").match(/^netrc-file/m)) {
