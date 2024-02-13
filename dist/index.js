@@ -12192,6 +12192,7 @@ async function setUpAutoCache() {
     const output = openSync(outputPath, 'a');
     const log = tailLog(daemonDir);
     const notifyFd = 3;
+    const netrc = await netrcPath();
     const daemon = spawn(daemonBin, [
         '--notify-fd', String(notifyFd),
         '--listen', coreExports.getInput('listen'),
@@ -12202,7 +12203,7 @@ async function setUpAutoCache() {
         '--use-flakehub',
         '--flakehub-cache-server', coreExports.getInput('flakehub-cache-server'),
         '--flakehub-api-server', coreExports.getInput('flakehub-api-server'),
-        '--flakehub-api-server-netrc', path$1.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc'),
+        '--flakehub-api-server-netrc', netrc,
     ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
         '--use-gha-cache'
     ] : []), {
@@ -12251,6 +12252,33 @@ async function notifyAutoCache() {
         coreExports.info(inspect(e));
         coreExports.info(`Magic Nix Cache may not be running for this workflow.`);
     }
+}
+async function netrcPath() {
+    const expectedNetrcPath = path$1.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc');
+    try {
+        await fs$2.access(expectedNetrcPath);
+        return expectedNetrcPath;
+    }
+    catch {
+        // `nix-installer` was not used, the user may be registered with FlakeHub though.
+        const destinedNetrcPath = path$1.join(process.env['RUNNER_TEMP'], 'magic-nix-cache-netrc');
+        try {
+            await flakehub_login(destinedNetrcPath);
+        }
+        catch (e) {
+            coreExports.info("FlakeHub cache disabled.");
+            coreExports.debug(`Error while logging into FlakeHub: ${e}`);
+        }
+        return destinedNetrcPath;
+    }
+}
+async function flakehub_login(netrc) {
+    const jwt = await coreExports.getIDToken("api.flakehub.com");
+    await fs$2.writeFile(netrc, [
+        `machine api.flakehub.com login flakehub password ${jwt}`,
+        `machine flakehub.com login flakehub password ${jwt}`,
+    ].join("\n"));
+    coreExports.info("Logged in to FlakeHub.");
 }
 async function tearDownAutoCache() {
     const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
