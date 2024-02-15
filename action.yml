@@ -41,7 +41,7 @@ inputs:
     required: false
   flakehub-cache-server:
     description: "The FlakeHub binary cache server."
-    default: "https://flakehub-cache-prod.fly.dev"
+    default: "https://cache.flakehub.com"
   flakehub-api-server:
     description: "The FlakeHub API server."
     default: "https://api.flakehub.com"
