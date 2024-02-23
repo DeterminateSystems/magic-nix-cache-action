@@ -141,12 +141,13 @@ async function setUpAutoCache() {
     });
   });
 
-  // Start the server. Once it is ready, it will notify us via the notification server.
+  // Start tailing the daemon log.
   const outputPath = `${daemonDir}/daemon.log`;
   const output = openSync(outputPath, 'a');
   const log = tailLog(daemonDir);
   const netrc = await netrcPath();
 
+  // Start the server. Once it is ready, it will notify us via the notification server.
   const daemon = spawn(
     daemonBin,
     [
