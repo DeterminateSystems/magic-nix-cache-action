@@ -7,6 +7,7 @@ import { spawn, exec } from 'node:child_process';
 import { openSync } from 'node:fs';
 import { setTimeout } from 'timers/promises';
 import { inspect, promisify } from 'node:util';
+import * as http from 'http';
 
 import * as core from '@actions/core';
 import { Tail } from 'tail';
@@ -118,17 +119,38 @@ async function setUpAutoCache() {
     runEnv = process.env;
   }
 
-  // Start the server. Once it is ready, it will notify us via file descriptor 3.
+  const notifyPort = core.getInput('startup-notification-port');
+
+  const notifyPromise = new Promise<Promise<void>>((resolveListening) => {
+    const promise = new Promise<void>(async (resolveQuit) => {
+      const notifyServer = http.createServer((req, res) => {
+        if (req.method === 'POST' && req.url === '/') {
+          core.debug(`Notify server shutting down.`);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end('{}');
+          notifyServer.close(() => {
+            resolveQuit();
+          });
+        }
+      });
+
+      notifyServer.listen(notifyPort, () => {
+        core.debug(`Notify server running.`);
+        resolveListening(promise);
+      });
+    });
+  });
+
+  // Start the server. Once it is ready, it will notify us via the notification server.
   const outputPath = `${daemonDir}/daemon.log`;
   const output = openSync(outputPath, 'a');
   const log = tailLog(daemonDir);
-  const notifyFd = 3;
   const netrc = await netrcPath();
 
   const daemon = spawn(
     daemonBin,
     [
-      '--notify-fd', String(notifyFd),
+      '--startup-notification-url', `http://127.0.0.1:${notifyPort}`,
       '--listen', core.getInput('listen'),
       '--upstream', core.getInput('upstream-cache'),
       '--diagnostic-endpoint', core.getInput('diagnostic-endpoint'),
@@ -144,7 +166,7 @@ async function setUpAutoCache() {
           '--use-gha-cache'
         ] : []),
     {
-      stdio: ['ignore', output, output, 'pipe'],
+      stdio: ['ignore', output, output],
       env: runEnv,
       detached: true
     }
@@ -153,13 +175,12 @@ async function setUpAutoCache() {
   const pidFile = path.join(daemonDir, 'daemon.pid');
   await fs.writeFile(pidFile, `${daemon.pid}`);
 
-  await new Promise<void>((resolve, reject) => {
-    daemon.stdio[notifyFd].on('data', (data) => {
-      if (data.toString().trim() == 'INIT') {
-        resolve();
-      }
-    });
+  core.info("Waiting for magic-nix-cache to start...");
 
+  await new Promise<void>((resolve, reject) => {
+    notifyPromise.then((value) => {
+      resolve();
+    });
     daemon.on('exit', async (code, signal) => {
       if (signal) {
         reject(new Error(`Daemon was killed by signal ${signal}`));

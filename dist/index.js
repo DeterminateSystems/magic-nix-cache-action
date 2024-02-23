@@ -6,14 +6,15 @@ import { spawn, exec } from 'node:child_process';
 import { openSync } from 'node:fs';
 import { setTimeout as setTimeout$1 } from 'timers/promises';
 import { promisify as promisify$1, inspect } from 'node:util';
+import * as require$$1 from 'http';
+import require$$1__default from 'http';
 import require$$0 from 'os';
-import require$$1 from 'fs';
+import require$$1$1 from 'fs';
 import crypto from 'crypto';
 import require$$0$2 from 'path';
-import require$$1$2 from 'http';
 import require$$2$1 from 'https';
 import require$$0$6 from 'net';
-import require$$1$1 from 'tls';
+import require$$1$2 from 'tls';
 import require$$0$1, { errorMonitor } from 'events';
 import require$$5 from 'assert';
 import require$$6, { types } from 'util';
@@ -532,7 +533,7 @@ Object.defineProperty(fileCommand, "__esModule", { value: true });
 fileCommand.prepareKeyValueMessage = fileCommand.issueFileCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const fs$1 = __importStar(require$$1);
+const fs$1 = __importStar(require$$1$1);
 const os = __importStar(require$$0);
 const uuid_1 = require$$2;
 const utils_1 = utils;
@@ -648,8 +649,8 @@ function isLoopbackAddress(host) {
 
 var tunnel$1 = {};
 
-var tls$4 = require$$1$1;
-var http$3 = require$$1$2;
+var tls$4 = require$$1$2;
+var http$3 = require$$1__default;
 var https$3 = require$$2$1;
 var events$1 = require$$0$1;
 var util = require$$6;
@@ -943,7 +944,7 @@ var tunnel = tunnel$1;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.HttpClient = exports.isHttps = exports.HttpClientResponse = exports.HttpClientError = exports.getProxyUrl = exports.MediaTypes = exports.Headers = exports.HttpCodes = void 0;
-	const http = __importStar(require$$1$2);
+	const http = __importStar(require$$1__default);
 	const https = __importStar(require$$2$1);
 	const pm = __importStar(proxy);
 	const tunnel$1 = __importStar(tunnel);
@@ -1704,7 +1705,7 @@ function requireSummary () {
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
 		const os_1 = require$$0;
-		const fs_1 = require$$1;
+		const fs_1 = require$$1$1;
 		const { access, appendFile, writeFile } = fs_1.promises;
 		exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
 		exports.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary';
@@ -2393,7 +2394,7 @@ function requireCore () {
 var coreExports = requireCore();
 
 let events = require$$0$1;
-let fs = require$$1;
+let fs = require$$1$1;
 let path = require$$0$2;
 
 // const environment = process.env['NODE_ENV'] || 'development'
@@ -6664,7 +6665,7 @@ var delayAsyncDestroy$2 = stream => {
 // eslint-disable-next-line node/prefer-global/url
 const {URL: URL$4} = require$$0$5;
 const EventEmitter = require$$0$1;
-const tls$3 = require$$1$1;
+const tls$3 = require$$1$2;
 const http2$2 = require$$3;
 const QuickLRU$1 = quickLru;
 const delayAsyncDestroy$1 = delayAsyncDestroy$2;
@@ -8299,7 +8300,7 @@ var clientRequest = ClientRequest$1;
 
 var auto$1 = {exports: {}};
 
-const tls$2 = require$$1$1;
+const tls$2 = require$$1$2;
 
 var resolveAlpn = (options = {}, connect = tls$2.connect) => new Promise((resolve, reject) => {
 	let timeout = false;
@@ -8374,7 +8375,7 @@ var calculateServerName$1 = host => {
 // See https://github.com/facebook/jest/issues/2549
 // eslint-disable-next-line node/prefer-global/url
 const {URL: URL$2, urlToHttpOptions} = require$$0$5;
-const http$2 = require$$1$2;
+const http$2 = require$$1__default;
 const https$2 = require$$2$1;
 const resolveALPN = resolveAlpn;
 const QuickLRU = quickLru;
@@ -8580,7 +8581,7 @@ auto$1.exports.createResolveProtocol = createResolveProtocol;
 var autoExports = auto$1.exports;
 
 const stream = require$$0$3;
-const tls$1 = require$$1$1;
+const tls$1 = require$$1$2;
 
 // Really awesome hack.
 const JSStreamSocket$2 = (new tls$1.TLSSocket(new stream.PassThrough()))._handle._parentWrap.constructor;
@@ -8653,8 +8654,8 @@ var getAuthHeaders = self => {
 	return {};
 };
 
-const tls = require$$1$1;
-const http$1 = require$$1$2;
+const tls = require$$1$2;
+const http$1 = require$$1__default;
 const https$1 = require$$2$1;
 const JSStreamSocket$1 = jsStreamSocket;
 const {globalAgent: globalAgent$2} = agent;
@@ -8815,7 +8816,7 @@ let Http2OverHttp2$1 = class Http2OverHttp2 extends Http2OverHttpX$1 {
 
 var h2OverH2 = Http2OverHttp2$1;
 
-const http = require$$1$2;
+const http = require$$1__default;
 const https = require$$2$1;
 const Http2OverHttpX = h2OverHx;
 const getAuthorizationHeaders = getAuthHeaders;
@@ -12187,14 +12188,32 @@ async function setUpAutoCache() {
     else {
         runEnv = process.env;
     }
-    // Start the server. Once it is ready, it will notify us via file descriptor 3.
+    const notifyPort = coreExports.getInput('startup-notification-port');
+    const notifyPromise = new Promise((resolveListening) => {
+        const promise = new Promise(async (resolveQuit) => {
+            const notifyServer = require$$1.createServer((req, res) => {
+                if (req.method === 'POST' && req.url === '/') {
+                    coreExports.debug(`Notify server shutting down.`);
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end('{}');
+                    notifyServer.close(() => {
+                        resolveQuit();
+                    });
+                }
+            });
+            notifyServer.listen(notifyPort, () => {
+                coreExports.debug(`Notify server running.`);
+                resolveListening(promise);
+            });
+        });
+    });
+    // Start the server. Once it is ready, it will notify us via the notification server.
     const outputPath = `${daemonDir}/daemon.log`;
     const output = openSync(outputPath, 'a');
     const log = tailLog(daemonDir);
-    const notifyFd = 3;
     const netrc = await netrcPath();
     const daemon = spawn(daemonBin, [
-        '--notify-fd', String(notifyFd),
+        '--startup-notification-url', `http://127.0.0.1:${notifyPort}`,
         '--listen', coreExports.getInput('listen'),
         '--upstream', coreExports.getInput('upstream-cache'),
         '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint'),
@@ -12207,17 +12226,16 @@ async function setUpAutoCache() {
     ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
         '--use-gha-cache'
     ] : []), {
-        stdio: ['ignore', output, output, 'pipe'],
+        stdio: ['ignore', output, output],
         env: runEnv,
         detached: true
     });
     const pidFile = path$1.join(daemonDir, 'daemon.pid');
     await fs$2.writeFile(pidFile, `${daemon.pid}`);
+    coreExports.info("Waiting for magic-nix-cache to start...");
     await new Promise((resolve, reject) => {
-        daemon.stdio[notifyFd].on('data', (data) => {
-            if (data.toString().trim() == 'INIT') {
-                resolve();
-            }
+        notifyPromise.then((value) => {
+            resolve();
         });
         daemon.on('exit', async (code, signal) => {
             if (signal) {
