@@ -104,7 +104,7 @@ cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Requir
 [action]: https://github.com/DeterminateSystems/magic-nix-cache-action/
 [installer]: https://github.com/DeterminateSystems/nix-installer/
 [ghacache]: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows
-[privacy]: https://determinate.systems/privacy
+[privacy]: https://determinate.systems/policies/privacy
 [telemetry]: https://github.com/DeterminateSystems/magic-nix-cache/blob/main/magic-nix-cache/src/telemetry.rs
 [semantics]: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache
 [z2ncache]: https://zero-to-nix.com/concepts/caching#binary-caches
