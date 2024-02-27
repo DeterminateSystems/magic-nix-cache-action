@@ -54,6 +54,6 @@ inputs:
     default: 41239
 
 runs:
-  using: "node16"
+  using: "node20"
   main: "./dist/index.js"
   post: "./dist/index.js"

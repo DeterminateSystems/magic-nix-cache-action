@@ -4,8 +4,7 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { spawn, exec } from 'node:child_process';
-import { openSync } from 'node:fs';
-import { setTimeout } from 'timers/promises';
+import { openSync, readFileSync } from 'node:fs';
 import { inspect, promisify } from 'node:util';
 import * as http from 'http';
 
@@ -17,7 +16,7 @@ const ENV_CACHE_DAEMONDIR = 'MAGIC_NIX_CACHE_DAEMONDIR';
 
 const gotClient = got.extend({
   retry: {
-    limit: 5,
+    limit: 1,
     methods: [ 'POST', 'GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE' ],
   },
   hooks: {
@@ -277,8 +276,6 @@ async function tearDownAutoCache() {
     core.debug(`back from post`);
     core.debug(res);
   } finally {
-    await setTimeout(5000);
-
     core.debug(`unwatching the daemon log`);
     log.unwatch();
   }
@@ -289,6 +286,12 @@ async function tearDownAutoCache() {
   } catch (e) {
     if (e.code !== 'ESRCH') {
       throw e;
+    }
+  } finally {
+    if (core.isDebug()) {
+      core.info("Entire log:");
+      const log = readFileSync(path.join(daemonDir, 'daemon.log'));
+      core.info(log.toString());
     }
   }
 }

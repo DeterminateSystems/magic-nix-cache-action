@@ -3,8 +3,7 @@ import * as os$2 from 'node:os';
 import os__default from 'node:os';
 import * as path$1 from 'node:path';
 import { spawn, exec } from 'node:child_process';
-import { openSync } from 'node:fs';
-import { setTimeout as setTimeout$1 } from 'timers/promises';
+import { openSync, readFileSync } from 'node:fs';
 import { promisify as promisify$1, inspect } from 'node:util';
 import * as require$$1 from 'http';
 import require$$1__default from 'http';
@@ -12105,7 +12104,7 @@ var got$1 = got;
 const ENV_CACHE_DAEMONDIR = 'MAGIC_NIX_CACHE_DAEMONDIR';
 const gotClient = got$1.extend({
     retry: {
-        limit: 5,
+        limit: 1,
         methods: ['POST', 'GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE'],
     },
     hooks: {
@@ -12224,6 +12223,7 @@ async function setUpAutoCache() {
         '--flakehub-cache-server', coreExports.getInput('flakehub-cache-server'),
         '--flakehub-api-server', coreExports.getInput('flakehub-api-server'),
         '--flakehub-api-server-netrc', netrc,
+        '--flakehub-flake-name', coreExports.getInput('flakehub-flake-name'),
     ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
         '--use-gha-cache'
     ] : []), {
@@ -12319,7 +12319,6 @@ async function tearDownAutoCache() {
         coreExports.debug(res);
     }
     finally {
-        await setTimeout$1(5000);
         coreExports.debug(`unwatching the daemon log`);
         log.unwatch();
     }
@@ -12330,6 +12329,13 @@ async function tearDownAutoCache() {
     catch (e) {
         if (e.code !== 'ESRCH') {
             throw e;
+        }
+    }
+    finally {
+        if (coreExports.isDebug()) {
+            coreExports.info("Entire log:");
+            const log = readFileSync(path$1.join(daemonDir, 'daemon.log'));
+            coreExports.info(log.toString());
         }
     }
 }
