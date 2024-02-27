@@ -247,6 +247,7 @@ async function flakehub_login(netrc: string) {
     [
       `machine api.flakehub.com login flakehub password ${jwt}`,
       `machine flakehub.com login flakehub password ${jwt}`,
+      `machine cache.flakehub.com login flakehub password ${jwt}`,
     ].join("\n"),
   );
 
