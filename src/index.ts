@@ -162,6 +162,7 @@ async function setUpAutoCache() {
         '--flakehub-cache-server', core.getInput('flakehub-cache-server'),
         '--flakehub-api-server', core.getInput('flakehub-api-server'),
         '--flakehub-api-server-netrc', netrc,
+        '--flakehub-flake-name', core.getInput('flakehub-flake-name'),
       ] : []).concat(
         core.getInput('use-gha-cache') === 'true' ? [
           '--use-gha-cache'

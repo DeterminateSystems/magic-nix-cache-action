@@ -45,6 +45,10 @@ inputs:
   flakehub-api-server:
     description: "The FlakeHub API server."
     default: "https://api.flakehub.com"
+  flakehub-flake-name:
+    description: "The name of your flake on FlakeHub. Defaults to the current name of the GitHub repository it is running in."
+    default: ${{ github.repository }}
+    required: false
   startup-notification-port:
     description: "The port magic-nix-cache uses for daemon startup notification."
     default: 41239
