@@ -88,14 +88,20 @@ cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Requir
 | Parameter | Description | Required | Default |
 | - | - | - | - |
 | `diagnostic-endpoint` | Diagnostic endpoint url where diagnostics and performance data is sent. To disable set this to an empty string. |  | https://install.determinate.systems/magic-nix-cache/perf |
+| `flakehub-api-server` | The FlakeHub API server. |  | https://api.flakehub.com |
+| `flakehub-cache-server` | The FlakeHub binary cache server. |  | https://cache.flakehub.com |
+| `flakehub-flake-name` | The name of your flake on FlakeHub. Defaults to the current name of the GitHub repository it is running in. |  |  |
 | `listen` | The host and port to listen on. |  | 127.0.0.1:37515 |
 | `source-binary` | Run a version of the cache binary from somewhere already on disk. Conflicts with all other `source-*` options. |  |  |
-| `source-branch` | The branch of `magic-nix-cache` to use. Conflicts with all other `source-*` options. |  |  |
+| `source-branch` | The branch of `magic-nix-cache` to use. Conflicts with all other `source-*` options. |  | main |
 | `source-pr` | The PR of `magic-nix-cache` to use. Conflicts with all other `source-*` options. |  |  |
 | `source-revision` | The revision of `nix-magic-nix-cache` to use. Conflicts with all other `source-*` options. |  |  |
 | `source-tag` | The tag of `magic-nix-cache` to use. Conflicts with all other `source-*` options. |  |  |
 | `source-url` | A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options. |  |  |
-| `upstream-cache` | Your preferred [upstream cache](#upstream-cache). Store paths fetched from this store will not be cached in the [GitHub Actions Cache][gha-cache]. |  | https://cache.nixos.org |
+| `startup-notification-port` | The port magic-nix-cache uses for daemon startup notification. |  | 41239 |
+| `upstream-cache` | Your preferred upstream cache. Store paths in this store will not be cached in GitHub Actions' cache. |  | https://cache.nixos.org |
+| `use-flakehub` | Whether to upload build results to FlakeHub Cache. |  | true |
+| `use-gha-cache` | Whether to upload build results to the GitHub Actions cache. |  | true |
 
 [gha-cache]: https://docs.github.com/en/rest/actions/cache
 [detsys]: https://determinate.systems/
