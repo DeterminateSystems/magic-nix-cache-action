@@ -12296,6 +12296,7 @@ async function flakehub_login(netrc) {
     await fs$2.writeFile(netrc, [
         `machine api.flakehub.com login flakehub password ${jwt}`,
         `machine flakehub.com login flakehub password ${jwt}`,
+        `machine cache.flakehub.com login flakehub password ${jwt}`,
     ].join("\n"));
     coreExports.info("Logged in to FlakeHub.");
 }
