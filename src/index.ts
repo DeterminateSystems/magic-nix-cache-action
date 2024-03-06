@@ -55,7 +55,7 @@ function getCacherUrl() : string {
     return `${urlPrefix}/rev/${core.getInput('source-revision')}/${binarySuffix}`;
   }
 
-  return `${urlPrefix}/latest/${binarySuffix}`;
+  return `${urlPrefix}/stable/${binarySuffix}`;
 }
 
 async function fetchAutoCacher(destination: string) {
