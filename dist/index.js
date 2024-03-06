@@ -2,18 +2,18 @@ import * as fs$2 from 'node:fs/promises';
 import * as os$2 from 'node:os';
 import os__default from 'node:os';
 import * as path$1 from 'node:path';
-import { spawn } from 'node:child_process';
-import { openSync, writeSync, close, readFileSync, createWriteStream } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
+import { spawn, exec } from 'node:child_process';
+import { openSync, readFileSync } from 'node:fs';
 import { promisify as promisify$1, inspect } from 'node:util';
+import * as require$$1 from 'http';
+import require$$1__default from 'http';
 import require$$0 from 'os';
-import require$$1 from 'fs';
+import require$$1$1 from 'fs';
 import crypto from 'crypto';
 import require$$0$2 from 'path';
-import require$$1$2 from 'http';
 import require$$2$1 from 'https';
 import require$$0$6 from 'net';
-import require$$1$1 from 'tls';
+import require$$1$2 from 'tls';
 import require$$0$1, { errorMonitor } from 'events';
 import require$$5 from 'assert';
 import require$$6, { types } from 'util';
@@ -532,7 +532,7 @@ Object.defineProperty(fileCommand, "__esModule", { value: true });
 fileCommand.prepareKeyValueMessage = fileCommand.issueFileCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const fs$1 = __importStar(require$$1);
+const fs$1 = __importStar(require$$1$1);
 const os = __importStar(require$$0);
 const uuid_1 = require$$2;
 const utils_1 = utils;
@@ -648,8 +648,8 @@ function isLoopbackAddress(host) {
 
 var tunnel$1 = {};
 
-var tls$4 = require$$1$1;
-var http$3 = require$$1$2;
+var tls$4 = require$$1$2;
+var http$3 = require$$1__default;
 var https$3 = require$$2$1;
 var events$1 = require$$0$1;
 var util = require$$6;
@@ -943,7 +943,7 @@ var tunnel = tunnel$1;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.HttpClient = exports.isHttps = exports.HttpClientResponse = exports.HttpClientError = exports.getProxyUrl = exports.MediaTypes = exports.Headers = exports.HttpCodes = void 0;
-	const http = __importStar(require$$1$2);
+	const http = __importStar(require$$1__default);
 	const https = __importStar(require$$2$1);
 	const pm = __importStar(proxy);
 	const tunnel$1 = __importStar(tunnel);
@@ -1704,7 +1704,7 @@ function requireSummary () {
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
 		const os_1 = require$$0;
-		const fs_1 = require$$1;
+		const fs_1 = require$$1$1;
 		const { access, appendFile, writeFile } = fs_1.promises;
 		exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
 		exports.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary';
@@ -2393,7 +2393,7 @@ function requireCore () {
 var coreExports = requireCore();
 
 let events = require$$0$1;
-let fs = require$$1;
+let fs = require$$1$1;
 let path = require$$0$2;
 
 // const environment = process.env['NODE_ENV'] || 'development'
@@ -6664,7 +6664,7 @@ var delayAsyncDestroy$2 = stream => {
 // eslint-disable-next-line node/prefer-global/url
 const {URL: URL$4} = require$$0$5;
 const EventEmitter = require$$0$1;
-const tls$3 = require$$1$1;
+const tls$3 = require$$1$2;
 const http2$2 = require$$3;
 const QuickLRU$1 = quickLru;
 const delayAsyncDestroy$1 = delayAsyncDestroy$2;
@@ -8299,7 +8299,7 @@ var clientRequest = ClientRequest$1;
 
 var auto$1 = {exports: {}};
 
-const tls$2 = require$$1$1;
+const tls$2 = require$$1$2;
 
 var resolveAlpn = (options = {}, connect = tls$2.connect) => new Promise((resolve, reject) => {
 	let timeout = false;
@@ -8374,7 +8374,7 @@ var calculateServerName$1 = host => {
 // See https://github.com/facebook/jest/issues/2549
 // eslint-disable-next-line node/prefer-global/url
 const {URL: URL$2, urlToHttpOptions} = require$$0$5;
-const http$2 = require$$1$2;
+const http$2 = require$$1__default;
 const https$2 = require$$2$1;
 const resolveALPN = resolveAlpn;
 const QuickLRU = quickLru;
@@ -8580,7 +8580,7 @@ auto$1.exports.createResolveProtocol = createResolveProtocol;
 var autoExports = auto$1.exports;
 
 const stream = require$$0$3;
-const tls$1 = require$$1$1;
+const tls$1 = require$$1$2;
 
 // Really awesome hack.
 const JSStreamSocket$2 = (new tls$1.TLSSocket(new stream.PassThrough()))._handle._parentWrap.constructor;
@@ -8653,8 +8653,8 @@ var getAuthHeaders = self => {
 	return {};
 };
 
-const tls = require$$1$1;
-const http$1 = require$$1$2;
+const tls = require$$1$2;
+const http$1 = require$$1__default;
 const https$1 = require$$2$1;
 const JSStreamSocket$1 = jsStreamSocket;
 const {globalAgent: globalAgent$2} = agent;
@@ -8815,7 +8815,7 @@ let Http2OverHttp2$1 = class Http2OverHttp2 extends Http2OverHttpX$1 {
 
 var h2OverH2 = Http2OverHttp2$1;
 
-const http = require$$1$2;
+const http = require$$1__default;
 const https = require$$2$1;
 const Http2OverHttpX = h2OverHx;
 const getAuthorizationHeaders = getAuthHeaders;
@@ -12119,7 +12119,7 @@ function getCacherUrl() {
     const runnerArch = process.env.RUNNER_ARCH;
     const runnerOs = process.env.RUNNER_OS;
     const binarySuffix = `${runnerArch}-${runnerOs}`;
-    const urlPrefix = `https://install.determinate.systems/magic-nix-cache`;
+    const urlPrefix = `https://install.determinate.systems/magic-nix-cache-closure`;
     if (coreExports.getInput('source-url')) {
         return coreExports.getInput('source-url');
     }
@@ -12137,14 +12137,22 @@ function getCacherUrl() {
     }
     return `${urlPrefix}/stable/${binarySuffix}`;
 }
-async function fetchAutoCacher(destination) {
-    const stream = createWriteStream(destination, {
-        encoding: "binary",
-        mode: 0o755,
-    });
+async function fetchAutoCacher() {
     const binary_url = getCacherUrl();
-    coreExports.debug(`Fetching the Magic Nix Cache from ${binary_url}`);
-    return pipeline(gotClient.stream(binary_url), stream);
+    coreExports.info(`Fetching the Magic Nix Cache from ${binary_url}`);
+    const { stdout } = await promisify$1(exec)(`curl -L "${binary_url}" | xz -d | nix-store --import`);
+    const paths = stdout.split(os$2.EOL);
+    // Since the export is in reverse topologically sorted order, magic-nix-cache is always the penultimate entry in the list (the empty string left by split being the last).
+    const last_path = paths.at(-2);
+    return `${last_path}/bin/magic-nix-cache`;
+}
+function tailLog(daemonDir) {
+    const log = new Tail_1(path$1.join(daemonDir, 'daemon.log'));
+    coreExports.debug(`tailing daemon.log...`);
+    log.on('line', (line) => {
+        coreExports.info(line);
+    });
+    return log;
 }
 async function setUpAutoCache() {
     const tmpdir = process.env['RUNNER_TEMP'] || os$2.tmpdir();
@@ -12166,8 +12174,7 @@ async function setUpAutoCache() {
         daemonBin = coreExports.getInput('source-binary');
     }
     else {
-        daemonBin = `${daemonDir}/magic-nix-cache`;
-        await fetchAutoCacher(daemonBin);
+        daemonBin = await fetchAutoCacher();
     }
     var runEnv;
     if (coreExports.isDebug()) {
@@ -12180,18 +12187,58 @@ async function setUpAutoCache() {
     else {
         runEnv = process.env;
     }
-    const output = openSync(`${daemonDir}/daemon.log`, 'a');
-    const launch = spawn(daemonBin, [
-        '--daemon-dir', daemonDir,
+    const notifyPort = coreExports.getInput('startup-notification-port');
+    const notifyPromise = new Promise((resolveListening) => {
+        const promise = new Promise(async (resolveQuit) => {
+            const notifyServer = require$$1.createServer((req, res) => {
+                if (req.method === 'POST' && req.url === '/') {
+                    coreExports.debug(`Notify server shutting down.`);
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end('{}');
+                    notifyServer.close(() => {
+                        resolveQuit();
+                    });
+                }
+            });
+            notifyServer.listen(notifyPort, () => {
+                coreExports.debug(`Notify server running.`);
+                resolveListening(promise);
+            });
+        });
+    });
+    // Start tailing the daemon log.
+    const outputPath = `${daemonDir}/daemon.log`;
+    const output = openSync(outputPath, 'a');
+    const log = tailLog(daemonDir);
+    const netrc = await netrcPath();
+    // Start the server. Once it is ready, it will notify us via the notification server.
+    const daemon = spawn(daemonBin, [
+        '--startup-notification-url', `http://127.0.0.1:${notifyPort}`,
         '--listen', coreExports.getInput('listen'),
         '--upstream', coreExports.getInput('upstream-cache'),
-        '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint')
-    ], {
+        '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint'),
+        '--nix-conf', `${process.env["HOME"]}/.config/nix/nix.conf`
+    ].concat(coreExports.getInput('use-flakehub') === 'true' ? [
+        '--use-flakehub',
+        '--flakehub-cache-server', coreExports.getInput('flakehub-cache-server'),
+        '--flakehub-api-server', coreExports.getInput('flakehub-api-server'),
+        '--flakehub-api-server-netrc', netrc,
+        '--flakehub-flake-name', coreExports.getInput('flakehub-flake-name'),
+    ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
+        '--use-gha-cache'
+    ] : []), {
         stdio: ['ignore', output, output],
-        env: runEnv
+        env: runEnv,
+        detached: true
     });
+    const pidFile = path$1.join(daemonDir, 'daemon.pid');
+    await fs$2.writeFile(pidFile, `${daemon.pid}`);
+    coreExports.info("Waiting for magic-nix-cache to start...");
     await new Promise((resolve, reject) => {
-        launch.on('exit', (code, signal) => {
+        notifyPromise.then((value) => {
+            resolve();
+        });
+        daemon.on('exit', async (code, signal) => {
             if (signal) {
                 reject(new Error(`Daemon was killed by signal ${signal}`));
             }
@@ -12199,17 +12246,14 @@ async function setUpAutoCache() {
                 reject(new Error(`Daemon exited with code ${code}`));
             }
             else {
-                resolve();
+                reject(new Error(`Daemon unexpectedly exited`));
             }
         });
     });
-    await fs$2.mkdir(`${process.env["HOME"]}/.config/nix`, { recursive: true });
-    const nixConf = openSync(`${process.env["HOME"]}/.config/nix/nix.conf`, 'a');
-    writeSync(nixConf, `${"\n"}extra-substituters = http://${coreExports.getInput('listen')}/?trusted=1&compression=zstd&parallel-compression=true${"\n"}`);
-    writeSync(nixConf, `fallback = true${"\n"}`);
-    close(nixConf);
-    coreExports.debug('Launched Magic Nix Cache');
+    daemon.unref();
+    coreExports.info('Launched Magic Nix Cache');
     coreExports.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
+    log.unwatch();
 }
 async function notifyAutoCache() {
     const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
@@ -12228,6 +12272,34 @@ async function notifyAutoCache() {
         coreExports.info(`Magic Nix Cache may not be running for this workflow.`);
     }
 }
+async function netrcPath() {
+    const expectedNetrcPath = path$1.join(process.env['RUNNER_TEMP'], 'determinate-nix-installer-netrc');
+    try {
+        await fs$2.access(expectedNetrcPath);
+        return expectedNetrcPath;
+    }
+    catch {
+        // `nix-installer` was not used, the user may be registered with FlakeHub though.
+        const destinedNetrcPath = path$1.join(process.env['RUNNER_TEMP'], 'magic-nix-cache-netrc');
+        try {
+            await flakehub_login(destinedNetrcPath);
+        }
+        catch (e) {
+            coreExports.info("FlakeHub cache disabled.");
+            coreExports.debug(`Error while logging into FlakeHub: ${e}`);
+        }
+        return destinedNetrcPath;
+    }
+}
+async function flakehub_login(netrc) {
+    const jwt = await coreExports.getIDToken("api.flakehub.com");
+    await fs$2.writeFile(netrc, [
+        `machine api.flakehub.com login flakehub password ${jwt}`,
+        `machine flakehub.com login flakehub password ${jwt}`,
+        `machine cache.flakehub.com login flakehub password ${jwt}`,
+    ].join("\n"));
+    coreExports.info("Logged in to FlakeHub.");
+}
 async function tearDownAutoCache() {
     const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
     if (!daemonDir) {
@@ -12240,11 +12312,7 @@ async function tearDownAutoCache() {
     if (!pid) {
         throw new Error("magic-nix-cache did not start successfully");
     }
-    const log = new Tail_1(path$1.join(daemonDir, 'daemon.log'));
-    coreExports.debug(`tailing daemon.log...`);
-    log.on('line', (line) => {
-        coreExports.info(line);
-    });
+    const log = tailLog(daemonDir);
     try {
         coreExports.debug(`about to post to localhost`);
         const res = await gotClient.post(`http://${coreExports.getInput('listen')}/api/workflow-finish`).json();

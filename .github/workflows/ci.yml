@@ -16,9 +16,12 @@ jobs:
       - name: Record existing bundle hash
         run: |
           echo "BUNDLE_HASH=$(sha256sum <dist/index.js | sed 's/  -//')" >>$GITHUB_ENV
+      - name: Check shell scripts
+        run: |
+          nix develop --command shellcheck ./.github/workflows/cache-test.sh
       - name: Build action
         run: |
-          nix develop --command -- just build
+          nix develop --command just build
       - name: Check bundle consistency
         run: |
           NEW_BUNDLE_HASH=$(sha256sum <dist/index.js | sed 's/  -//')
@@ -35,11 +38,15 @@ jobs:
   run-x86_64-linux:
     name: Run x86_64 Linux
     runs-on: ubuntu-22.04
+    permissions:
+      id-token: "write"
+      contents: "read"
     steps:
       - uses: actions/checkout@v3
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
+          flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
@@ -48,18 +55,43 @@ jobs:
         run: |
           .github/workflows/cache-test.sh
 
-  # run-x86_64-darwin:
-  #   name: Run x86_64 Darwin
-  #   runs-on: macos-12
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Install Nix
-  #       uses: DeterminateSystems/nix-installer-action@main
-  #       with:
-  #         extra-conf: |
-  #           narinfo-cache-negative-ttl = 0
-  #     - name: Cache the store
-  #       uses: ./
-  #     - name: Check the cache for liveness
-  #       run: |
-  #         .github/workflows/cache-test.sh
+  run-x86_64-darwin:
+    name: Run x86_64 Darwin
+    runs-on: macos-12
+    permissions:
+      id-token: "write"
+      contents: "read"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          flakehub: true
+          extra-conf: |
+            narinfo-cache-negative-ttl = 0
+      - name: Cache the store
+        uses: ./
+      - name: Check the cache for liveness
+        run: |
+          .github/workflows/cache-test.sh
+
+  run-aarch64-darwin:
+    name: Run aarch64 Darwin
+    concurrency: build-ARM64-macOS
+    runs-on: macos-latest-xlarge
+    permissions:
+      id-token: "write"
+      contents: "read"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          flakehub: true
+          extra-conf: |
+            narinfo-cache-negative-ttl = 0
+      - name: Cache the store
+        uses: ./
+      - name: Check the cache for liveness
+        run: |
+          .github/workflows/cache-test.sh
