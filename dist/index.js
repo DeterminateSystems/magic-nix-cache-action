@@ -12135,7 +12135,7 @@ function getCacherUrl() {
     if (coreExports.getInput('source-revision')) {
         return `${urlPrefix}/rev/${coreExports.getInput('source-revision')}/${binarySuffix}`;
     }
-    return `${urlPrefix}/latest/${binarySuffix}`;
+    return `${urlPrefix}/stable/${binarySuffix}`;
 }
 async function fetchAutoCacher(destination) {
     const stream = createWriteStream(destination, {
