@@ -16,9 +16,12 @@ jobs:
       - name: Record existing bundle hash
         run: |
           echo "BUNDLE_HASH=$(sha256sum <dist/index.js | sed 's/  -//')" >>$GITHUB_ENV
+      - name: Check shell scripts
+        run: |
+          nix develop --command shellcheck ./.github/workflows/cache-test.sh
       - name: Build action
         run: |
-          nix develop --command -- just build
+          nix develop --command just build
       - name: Check bundle consistency
         run: |
           NEW_BUNDLE_HASH=$(sha256sum <dist/index.js | sed 's/  -//')

@@ -19,10 +19,10 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             bun
-            nodejs
             jq
             act
             just
+            shellcheck
           ];
         };
       });
