@@ -19,7 +19,6 @@ inputs:
   source-branch:
     description: The branch of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
     required: false
-    default: main
   source-pr:
     description: The PR of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
     required: false
