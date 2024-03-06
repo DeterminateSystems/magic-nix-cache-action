@@ -12119,7 +12119,7 @@ function getCacherUrl() {
     const runnerArch = process.env.RUNNER_ARCH;
     const runnerOs = process.env.RUNNER_OS;
     const binarySuffix = `${runnerArch}-${runnerOs}`;
-    const urlPrefix = `https://install.determinate.systems/magic-nix-cache-priv`;
+    const urlPrefix = `https://install.determinate.systems/magic-nix-cache-closure`;
     if (coreExports.getInput('source-url')) {
         return coreExports.getInput('source-url');
     }
