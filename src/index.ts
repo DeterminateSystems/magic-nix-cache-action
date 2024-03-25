@@ -3,7 +3,7 @@
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { spawn, exec } from 'node:child_process';
+import { spawn, exec, SpawnOptions } from 'node:child_process';
 import { openSync, readFileSync } from 'node:fs';
 import { inspect, promisify } from 'node:util';
 import * as http from 'http';
@@ -145,33 +145,38 @@ async function setUpAutoCache() {
   const output = openSync(outputPath, 'a');
   const log = tailLog(daemonDir);
   const netrc = await netrcPath();
+  const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
+
+  const daemonCliFlags: string[] = [
+    '--startup-notification-url', `http://127.0.0.1:${notifyPort}`,
+    '--listen', core.getInput('listen'),
+    '--upstream', core.getInput('upstream-cache'),
+    '--diagnostic-endpoint', core.getInput('diagnostic-endpoint'),
+    '--nix-conf', nixConfPath
+  ].concat(
+    core.getBooleanInput('use-flakehub') ? [
+      '--use-flakehub',
+      '--flakehub-cache-server', core.getInput('flakehub-cache-server'),
+      '--flakehub-api-server', core.getInput('flakehub-api-server'),
+      '--flakehub-api-server-netrc', netrc,
+      '--flakehub-flake-name', core.getInput('flakehub-flake-name'),
+    ] : []).concat(
+      core.getBooleanInput('use-gha-cache') ? [
+        '--use-gha-cache'
+      ] : []);
+
+  const opts: SpawnOptions = {
+    stdio: ['ignore', output, output],
+    env: runEnv,
+    detached: true
+  }; 
+
+  // Display the final command for debugging purposes
+  core.debug("Full daemon start command:");
+  core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
 
   // Start the server. Once it is ready, it will notify us via the notification server.
-  const daemon = spawn(
-    daemonBin,
-    [
-      '--startup-notification-url', `http://127.0.0.1:${notifyPort}`,
-      '--listen', core.getInput('listen'),
-      '--upstream', core.getInput('upstream-cache'),
-      '--diagnostic-endpoint', core.getInput('diagnostic-endpoint'),
-      '--nix-conf', `${process.env["HOME"]}/.config/nix/nix.conf`
-    ].concat(
-      core.getInput('use-flakehub') === 'true' ? [
-        '--use-flakehub',
-        '--flakehub-cache-server', core.getInput('flakehub-cache-server'),
-        '--flakehub-api-server', core.getInput('flakehub-api-server'),
-        '--flakehub-api-server-netrc', netrc,
-        '--flakehub-flake-name', core.getInput('flakehub-flake-name'),
-      ] : []).concat(
-        core.getInput('use-gha-cache') === 'true' ? [
-          '--use-gha-cache'
-        ] : []),
-    {
-      stdio: ['ignore', output, output],
-      env: runEnv,
-      detached: true
-    }
-  );
+  const daemon = spawn(daemonBin, daemonCliFlags, opts);
 
   const pidFile = path.join(daemonDir, 'daemon.pid');
   await fs.writeFile(pidFile, `${daemon.pid}`);

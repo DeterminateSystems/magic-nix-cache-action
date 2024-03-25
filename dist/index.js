@@ -12211,26 +12211,32 @@ async function setUpAutoCache() {
     const output = openSync(outputPath, 'a');
     const log = tailLog(daemonDir);
     const netrc = await netrcPath();
-    // Start the server. Once it is ready, it will notify us via the notification server.
-    const daemon = spawn(daemonBin, [
+    const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
+    const daemonCliFlags = [
         '--startup-notification-url', `http://127.0.0.1:${notifyPort}`,
         '--listen', coreExports.getInput('listen'),
         '--upstream', coreExports.getInput('upstream-cache'),
         '--diagnostic-endpoint', coreExports.getInput('diagnostic-endpoint'),
-        '--nix-conf', `${process.env["HOME"]}/.config/nix/nix.conf`
-    ].concat(coreExports.getInput('use-flakehub') === 'true' ? [
+        '--nix-conf', nixConfPath
+    ].concat(coreExports.getBooleanInput('use-flakehub') ? [
         '--use-flakehub',
         '--flakehub-cache-server', coreExports.getInput('flakehub-cache-server'),
         '--flakehub-api-server', coreExports.getInput('flakehub-api-server'),
         '--flakehub-api-server-netrc', netrc,
         '--flakehub-flake-name', coreExports.getInput('flakehub-flake-name'),
-    ] : []).concat(coreExports.getInput('use-gha-cache') === 'true' ? [
+    ] : []).concat(coreExports.getBooleanInput('use-gha-cache') ? [
         '--use-gha-cache'
-    ] : []), {
+    ] : []);
+    const opts = {
         stdio: ['ignore', output, output],
         env: runEnv,
         detached: true
-    });
+    };
+    // Display the final command for debugging purposes
+    coreExports.debug("Full daemon start command:");
+    coreExports.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
+    // Start the server. Once it is ready, it will notify us via the notification server.
+    const daemon = spawn(daemonBin, daemonCliFlags, opts);
     const pidFile = path$1.join(daemonDir, 'daemon.pid');
     await fs$2.writeFile(pidFile, `${daemon.pid}`);
     coreExports.info("Waiting for magic-nix-cache to start...");
