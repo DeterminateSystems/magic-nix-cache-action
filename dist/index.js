@@ -95203,6 +95203,7 @@ async function tearDownAutoCache() {
 const idslib = new IdsToolbox({
     name: "magic-nix-cache",
     fetchStyle: "gh-env-style",
+    idsProjectName: "magic-nix-cache-closure",
 });
 idslib.onMain(async () => {
     await setUpAutoCache(idslib);

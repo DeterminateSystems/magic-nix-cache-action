@@ -304,6 +304,7 @@ async function tearDownAutoCache(): Promise<void> {
 const idslib = new IdsToolbox({
   name: "magic-nix-cache",
   fetchStyle: "gh-env-style",
+  idsProjectName: "magic-nix-cache-closure",
 });
 
 idslib.onMain(async () => {
