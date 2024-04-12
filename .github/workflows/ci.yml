@@ -13,27 +13,23 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
-      - name: Record existing bundle hash
-        run: |
-          echo "BUNDLE_HASH=$(sha256sum <dist/index.js | sed 's/  -//')" >>$GITHUB_ENV
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Check shell scripts
         run: |
           nix develop --command shellcheck ./.github/workflows/cache-test.sh
-      - name: Build action
-        run: |
-          nix develop --command just build
-      - name: Check bundle consistency
-        run: |
-          NEW_BUNDLE_HASH=$(sha256sum <dist/index.js | sed 's/  -//')
-          if [[ "$BUNDLE_HASH" != "$NEW_BUNDLE_HASH" ]]; then
-            >&2 echo "The committed dist/index.js is out-of-date!"
-            >&2 echo
-            >&2 echo "    Committed: $BUNDLE_HASH"
-            >&2 echo "        Built: $NEW_BUNDLE_HASH"
-            >&2 echo
-            >&2 echo 'Run `just build` then commit the resulting dist/index.js'
-            exit 1
-          fi
+      - uses: DeterminateSystems/nix-installer-action@main
+      - name: Install pnpm dependencies
+        run: nix develop --command pnpm install
+      - name: Check formatting
+        run: nix develop --command pnpm run format
+      - name: Lint
+        run: nix develop --command pnpm run lint
+      - name: Build
+        run: nix develop --command pnpm run build
+      - name: Package
+        run: nix develop --command pnpm run package
+      - run: git status --porcelain=v1
+      - run: test $(git status --porcelain=v1 2>/dev/null | wc -l) -eq 0
 
   run-x86_64-linux:
     name: Run x86_64 Linux

@@ -18,11 +18,12 @@
       devShells = forAllSystems ({ pkgs }: {
         default = pkgs.mkShell {
           packages = with pkgs; [
-            bun
             jq
-            act
-            just
             shellcheck
+            nodejs_latest
+            nixpkgs-fmt
+            nodePackages_latest.pnpm
+            nodePackages_latest.typescript-language-server
           ];
         };
       });
