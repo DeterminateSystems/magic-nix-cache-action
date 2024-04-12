@@ -94412,7 +94412,7 @@ const got = source_create(defaults);
 
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@11b68d543f1daee6eca15814c2a7289121c389c6_x3kpdinfohfhwkluq24hvwynwu/node_modules/detsys-ts/dist/correlation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/correlation.js
 
 
 function identify(projectName) {
@@ -94433,20 +94433,33 @@ function identify(projectName) {
             "GITHUB_REPOSITORY_ID",
             "GITHUB_WORKFLOW",
         ]),
-        run: hashEnvironmentVariables("GHWR", [
+        job: hashEnvironmentVariables("GHWJ", [
             "GITHUB_SERVER_URL",
             "GITHUB_REPOSITORY_OWNER",
             "GITHUB_REPOSITORY_OWNER_ID",
             "GITHUB_REPOSITORY",
             "GITHUB_REPOSITORY_ID",
+            "GITHUB_WORKFLOW",
+            "GITHUB_JOB",
+        ]),
+        run: hashEnvironmentVariables("GHWJR", [
+            "GITHUB_SERVER_URL",
+            "GITHUB_REPOSITORY_OWNER",
+            "GITHUB_REPOSITORY_OWNER_ID",
+            "GITHUB_REPOSITORY",
+            "GITHUB_REPOSITORY_ID",
+            "GITHUB_WORKFLOW",
+            "GITHUB_JOB",
             "GITHUB_RUN_ID",
         ]),
-        run_differentiator: hashEnvironmentVariables("GHWA", [
+        run_differentiator: hashEnvironmentVariables("GHWJA", [
             "GITHUB_SERVER_URL",
             "GITHUB_REPOSITORY_OWNER",
             "GITHUB_REPOSITORY_OWNER_ID",
             "GITHUB_REPOSITORY",
             "GITHUB_REPOSITORY_ID",
+            "GITHUB_WORKFLOW",
+            "GITHUB_JOB",
             "GITHUB_RUN_ID",
             "GITHUB_RUN_NUMBER",
             "GITHUB_RUN_ATTEMPT",
@@ -94481,9 +94494,9 @@ function hashEnvironmentVariables(prefix, variables) {
     return `${prefix}-${hash.digest("hex")}`;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@11b68d543f1daee6eca15814c2a7289121c389c6_x3kpdinfohfhwkluq24hvwynwu/node_modules/detsys-ts/dist/package.json
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/package.json
 const package_namespaceObject = {"i8":"1.0.0"};
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@11b68d543f1daee6eca15814c2a7289121c389c6_x3kpdinfohfhwkluq24hvwynwu/node_modules/detsys-ts/dist/platform.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/platform.js
 
 function getArchOs() {
     const envArch = process.env.RUNNER_ARCH;
@@ -94513,7 +94526,7 @@ function getNixPlatform(archOs) {
     }
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@11b68d543f1daee6eca15814c2a7289121c389c6_x3kpdinfohfhwkluq24hvwynwu/node_modules/detsys-ts/dist/sourcedef.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/sourcedef.js
 
 function constructSourceParameters(legacyPrefix) {
     const noisilyGetInput = (suffix) => {
@@ -94573,7 +94586,7 @@ const validate = uuid_dist/* validate */.Gu;
 const stringify = uuid_dist/* stringify */.Pz;
 const parse = uuid_dist/* parse */.Qc;
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@11b68d543f1daee6eca15814c2a7289121c389c6_x3kpdinfohfhwkluq24hvwynwu/node_modules/detsys-ts/dist/main.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/main.js
 
 // eslint-disable-next-line import/extensions
 
@@ -94696,7 +94709,10 @@ class IdsToolbox {
                 ? error.toString()
                 : JSON.stringify(error);
             this.addFact(FACT_FINAL_EXCEPTION, reportable);
-            if (this.executionPhase !== "post") {
+            if (this.executionPhase === "post") {
+                core.warning(reportable);
+            }
+            else {
                 core.setFailed(reportable);
             }
             this.recordEvent(EVENT_EXCEPTION);
