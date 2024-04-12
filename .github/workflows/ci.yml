@@ -18,8 +18,16 @@ jobs:
         run: |
           nix develop --command shellcheck ./.github/workflows/cache-test.sh
       - uses: DeterminateSystems/nix-installer-action@main
-      - run: nix develop --command pnpm install
-      - run: nix develop --command pnpm run all
+      - name: Install pnpm dependencies
+        run: nix develop --command pnpm install
+      - name: Check formatting
+        run: nix develop --command pnpm run format
+      - name: Lint
+        run: nix develop --command pnpm run lint
+      - name: Build
+        run: nix develop --command pnpm run build
+      - name: Package
+        run: nix develop --command pnpm run package
       - run: git status --porcelain=v1
       - run: test $(git status --porcelain=v1 2>/dev/null | wc -l) -eq 0
 
