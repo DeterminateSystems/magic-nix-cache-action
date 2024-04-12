@@ -18,8 +18,8 @@ dependencies:
     specifier: ^2.0.1
     version: 2.0.1
   detsys-ts:
-    specifier: github:DeterminateSystems/detsys-ts#mnc-nits
-    version: github.com/DeterminateSystems/detsys-ts/11b68d543f1daee6eca15814c2a7289121c389c6
+    specifier: github:DeterminateSystems/detsys-ts
+    version: github.com/DeterminateSystems/detsys-ts/3a315cdffd83d4b229d4fb16548d22a3756baf28
   fetch-retry:
     specifier: ^5.0.6
     version: 5.0.6
@@ -1358,8 +1358,8 @@ packages:
     engines: { node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7 }
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001608
-      electron-to-chromium: 1.4.734
+      caniuse-lite: 1.0.30001609
+      electron-to-chromium: 1.4.735
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.23.0)
     dev: true
@@ -1410,10 +1410,10 @@ packages:
     engines: { node: ">=6" }
     dev: true
 
-  /caniuse-lite@1.0.30001608:
+  /caniuse-lite@1.0.30001609:
     resolution:
       {
-        integrity: sha512-cjUJTQkk9fQlJR2s4HMuPMvTiRggl0rAVMtthQuyOlDWuqHXqN8azLq+pi8B2TjwKJ32diHjUqRIKeFX4z1FoA==,
+        integrity: sha512-JFPQs34lHKx1B5t1EpQpWH4c+29zIyn/haGsbpfq3suuV9v56enjFt23zqijxGTMwy1p/4H2tjnQMY+p1WoAyA==,
       }
     dev: true
 
@@ -1675,10 +1675,10 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /electron-to-chromium@1.4.734:
+  /electron-to-chromium@1.4.735:
     resolution:
       {
-        integrity: sha512-pYfGUc+ll8AOzLbLC0lfgwkvCZIV+sKGuFFsSNuF3K3ujrmem8jIjg/t6DNq0J7biTSS1hCt/Hts0nmA3ZyprQ==,
+        integrity: sha512-pkYpvwg8VyOTQAeBqZ7jsmpCjko1Qc6We1ZtZCjRyYbT5v4AIUKDy5cQTRotQlSSZmMr8jqpEt6JtOj5k7lR7A==,
       }
     dev: true
 
@@ -4353,10 +4353,10 @@ packages:
     engines: { node: ">=10" }
     dev: true
 
-  github.com/DeterminateSystems/detsys-ts/11b68d543f1daee6eca15814c2a7289121c389c6:
+  github.com/DeterminateSystems/detsys-ts/3a315cdffd83d4b229d4fb16548d22a3756baf28:
     resolution:
       {
-        tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/11b68d543f1daee6eca15814c2a7289121c389c6,
+        tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/3a315cdffd83d4b229d4fb16548d22a3756baf28,
       }
     name: detsys-ts
     version: 1.0.0
