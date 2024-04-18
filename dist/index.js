@@ -94412,7 +94412,7 @@ const got = source_create(defaults);
 
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@26785e47ea40f359156ca7ce0fa3a3dafffd424e_sruplfqlal7bu74f2oc3e3r6zm/node_modules/detsys-ts/dist/correlation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/correlation.js
 
 
 function identify(projectName) {
@@ -94494,9 +94494,9 @@ function hashEnvironmentVariables(prefix, variables) {
     return `${prefix}-${hash.digest("hex")}`;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@26785e47ea40f359156ca7ce0fa3a3dafffd424e_sruplfqlal7bu74f2oc3e3r6zm/node_modules/detsys-ts/dist/package.json
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/package.json
 const package_namespaceObject = {"i8":"1.0.0"};
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@26785e47ea40f359156ca7ce0fa3a3dafffd424e_sruplfqlal7bu74f2oc3e3r6zm/node_modules/detsys-ts/dist/platform.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/platform.js
 /**
  * @packageDocumentation
  * Helpers for determining system attributes of the current runner.
@@ -94536,7 +94536,7 @@ function getNixPlatform(archOs) {
     }
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@26785e47ea40f359156ca7ce0fa3a3dafffd424e_sruplfqlal7bu74f2oc3e3r6zm/node_modules/detsys-ts/dist/inputs.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/inputs.js
 /**
  * @packageDocumentation
  * Helpers for getting values from an Action's configuration.
@@ -94604,7 +94604,7 @@ const getStringOrUndefined = (name) => {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@26785e47ea40f359156ca7ce0fa3a3dafffd424e_sruplfqlal7bu74f2oc3e3r6zm/node_modules/detsys-ts/dist/sourcedef.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/sourcedef.js
 
 
 function constructSourceParameters(legacyPrefix) {
@@ -94656,7 +94656,7 @@ const validate = uuid_dist/* validate */.Gu;
 const stringify = uuid_dist/* stringify */.Pz;
 const parse = uuid_dist/* parse */.Qc;
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@26785e47ea40f359156ca7ce0fa3a3dafffd424e_sruplfqlal7bu74f2oc3e3r6zm/node_modules/detsys-ts/dist/main.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/main.js
 /**
  * @packageDocumentation
  * Determinate Systems' TypeScript library for creating GitHub Actions logic.
@@ -94965,7 +94965,7 @@ class IdsToolbox {
         core.saveState("idstoolbox_nix_not_found", "not-found");
         switch (this.actionOptions.requireNix) {
             case "fail":
-                core.error("This action can only be used when Nix is installed." +
+                core.setFailed("This action can only be used when Nix is installed." +
                     " Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow.");
                 break;
             case "warn":
