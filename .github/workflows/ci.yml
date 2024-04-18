@@ -32,7 +32,7 @@ jobs:
       - run: test $(git status --porcelain=v1 2>/dev/null | wc -l) -eq 0
 
   test-no-nix:
-    name: Run x86_64 Linux
+    name: "Test: Nix not installed"
     runs-on: ubuntu-22.04
     permissions:
       id-token: "write"
