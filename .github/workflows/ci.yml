@@ -31,6 +31,19 @@ jobs:
       - run: git status --porcelain=v1
       - run: test $(git status --porcelain=v1 2>/dev/null | wc -l) -eq 0
 
+  test-no-nix:
+    name: Run x86_64 Linux
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: "write"
+      contents: "read"
+    env:
+      ACTIONS_STEP_DEBUG: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache the store
+        uses: ./
+
   run-x86_64-linux:
     name: Run x86_64 Linux
     runs-on: ubuntu-22.04
