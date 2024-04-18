@@ -94412,9 +94412,10 @@ const got = source_create(defaults);
 
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/correlation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/correlation.js
 
 
+const OPTIONAL_VARIABLES = ["INVOCATION_ID"];
 function identify(projectName) {
     const ident = {
         correlation_source: "github-actions",
@@ -94463,6 +94464,7 @@ function identify(projectName) {
             "GITHUB_RUN_ID",
             "GITHUB_RUN_NUMBER",
             "GITHUB_RUN_ATTEMPT",
+            "INVOCATION_ID",
         ]),
         groups: {
             ci: "github-actions",
@@ -94481,22 +94483,26 @@ function identify(projectName) {
 function hashEnvironmentVariables(prefix, variables) {
     const hash = (0,external_node_crypto_namespaceObject.createHash)("sha256");
     for (const varName of variables) {
-        const value = process.env[varName];
+        let value = process.env[varName];
         if (value === undefined) {
-            core.debug(`Environment variable not set: ${varName} -- can't generate the requested identity`);
-            return undefined;
+            if (OPTIONAL_VARIABLES.includes(varName)) {
+                core.debug(`Optional environment variable not set: ${varName} -- substituting with the variable name`);
+                value = varName;
+            }
+            else {
+                core.debug(`Environment variable not set: ${varName} -- can't generate the requested identity`);
+                return undefined;
+            }
         }
-        else {
-            hash.update(value);
-            hash.update("\0");
-        }
+        hash.update(value);
+        hash.update("\0");
     }
     return `${prefix}-${hash.digest("hex")}`;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/package.json
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/package.json
 const package_namespaceObject = {"i8":"1.0.0"};
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/platform.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/platform.js
 /**
  * @packageDocumentation
  * Helpers for determining system attributes of the current runner.
@@ -94536,7 +94542,7 @@ function getNixPlatform(archOs) {
     }
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/inputs.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/inputs.js
 /**
  * @packageDocumentation
  * Helpers for getting values from an Action's configuration.
@@ -94604,7 +94610,7 @@ const getStringOrUndefined = (name) => {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/sourcedef.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/sourcedef.js
 
 
 function constructSourceParameters(legacyPrefix) {
@@ -94656,7 +94662,7 @@ const validate = uuid_dist/* validate */.Gu;
 const stringify = uuid_dist/* stringify */.Pz;
 const parse = uuid_dist/* parse */.Qc;
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@59a86c183df9930f8775748ae0733f94d1b11220_2ofemuz4qq5d23wbavznuv3z7e/node_modules/detsys-ts/dist/main.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/main.js
 /**
  * @packageDocumentation
  * Determinate Systems' TypeScript library for creating GitHub Actions logic.
