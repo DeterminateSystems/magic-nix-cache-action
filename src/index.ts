@@ -305,6 +305,7 @@ const idslib = new IdsToolbox({
   name: "magic-nix-cache",
   fetchStyle: "gh-env-style",
   idsProjectName: "magic-nix-cache-closure",
+  requireNix: true,
 });
 
 idslib.onMain(async () => {

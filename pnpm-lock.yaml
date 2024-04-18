@@ -18,8 +18,8 @@ dependencies:
     specifier: ^2.0.1
     version: 2.0.1
   detsys-ts:
-    specifier: github:DeterminateSystems/detsys-ts
-    version: github.com/DeterminateSystems/detsys-ts/3a315cdffd83d4b229d4fb16548d22a3756baf28
+    specifier: github:DeterminateSystems/detsys-ts#graham/fh-272-detsys-ts-create-a-helper-to-assert-nix-is-available-ahead
+    version: github.com/DeterminateSystems/detsys-ts/d0549728861cc4c4797fddc2c931739ff5f7c819
   fetch-retry:
     specifier: ^5.0.6
     version: 5.0.6
@@ -4353,10 +4353,10 @@ packages:
     engines: { node: ">=10" }
     dev: true
 
-  github.com/DeterminateSystems/detsys-ts/3a315cdffd83d4b229d4fb16548d22a3756baf28:
+  github.com/DeterminateSystems/detsys-ts/d0549728861cc4c4797fddc2c931739ff5f7c819:
     resolution:
       {
-        tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/3a315cdffd83d4b229d4fb16548d22a3756baf28,
+        tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/d0549728861cc4c4797fddc2c931739ff5f7c819,
       }
     name: detsys-ts
     version: 1.0.0

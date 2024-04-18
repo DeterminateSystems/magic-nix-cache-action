@@ -94412,7 +94412,7 @@ const got = source_create(defaults);
 
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/correlation.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@d0549728861cc4c4797fddc2c931739ff5f7c819_aivncslwkd46yrth3vskk4g6rm/node_modules/detsys-ts/dist/correlation.js
 
 
 function identify(projectName) {
@@ -94494,10 +94494,17 @@ function hashEnvironmentVariables(prefix, variables) {
     return `${prefix}-${hash.digest("hex")}`;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/package.json
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@d0549728861cc4c4797fddc2c931739ff5f7c819_aivncslwkd46yrth3vskk4g6rm/node_modules/detsys-ts/dist/package.json
 const package_namespaceObject = {"i8":"1.0.0"};
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/platform.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@d0549728861cc4c4797fddc2c931739ff5f7c819_aivncslwkd46yrth3vskk4g6rm/node_modules/detsys-ts/dist/platform.js
+/**
+ * @packageDocumentation
+ * Helpers for determining system attributes of the current runner.
+ */
 
+/**
+ * Get the current architecture plus OS. Examples include `X64-Linux` and `ARM64-macOS`.
+ */
 function getArchOs() {
     const envArch = process.env.RUNNER_ARCH;
     const envOs = process.env.RUNNER_OS;
@@ -94509,6 +94516,9 @@ function getArchOs() {
         throw new Error("RUNNER_ARCH and/or RUNNER_OS is not defined");
     }
 }
+/**
+ * Get the current Nix system. Examples include `x86_64-linux` and `aarch64-darwin`.
+ */
 function getNixPlatform(archOs) {
     const archOsMap = new Map([
         ["X64-macOS", "x86_64-darwin"],
@@ -94526,17 +94536,86 @@ function getNixPlatform(archOs) {
     }
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/sourcedef.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@d0549728861cc4c4797fddc2c931739ff5f7c819_aivncslwkd46yrth3vskk4g6rm/node_modules/detsys-ts/dist/inputs.js
+/**
+ * @packageDocumentation
+ * Helpers for getting values from an Action's configuration.
+ */
+
+/**
+ * Get a Boolean input from the Action's configuration by name.
+ */
+const getBool = (name) => {
+    return actionsCore.getBooleanInput(name);
+};
+/**
+ * Get a multi-line string input from the Action's configuration by name or return `null` if not set.
+ */
+const getMultilineStringOrNull = (name) => {
+    const value = actionsCore.getMultilineInput(name);
+    if (value.length === 0) {
+        return null;
+    }
+    else {
+        return value;
+    }
+};
+/**
+ * Get a number input from the Action's configuration by name or return `null` if not set.
+ */
+const getNumberOrNull = (name) => {
+    const value = actionsCore.getInput(name);
+    if (value === "") {
+        return null;
+    }
+    else {
+        return Number(value);
+    }
+};
+/**
+ * Get a string input from the Action's configuration.
+ */
+const getString = (name) => {
+    return actionsCore.getInput(name);
+};
+/**
+ * Get a string input from the Action's configuration by name or return `null` if not set.
+ */
+const getStringOrNull = (name) => {
+    const value = actionsCore.getInput(name);
+    if (value === "") {
+        return null;
+    }
+    else {
+        return value;
+    }
+};
+/**
+ * Get a string input from the Action's configuration by name or return `undefined` if not set.
+ */
+const getStringOrUndefined = (name) => {
+    const value = core.getInput(name);
+    if (value === "") {
+        return undefined;
+    }
+    else {
+        return value;
+    }
+};
+
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@d0549728861cc4c4797fddc2c931739ff5f7c819_aivncslwkd46yrth3vskk4g6rm/node_modules/detsys-ts/dist/sourcedef.js
+
 
 function constructSourceParameters(legacyPrefix) {
     const noisilyGetInput = (suffix) => {
-        const preferredInput = inputStringOrUndef(`source-${suffix}`);
+        const preferredInput = getStringOrUndefined(`source-${suffix}`);
         if (!legacyPrefix) {
             return preferredInput;
         }
         // Remaining is for handling cases where the legacy prefix
         // should be examined.
-        const legacyInput = inputStringOrUndef(`${legacyPrefix}-${suffix}`);
+        const legacyInput = getStringOrUndefined(`${legacyPrefix}-${suffix}`);
         if (preferredInput && legacyInput) {
             core.warning(`The supported option source-${suffix} and the legacy option ${legacyPrefix}-${suffix} are both set. Preferring source-${suffix}. Please stop setting ${legacyPrefix}-${suffix}.`);
             return preferredInput;
@@ -94558,15 +94637,6 @@ function constructSourceParameters(legacyPrefix) {
         revision: noisilyGetInput("revision"),
     };
 }
-function inputStringOrUndef(name) {
-    const value = core.getInput(name);
-    if (value === "") {
-        return undefined;
-    }
-    else {
-        return value;
-    }
-}
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@3.2.4/node_modules/@actions/cache/lib/cache.js
 var cache = __nccwpck_require__(6878);
@@ -94586,7 +94656,11 @@ const validate = uuid_dist/* validate */.Gu;
 const stringify = uuid_dist/* stringify */.Pz;
 const parse = uuid_dist/* parse */.Qc;
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3a315cdffd83d4b229d4fb16548d22a3756baf28_lprtsns3vmnabnzqpk64lag6gi/node_modules/detsys-ts/dist/main.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@d0549728861cc4c4797fddc2c931739ff5f7c819_aivncslwkd46yrth3vskk4g6rm/node_modules/detsys-ts/dist/main.js
+/**
+ * @packageDocumentation
+ * Determinate Systems' TypeScript library for creating GitHub Actions logic.
+ */
 
 // eslint-disable-next-line import/extensions
 
@@ -94695,6 +94769,10 @@ class IdsToolbox {
     async executeAsync() {
         try {
             process.env.DETSYS_CORRELATION = JSON.stringify(this.getCorrelationHashes());
+            if (!(await this.preflightRequireNix())) {
+                this.recordEvent("preflight-require-nix-denied");
+                return;
+            }
             if (this.executionPhase === "main" && this.hookMain) {
                 await this.hookMain();
             }
@@ -94858,6 +94936,34 @@ class IdsToolbox {
             process.chdir(startCwd);
         }
     }
+    async preflightRequireNix() {
+        let nixLocation;
+        const pathParts = (process.env["PATH"] || "").split(":");
+        for (const location of pathParts) {
+            const candidateNix = external_node_path_namespaceObject.join(location, "nix");
+            try {
+                await promises_namespaceObject.access(candidateNix, promises_namespaceObject.constants.X_OK);
+                core.debug(`Found Nix at ${candidateNix}`);
+                nixLocation = candidateNix;
+            }
+            catch {
+                core.debug(`Nix not at ${candidateNix}`);
+            }
+        }
+        this.addFact("nix_location", nixLocation || "");
+        const currentNotFoundState = core.getState("idstoolbox_nix_not_found");
+        if (this.actionOptions.requireNix && currentNotFoundState === "not-found") {
+            // It was previously not found, so don't run subsequent actions
+            return false;
+        }
+        if (this.actionOptions.requireNix && nixLocation === undefined) {
+            core.warning("This action is in no-op mode because Nix is not installed." +
+                " Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow.");
+            core.saveState("idstoolbox_nix_not_found", "not-found");
+            return false;
+        }
+        return true;
+    }
     async submitEvents() {
         if (!this.actionOptions.diagnosticsUrl) {
             core.debug("Diagnostics are disabled. Not sending the following events:");
@@ -94892,6 +94998,7 @@ function makeOptionsConfident(actionOptions) {
         eventPrefix: actionOptions.eventPrefix || "action:",
         fetchStyle: actionOptions.fetchStyle,
         legacySourcePrefix: actionOptions.legacySourcePrefix,
+        requireNix: actionOptions.requireNix,
         diagnosticsUrl: determineDiagnosticsUrl(idsProjectName, actionOptions.diagnosticsUrl),
     };
     core.debug("idslib options:");
@@ -94957,6 +95064,9 @@ function mungeDiagnosticEndpoint(inputUrl) {
     }
     return inputUrl;
 }
+// Public exports from other files
+
+
 
 ;// CONCATENATED MODULE: ./dist/index.js
 
@@ -95220,6 +95330,7 @@ const idslib = new IdsToolbox({
     name: "magic-nix-cache",
     fetchStyle: "gh-env-style",
     idsProjectName: "magic-nix-cache-closure",
+    requireNix: true,
 });
 idslib.onMain(async () => {
     await setUpAutoCache(idslib);
