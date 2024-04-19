@@ -95344,6 +95344,8 @@ const getLinuxInfo = async () => {
     let data = {};
     try {
         data = (0,linux_release_info_dist/* releaseInfo */.o)({ mode: "sync" });
+        // eslint-disable-next-line no-console
+        console.log(data);
     }
     catch (e) {
         core.debug(`Error collecting release info: ${e}`);

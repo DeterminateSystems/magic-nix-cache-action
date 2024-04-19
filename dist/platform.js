@@ -51,6 +51,8 @@ const getLinuxInfo = async () => {
     let data = {};
     try {
         data = releaseInfo({ mode: "sync" });
+        // eslint-disable-next-line no-console
+        console.log(data);
     }
     catch (e) {
         core.debug(`Error collecting release info: ${e}`);
