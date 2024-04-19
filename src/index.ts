@@ -314,7 +314,7 @@ idslib.onMain(async () => {
   console.log(platform);
 
   // eslint-disable-next-line no-console
-  console.log(platform.getDetails());
+  console.log(await platform.getDetails());
   await setUpAutoCache(idslib);
   await notifyAutoCache();
 });

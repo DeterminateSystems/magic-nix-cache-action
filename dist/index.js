@@ -95456,7 +95456,7 @@ idslib.onMain(async () => {
     // eslint-disable-next-line no-console
     console.log(dist_platform_namespaceObject);
     // eslint-disable-next-line no-console
-    console.log(getDetails());
+    console.log(await getDetails());
     await setUpAutoCache(idslib);
     await notifyAutoCache();
 });
