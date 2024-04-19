@@ -2,6 +2,7 @@
 // since it isn't in @actions/core 1.10.1 which is their current release as 2024-04-19
 import os from "os";
 import * as exec from "@actions/exec";
+import * as core from "@actions/core";
 import { releaseInfo } from "linux-release-info";
 const getWindowsInfo = async () => {
     const { stdout: version } = await exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"', undefined, {
@@ -26,17 +27,37 @@ const getMacOsInfo = async () => {
         version,
     };
 };
+function getPropertyViaWithDefault(data, names, defaultValue) {
+    for (const name of names) {
+        const ret = getPropertyWithDefault(data, name, undefined);
+        if (ret !== undefined) {
+            return ret;
+        }
+    }
+    return defaultValue;
+}
+function getPropertyWithDefault(data, name, defaultValue) {
+    if (!data.hasOwnProperty(name)) {
+        return defaultValue;
+    }
+    const value = data[name];
+    // NB. this check won't work for object instances
+    if (typeof value !== typeof defaultValue) {
+        return defaultValue;
+    }
+    return value;
+}
 const getLinuxInfo = async () => {
-    const data = releaseInfo({ mode: "sync" });
-    // eslint-disable-next-line no-console
-    console.log(data);
-    const { stdout } = await exec.getExecOutput("lsb_release", ["-i", "-r", "-s"], {
-        silent: true,
-    });
-    const [name, version] = stdout.trim().split("\n");
+    let data = {};
+    try {
+        data = releaseInfo({ mode: "sync" });
+    }
+    catch (e) {
+        core.debug(`Error collecting release info: ${e}`);
+    }
     return {
-        name,
-        version,
+        name: getPropertyViaWithDefault(data, ["id", "name", "pretty_name", "id_like"], "unknown"),
+        version: getPropertyViaWithDefault(data, ["version_id", "version", "version_codename"], "unknown"),
     };
 };
 export const platform = os.platform();

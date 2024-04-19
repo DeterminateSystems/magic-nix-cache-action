@@ -95296,6 +95296,7 @@ var linux_release_info_dist = __nccwpck_require__(7540);
 
 
 
+
 const getWindowsInfo = async () => {
     const { stdout: version } = await exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"', undefined, {
         silent: true,
@@ -95319,17 +95320,37 @@ const getMacOsInfo = async () => {
         version,
     };
 };
+function getPropertyViaWithDefault(data, names, defaultValue) {
+    for (const name of names) {
+        const ret = getPropertyWithDefault(data, name, undefined);
+        if (ret !== undefined) {
+            return ret;
+        }
+    }
+    return defaultValue;
+}
+function getPropertyWithDefault(data, name, defaultValue) {
+    if (!data.hasOwnProperty(name)) {
+        return defaultValue;
+    }
+    const value = data[name];
+    // NB. this check won't work for object instances
+    if (typeof value !== typeof defaultValue) {
+        return defaultValue;
+    }
+    return value;
+}
 const getLinuxInfo = async () => {
-    const data = (0,linux_release_info_dist/* releaseInfo */.o)({ mode: "sync" });
-    // eslint-disable-next-line no-console
-    console.log(data);
-    const { stdout } = await exec.getExecOutput("lsb_release", ["-i", "-r", "-s"], {
-        silent: true,
-    });
-    const [name, version] = stdout.trim().split("\n");
+    let data = {};
+    try {
+        data = (0,linux_release_info_dist/* releaseInfo */.o)({ mode: "sync" });
+    }
+    catch (e) {
+        core.debug(`Error collecting release info: ${e}`);
+    }
     return {
-        name,
-        version,
+        name: getPropertyViaWithDefault(data, ["id", "name", "pretty_name", "id_like"], "unknown"),
+        version: getPropertyViaWithDefault(data, ["version_id", "version", "version_codename"], "unknown"),
     };
 };
 const platform = external_os_.platform();

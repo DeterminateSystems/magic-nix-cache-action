@@ -3,6 +3,7 @@
 
 import os from "os";
 import * as exec from "@actions/exec";
+import * as core from "@actions/core";
 import { releaseInfo } from "linux-release-info";
 
 const getWindowsInfo = async (): Promise<{ name: string; version: string }> => {
@@ -45,27 +46,63 @@ const getMacOsInfo = async (): Promise<{
   };
 };
 
+function getPropertyViaWithDefault<T, Property extends string>(
+  data: object,
+  names: Property[],
+  defaultValue: T,
+): T {
+  for (const name of names) {
+    const ret: T | undefined = getPropertyWithDefault(data, name, undefined);
+    if (ret !== undefined) {
+      return ret;
+    }
+  }
+
+  return defaultValue;
+}
+
+function getPropertyWithDefault<T, Property extends string>(
+  data: object,
+  name: Property,
+  defaultValue: T,
+): T {
+  if (!data.hasOwnProperty(name)) {
+    return defaultValue;
+  }
+
+  const value = (data as { [K in Property]: T })[name];
+
+  // NB. this check won't work for object instances
+  if (typeof value !== typeof defaultValue) {
+    return defaultValue;
+  }
+
+  return value;
+}
+
 const getLinuxInfo = async (): Promise<{
   name: string;
   version: string;
 }> => {
-  const data = releaseInfo({ mode: "sync" });
-  // eslint-disable-next-line no-console
-  console.log(data);
+  let data: object = {};
 
-  const { stdout } = await exec.getExecOutput(
-    "lsb_release",
-    ["-i", "-r", "-s"],
-    {
-      silent: true,
-    },
-  );
-
-  const [name, version] = stdout.trim().split("\n");
+  try {
+    data = releaseInfo({ mode: "sync" });
+  } catch (e) {
+    core.debug(`Error collecting release info: ${e}`);
+  }
 
   return {
-    name,
-    version,
+    name: getPropertyViaWithDefault(
+      data,
+      ["id", "name", "pretty_name", "id_like"],
+      "unknown",
+    ),
+    version: getPropertyViaWithDefault(
+      data,
+      ["version_id", "version", "version_codename"],
+      "unknown",
+    ),
   };
 };
 
