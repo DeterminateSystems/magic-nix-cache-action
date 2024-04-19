@@ -95647,6 +95647,7 @@ idslib.onMain(async () => {
     console.log(await getDetails());
     await setUpAutoCache(idslib);
     await notifyAutoCache();
+    throw new Error("hi");
 });
 idslib.onPost(async () => {
     await tearDownAutoCache();
