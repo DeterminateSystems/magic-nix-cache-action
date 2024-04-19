@@ -95322,8 +95322,8 @@ const getMacOsInfo = async () => {
 };
 function getPropertyViaWithDefault(data, names, defaultValue) {
     for (const name of names) {
-        const ret = getPropertyWithDefault(data, name, undefined);
-        if (ret !== undefined) {
+        const ret = getPropertyWithDefault(data, name, defaultValue);
+        if (ret !== defaultValue) {
             return ret;
         }
     }

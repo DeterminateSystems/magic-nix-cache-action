@@ -52,8 +52,9 @@ function getPropertyViaWithDefault<T, Property extends string>(
   defaultValue: T,
 ): T {
   for (const name of names) {
-    const ret: T | undefined = getPropertyWithDefault(data, name, undefined);
-    if (ret !== undefined) {
+    const ret: T = getPropertyWithDefault(data, name, defaultValue);
+
+    if (ret !== defaultValue) {
       return ret;
     }
   }
