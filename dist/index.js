@@ -44767,6 +44767,176 @@ module.exports = Keyv;
 
 /***/ }),
 
+/***/ 8811:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+
+
+const fs = __nccwpck_require__(7147)
+const os = __nccwpck_require__(2037)
+
+/**
+ * Get OS release info from the node os module and augment that with information
+ * from '/etc/os-release', '/usr/lib/os-release', or '/etc/alpine-release'. The
+ * information in that file is distribution-dependent. If not Linux return only
+ * the node os module info.
+ *
+ * @returns info {object} via Promise | callback | return value
+ *
+ * the file property in the info object will be filled in with one of:
+ *   - undefined, if not Linux
+ *   - the file path (above) used
+ *   - an Error instance if no file could be read
+ */
+function linuxOsInfo (opts) {
+  let outputData = {
+    type: os.type(),
+    platform: os.platform(),
+    hostname: os.hostname(),
+    arch: os.arch(),
+    release: os.release(),
+    file: undefined,
+  }
+
+  let mode = 'promise'
+  opts = opts || {}
+
+
+
+  const list = Array.isArray(opts.list) ? opts.list : defaultList
+
+  if (typeof opts.mode === 'function') {
+    mode = 'callback'
+  } else if (opts.mode === 'sync') {
+    mode = 'sync'
+  }
+
+  if (os.type() !== 'Linux') {
+    if (mode === 'promise') {
+      return Promise.resolve(outputData)
+    } else if (mode === 'callback') {
+      return opts.mode(null, outputData)
+    } else {
+      return outputData
+    }
+  }
+
+  if (mode === 'sync') {
+    return synchronousRead()
+  } else {
+    // return a Promise that can be ignored if caller expects a callback
+    return new Promise(asynchronousRead)
+  }
+
+  // loop through the file list synchronously
+  function synchronousRead () {
+    for (let i = 0; i < list.length; i++) {
+      let data
+      try {
+        data = fs.readFileSync(list[i].path, 'utf8')
+        list[i].parser(data, outputData)
+        outputData.file = list[i].path
+        return outputData
+      } catch (e) {
+        // accumulate errors?
+      }
+    }
+    outputData.file = new Error('linux-os-info - no file found')
+    return outputData
+  }
+
+  // loop through the file list on completion of async reads
+  function asynchronousRead (resolve, reject) {
+    let i = 0
+
+    function tryRead () {
+      if (i >= list.length) {
+        const e = new Error('linux-os-info - no file found')
+        outputData.file = e
+        mode === 'promise' ? resolve(outputData) : opts.mode(null, outputData)
+      } else {
+        // try to read the file.
+        let file = list[i].path
+        fs.readFile(file, 'utf8', (err, data) => {
+          if (err) {
+            i += 1
+            tryRead()
+          } else {
+            list[i].parser(data, outputData)
+            outputData.file = file
+            mode === 'promise' ? resolve(outputData) : opts.mode(null, outputData)
+          }
+        })
+      }
+    }
+
+    tryRead()
+  }
+}
+
+//
+// the default list of files to try to read and their parsers.
+// in theory this can be replaced, especially for testing purposes.
+// but it's not documented at this time unless one is reading this.
+//
+const defaultList = [
+  {path: '/etc/os-release', parser: etcOsRelease},
+  {path: '/usr/lib/os-release', parser: usrLibOsRelease},
+  {path: '/etc/alpine-release', parser: etcAlpineRelease}
+]
+
+//
+// helper functions to parse file data
+//
+
+function etcOsRelease(data, outputData) {
+  addOsReleaseToOutputData(data, outputData)
+}
+
+function usrLibOsRelease(data, outputData) {
+  addOsReleaseToOutputData(data, outputData)
+}
+
+// the alpine-release file only contains the version string
+// so fill in the basics based on that.
+function etcAlpineRelease(data, outputData) {
+  outputData.name = 'Alpine'
+  outputData.id = 'alpine'
+  outputData.version = data
+  outputData.version_id = data
+}
+
+function addOsReleaseToOutputData(data, outputData) {
+  const lines = data.split('\n')
+
+  lines.forEach(line => {
+    let index = line.indexOf('=')
+    // only look at lines with at least a one character key
+    if (index >= 1) {
+      // lowercase key and remove quotes on value
+      let key = line.slice(0, index).toLowerCase()
+      let value = line.slice(index + 1).replace(/"/g, '')
+
+      Object.defineProperty(outputData, key, {
+        value: value,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      })
+    }
+  });
+}
+
+module.exports = linuxOsInfo
+
+//
+// a tiny bit of testing
+//
+if (false) {}
+
+
+/***/ }),
+
 /***/ 4015:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -95129,9 +95299,12 @@ function mungeDiagnosticEndpoint(inputUrl) {
 var external_os_ = __nccwpck_require__(2037);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+exec@1.1.1/node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(7775);
+// EXTERNAL MODULE: ./node_modules/.pnpm/linux-os-info@2.0.0/node_modules/linux-os-info/index.js
+var linux_os_info = __nccwpck_require__(8811);
 ;// CONCATENATED MODULE: ./dist/platform.js
 // MIT, lifted from https://github.com/actions/toolkit/blob/5a736647a123ecf8582376bdaee833fbae5b3847/packages/core/src/platform.ts
 // since it isn't in @actions/core 1.10.1 which is their current release as 2024-04-19
+
 
 
 const getWindowsInfo = async () => {
@@ -95158,6 +95331,9 @@ const getMacOsInfo = async () => {
     };
 };
 const getLinuxInfo = async () => {
+    const data = await linux_os_info({ mode: "async" });
+    // eslint-disable-next-line no-console
+    console.log(data);
     const { stdout } = await exec.getExecOutput("lsb_release", ["-i", "-r", "-s"], {
         silent: true,
     });

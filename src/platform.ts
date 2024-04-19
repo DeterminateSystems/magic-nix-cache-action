@@ -3,6 +3,7 @@
 
 import os from "os";
 import * as exec from "@actions/exec";
+import osInfo from "linux-os-info";
 
 const getWindowsInfo = async (): Promise<{ name: string; version: string }> => {
   const { stdout: version } = await exec.getExecOutput(
@@ -48,6 +49,10 @@ const getLinuxInfo = async (): Promise<{
   name: string;
   version: string;
 }> => {
+  const data = await osInfo({ mode: "async" });
+  // eslint-disable-next-line no-console
+  console.log(data);
+
   const { stdout } = await exec.getExecOutput(
     "lsb_release",
     ["-i", "-r", "-s"],

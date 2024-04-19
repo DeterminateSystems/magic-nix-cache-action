@@ -26,6 +26,9 @@ dependencies:
   got:
     specifier: ^14.2.1
     version: 14.2.1
+  linux-os-info:
+    specifier: ^2.0.0
+    version: 2.0.0
   string-argv:
     specifier: ^0.3.2
     version: 0.3.2
@@ -3341,6 +3344,13 @@ packages:
       prelude-ls: 1.2.1
       type-check: 0.4.0
     dev: true
+
+  /linux-os-info@2.0.0:
+    resolution:
+      {
+        integrity: sha512-ZopyH4kT2Ehnmix8iUgS/41pfv7fSlUV1JukIn3DB3qD3byvhBNtgCbUApoAtiqcHRLKXCY3zakXlJgiExm2Qg==,
+      }
+    dev: false
 
   /locate-path@6.0.0:
     resolution:
