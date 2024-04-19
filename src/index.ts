@@ -10,6 +10,7 @@ import * as core from "@actions/core";
 import { Tail } from "tail";
 import got from "got";
 import { IdsToolbox } from "detsys-ts";
+import * as platform from "./platform.js";
 
 const ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
@@ -309,6 +310,11 @@ const idslib = new IdsToolbox({
 });
 
 idslib.onMain(async () => {
+  // eslint-disable-next-line no-console
+  console.log(platform);
+
+  // eslint-disable-next-line no-console
+  console.log(platform.getDetails());
   await setUpAutoCache(idslib);
   await notifyAutoCache();
 });

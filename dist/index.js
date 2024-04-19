@@ -87434,6 +87434,34 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ }
 /******/ 
 /************************************************************************/
+/******/ /* webpack/runtime/define property getters */
+/******/ (() => {
+/******/ 	// define getter functions for harmony exports
+/******/ 	__nccwpck_require__.d = (exports, definition) => {
+/******/ 		for(var key in definition) {
+/******/ 			if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			}
+/******/ 		}
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/hasOwnProperty shorthand */
+/******/ (() => {
+/******/ 	__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/make namespace object */
+/******/ (() => {
+/******/ 	// define __esModule on exports
+/******/ 	__nccwpck_require__.r = (exports) => {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/ })();
+/******/ 
 /******/ /* webpack/runtime/compat */
 /******/ 
 /******/ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\/\/\/\w:/) ? 1 : 0, -1) + "/";
@@ -87442,6 +87470,18 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
+
+// NAMESPACE OBJECT: ./dist/platform.js
+var dist_platform_namespaceObject = {};
+__nccwpck_require__.r(dist_platform_namespaceObject);
+__nccwpck_require__.d(dist_platform_namespaceObject, {
+  "arch": () => (arch),
+  "getDetails": () => (getDetails),
+  "isLinux": () => (isLinux),
+  "isMacOS": () => (isMacOS),
+  "isWindows": () => (isWindows),
+  "platform": () => (platform)
+});
 
 ;// CONCATENATED MODULE: external "node:fs/promises"
 const promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs/promises");
@@ -95085,7 +95125,70 @@ function mungeDiagnosticEndpoint(inputUrl) {
 
 
 
+// EXTERNAL MODULE: external "os"
+var external_os_ = __nccwpck_require__(2037);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+exec@1.1.1/node_modules/@actions/exec/lib/exec.js
+var exec = __nccwpck_require__(7775);
+;// CONCATENATED MODULE: ./dist/platform.js
+// MIT, lifted from https://github.com/actions/toolkit/blob/5a736647a123ecf8582376bdaee833fbae5b3847/packages/core/src/platform.ts
+// since it isn't in @actions/core 1.10.1 which is their current release as 2024-04-19
+
+
+const getWindowsInfo = async () => {
+    const { stdout: version } = await exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"', undefined, {
+        silent: true,
+    });
+    const { stdout: name } = await exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Caption"', undefined, {
+        silent: true,
+    });
+    return {
+        name: name.trim(),
+        version: version.trim(),
+    };
+};
+const getMacOsInfo = async () => {
+    const { stdout } = await exec.getExecOutput("sw_vers", undefined, {
+        silent: true,
+    });
+    const version = stdout.match(/ProductVersion:\s*(.+)/)?.[1] ?? "";
+    const name = stdout.match(/ProductName:\s*(.+)/)?.[1] ?? "";
+    return {
+        name,
+        version,
+    };
+};
+const getLinuxInfo = async () => {
+    const { stdout } = await exec.getExecOutput("lsb_release", ["-i", "-r", "-s"], {
+        silent: true,
+    });
+    const [name, version] = stdout.trim().split("\n");
+    return {
+        name,
+        version,
+    };
+};
+const platform = external_os_.platform();
+const arch = external_os_.arch();
+const isWindows = platform === "win32";
+const isMacOS = platform === "darwin";
+const isLinux = platform === "linux";
+async function getDetails() {
+    return {
+        ...(await (isWindows
+            ? getWindowsInfo()
+            : isMacOS
+                ? getMacOsInfo()
+                : getLinuxInfo())),
+        platform,
+        arch,
+        isWindows,
+        isMacOS,
+        isLinux,
+    };
+}
+
 ;// CONCATENATED MODULE: ./dist/index.js
+
 
 
 
@@ -95350,6 +95453,10 @@ const idslib = new IdsToolbox({
     requireNix: "warn",
 });
 idslib.onMain(async () => {
+    // eslint-disable-next-line no-console
+    console.log(dist_platform_namespaceObject);
+    // eslint-disable-next-line no-console
+    console.log(getDetails());
     await setUpAutoCache(idslib);
     await notifyAutoCache();
 });
