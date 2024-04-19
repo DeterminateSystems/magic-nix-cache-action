@@ -29,6 +29,9 @@ dependencies:
   linux-os-info:
     specifier: ^2.0.0
     version: 2.0.0
+  linux-release-info:
+    specifier: ^3.0.0
+    version: 3.0.0
   string-argv:
     specifier: ^0.3.2
     version: 0.3.2
@@ -3350,6 +3353,14 @@ packages:
       {
         integrity: sha512-ZopyH4kT2Ehnmix8iUgS/41pfv7fSlUV1JukIn3DB3qD3byvhBNtgCbUApoAtiqcHRLKXCY3zakXlJgiExm2Qg==,
       }
+    dev: false
+
+  /linux-release-info@3.0.0:
+    resolution:
+      {
+        integrity: sha512-qVARfxfp2uOM8XTlb+ZkzqVqvNDd6djySW7JL0ec+cnpB/SKZO2O/NJc9XR699fE7Wg1ERWN6aKcPm5Ejioj3A==,
+      }
+    engines: { node: ">=8.0" }
     dev: false
 
   /locate-path@6.0.0:

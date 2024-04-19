@@ -44767,173 +44767,162 @@ module.exports = Keyv;
 
 /***/ }),
 
-/***/ 8811:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+/***/ 7540:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+var __webpack_unused_export__;
 
-
-const fs = __nccwpck_require__(7147)
-const os = __nccwpck_require__(2037)
-
-/**
- * Get OS release info from the node os module and augment that with information
- * from '/etc/os-release', '/usr/lib/os-release', or '/etc/alpine-release'. The
- * information in that file is distribution-dependent. If not Linux return only
- * the node os module info.
+/*!
+ * linux-release-info
+ * Get Linux release info (distribution name, version, arch, release, etc.)
+ * from '/etc/os-release' or '/usr/lib/os-release' files and from native os
+ * module. On Windows and Darwin platforms it only returns common node os module
+ * info (platform, hostname, release, and arch)
  *
- * @returns info {object} via Promise | callback | return value
- *
- * the file property in the info object will be filled in with one of:
- *   - undefined, if not Linux
- *   - the file path (above) used
- *   - an Error instance if no file could be read
+ * Licensed under MIT
+ * Copyright (c) 2018-2020 [Samuel Carreira]
  */
-function linuxOsInfo (opts) {
-  let outputData = {
-    type: os.type(),
-    platform: os.platform(),
-    hostname: os.hostname(),
-    arch: os.arch(),
-    release: os.release(),
-    file: undefined,
-  }
-
-  let mode = 'promise'
-  opts = opts || {}
-
-
-
-  const list = Array.isArray(opts.list) ? opts.list : defaultList
-
-  if (typeof opts.mode === 'function') {
-    mode = 'callback'
-  } else if (opts.mode === 'sync') {
-    mode = 'sync'
-  }
-
-  if (os.type() !== 'Linux') {
-    if (mode === 'promise') {
-      return Promise.resolve(outputData)
-    } else if (mode === 'callback') {
-      return opts.mode(null, outputData)
-    } else {
-      return outputData
+__webpack_unused_export__ = ({ value: true });
+const fs = __nccwpck_require__(7147);
+const os = __nccwpck_require__(2037);
+const util_1 = __nccwpck_require__(3837);
+const readFileAsync = util_1.promisify(fs.readFile);
+const linuxReleaseInfoOptionsDefaults = {
+    mode: 'async',
+    custom_file: null,
+    debug: false
+};
+/**
+ * Get OS release info from 'os-release' file and from native os module
+ * on Windows or Darwin it only returns common os module info
+ * (uses native fs module)
+ * @returns {object} info from the current os
+ */
+function releaseInfo(options) {
+    options = { ...linuxReleaseInfoOptionsDefaults, ...options };
+    const searchOsreleaseFileList = osreleaseFileList(options.custom_file);
+    async function readAsyncOsreleaseFile(searchOsreleaseFileList, options) {
+        let fileData = null;
+        for (let os_release_file of searchOsreleaseFileList) {
+            try {
+                if (options.debug) {
+                    console.log(`Trying to read '${os_release_file}'...`);
+                }
+                fileData = await readFileAsync(os_release_file, 'binary');
+                if (options.debug) {
+                    console.log('Read data:\n' + fileData);
+                }
+                break;
+            }
+            catch (error) {
+                if (options.debug) {
+                    console.error(error);
+                }
+            }
+        }
+        if (fileData === null) {
+            throw new Error('Cannot read os-release file!');
+            //return getOsInfo();
+        }
+        return formatFileData(getOsInfo(), fileData);
     }
-  }
-
-  if (mode === 'sync') {
-    return synchronousRead()
-  } else {
-    // return a Promise that can be ignored if caller expects a callback
-    return new Promise(asynchronousRead)
-  }
-
-  // loop through the file list synchronously
-  function synchronousRead () {
-    for (let i = 0; i < list.length; i++) {
-      let data
-      try {
-        data = fs.readFileSync(list[i].path, 'utf8')
-        list[i].parser(data, outputData)
-        outputData.file = list[i].path
-        return outputData
-      } catch (e) {
-        // accumulate errors?
-      }
+    function readSyncOsreleaseFile(searchOsreleaseFileList, options) {
+        let fileData = null;
+        for (let os_release_file of searchOsreleaseFileList) {
+            try {
+                if (options.debug) {
+                    console.log(`Trying to read '${os_release_file}'...`);
+                }
+                fileData = fs.readFileSync(os_release_file, 'binary');
+                if (options.debug) {
+                    console.log('Read data:\n' + fileData);
+                }
+                break;
+            }
+            catch (error) {
+                if (options.debug) {
+                    console.error(error);
+                }
+            }
+        }
+        if (fileData === null) {
+            throw new Error('Cannot read os-release file!');
+            //return getOsInfo();
+        }
+        return formatFileData(getOsInfo(), fileData);
     }
-    outputData.file = new Error('linux-os-info - no file found')
-    return outputData
-  }
-
-  // loop through the file list on completion of async reads
-  function asynchronousRead (resolve, reject) {
-    let i = 0
-
-    function tryRead () {
-      if (i >= list.length) {
-        const e = new Error('linux-os-info - no file found')
-        outputData.file = e
-        mode === 'promise' ? resolve(outputData) : opts.mode(null, outputData)
-      } else {
-        // try to read the file.
-        let file = list[i].path
-        fs.readFile(file, 'utf8', (err, data) => {
-          if (err) {
-            i += 1
-            tryRead()
-          } else {
-            list[i].parser(data, outputData)
-            outputData.file = file
-            mode === 'promise' ? resolve(outputData) : opts.mode(null, outputData)
-          }
-        })
-      }
+    if (os.type() !== 'Linux') {
+        if (options.mode === 'sync') {
+            return getOsInfo();
+        }
+        else {
+            return Promise.resolve(getOsInfo());
+        }
     }
-
-    tryRead()
-  }
-}
-
-//
-// the default list of files to try to read and their parsers.
-// in theory this can be replaced, especially for testing purposes.
-// but it's not documented at this time unless one is reading this.
-//
-const defaultList = [
-  {path: '/etc/os-release', parser: etcOsRelease},
-  {path: '/usr/lib/os-release', parser: usrLibOsRelease},
-  {path: '/etc/alpine-release', parser: etcAlpineRelease}
-]
-
-//
-// helper functions to parse file data
-//
-
-function etcOsRelease(data, outputData) {
-  addOsReleaseToOutputData(data, outputData)
-}
-
-function usrLibOsRelease(data, outputData) {
-  addOsReleaseToOutputData(data, outputData)
-}
-
-// the alpine-release file only contains the version string
-// so fill in the basics based on that.
-function etcAlpineRelease(data, outputData) {
-  outputData.name = 'Alpine'
-  outputData.id = 'alpine'
-  outputData.version = data
-  outputData.version_id = data
-}
-
-function addOsReleaseToOutputData(data, outputData) {
-  const lines = data.split('\n')
-
-  lines.forEach(line => {
-    let index = line.indexOf('=')
-    // only look at lines with at least a one character key
-    if (index >= 1) {
-      // lowercase key and remove quotes on value
-      let key = line.slice(0, index).toLowerCase()
-      let value = line.slice(index + 1).replace(/"/g, '')
-
-      Object.defineProperty(outputData, key, {
-        value: value,
-        writable: true,
-        enumerable: true,
-        configurable: true
-      })
+    if (options.mode === 'sync') {
+        return readSyncOsreleaseFile(searchOsreleaseFileList, options);
     }
-  });
+    else {
+        return Promise.resolve(readAsyncOsreleaseFile(searchOsreleaseFileList, options));
+    }
 }
-
-module.exports = linuxOsInfo
-
-//
-// a tiny bit of testing
-//
-if (false) {}
-
+exports.o = releaseInfo;
+/**
+ * Format file data: convert data to object keys/values
+ *
+ * @param {object} sourceData Source object to be appended
+ * @param {string} srcParseData Input file data to be parsed
+ * @returns {object} Formated object
+ */
+function formatFileData(sourceData, srcParseData) {
+    const lines = srcParseData.split('\n');
+    // @ts-ignore
+    lines.forEach(element => {
+        const linedata = element.split('=');
+        if (linedata.length === 2) {
+            linedata[1] = linedata[1].replace(/["'\r]/gi, ''); // remove quotes and return character
+            Object.defineProperty(sourceData, linedata[0].toLowerCase(), {
+                value: linedata[1],
+                writable: true,
+                enumerable: true,
+                configurable: true
+            });
+        }
+    });
+    return sourceData;
+}
+/**
+ * Export a list of os-release files
+ *
+ * @param {string} customFile optional custom complete filepath
+ * @returns {array} list of os-release files
+ */
+function osreleaseFileList(customFile) {
+    const DEFAULT_OS_RELEASE_FILES = ['/etc/os-release', '/usr/lib/os-release'];
+    if (!customFile) {
+        return DEFAULT_OS_RELEASE_FILES;
+    }
+    else {
+        return Array(customFile);
+    }
+}
+/**
+ * Get OS Basic Info
+ * (uses node 'os' native module)
+ *
+ * @returns {object} os basic info
+ */
+function getOsInfo() {
+    const osInfo = {
+        type: os.type(),
+        platform: os.platform(),
+        hostname: os.hostname(),
+        arch: os.arch(),
+        release: os.release()
+    };
+    return osInfo;
+}
+//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -95299,8 +95288,8 @@ function mungeDiagnosticEndpoint(inputUrl) {
 var external_os_ = __nccwpck_require__(2037);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+exec@1.1.1/node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(7775);
-// EXTERNAL MODULE: ./node_modules/.pnpm/linux-os-info@2.0.0/node_modules/linux-os-info/index.js
-var linux_os_info = __nccwpck_require__(8811);
+// EXTERNAL MODULE: ./node_modules/.pnpm/linux-release-info@3.0.0/node_modules/linux-release-info/dist/index.js
+var linux_release_info_dist = __nccwpck_require__(7540);
 ;// CONCATENATED MODULE: ./dist/platform.js
 // MIT, lifted from https://github.com/actions/toolkit/blob/5a736647a123ecf8582376bdaee833fbae5b3847/packages/core/src/platform.ts
 // since it isn't in @actions/core 1.10.1 which is their current release as 2024-04-19
@@ -95331,7 +95320,7 @@ const getMacOsInfo = async () => {
     };
 };
 const getLinuxInfo = async () => {
-    const data = await linux_os_info({ mode: "async" });
+    const data = (0,linux_release_info_dist/* releaseInfo */.o)({ mode: "sync" });
     // eslint-disable-next-line no-console
     console.log(data);
     const { stdout } = await exec.getExecOutput("lsb_release", ["-i", "-r", "-s"], {

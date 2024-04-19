@@ -3,7 +3,7 @@
 
 import os from "os";
 import * as exec from "@actions/exec";
-import osInfo from "linux-os-info";
+import { releaseInfo } from "linux-release-info";
 
 const getWindowsInfo = async (): Promise<{ name: string; version: string }> => {
   const { stdout: version } = await exec.getExecOutput(
@@ -49,7 +49,7 @@ const getLinuxInfo = async (): Promise<{
   name: string;
   version: string;
 }> => {
-  const data = await osInfo({ mode: "async" });
+  const data = releaseInfo({ mode: "sync" });
   // eslint-disable-next-line no-console
   console.log(data);
 

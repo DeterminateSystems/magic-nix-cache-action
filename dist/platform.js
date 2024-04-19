@@ -2,7 +2,7 @@
 // since it isn't in @actions/core 1.10.1 which is their current release as 2024-04-19
 import os from "os";
 import * as exec from "@actions/exec";
-import osInfo from "linux-os-info";
+import { releaseInfo } from "linux-release-info";
 const getWindowsInfo = async () => {
     const { stdout: version } = await exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"', undefined, {
         silent: true,
@@ -27,7 +27,7 @@ const getMacOsInfo = async () => {
     };
 };
 const getLinuxInfo = async () => {
-    const data = await osInfo({ mode: "async" });
+    const data = releaseInfo({ mode: "sync" });
     // eslint-disable-next-line no-console
     console.log(data);
     const { stdout } = await exec.getExecOutput("lsb_release", ["-i", "-r", "-s"], {
