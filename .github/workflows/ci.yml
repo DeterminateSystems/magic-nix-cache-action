@@ -21,7 +21,7 @@ jobs:
       - name: Install pnpm dependencies
         run: nix develop --command pnpm install
       - name: Check formatting
-        run: nix develop --command pnpm run format
+        run: nix develop --command pnpm run check-fmt
       - name: Lint
         run: nix develop --command pnpm run lint
       - name: Build
