@@ -18,8 +18,8 @@ dependencies:
     specifier: ^2.0.1
     version: 2.0.1
   detsys-ts:
-    specifier: github:DeterminateSystems/detsys-ts#uuid-cleanup
-    version: github.com/DeterminateSystems/detsys-ts/6108a5ce5aacf32f809fa92c919cad046a6f2ae2
+    specifier: github:DeterminateSystems/detsys-ts
+    version: github.com/DeterminateSystems/detsys-ts/ea7ff7d4a2488e08b5397cda1a0c56e7f431f43c
   fetch-retry:
     specifier: ^5.0.6
     version: 5.0.6
@@ -3984,8 +3984,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/DeterminateSystems/detsys-ts/6108a5ce5aacf32f809fa92c919cad046a6f2ae2:
-    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/6108a5ce5aacf32f809fa92c919cad046a6f2ae2}
+  github.com/DeterminateSystems/detsys-ts/ea7ff7d4a2488e08b5397cda1a0c56e7f431f43c:
+    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/ea7ff7d4a2488e08b5397cda1a0c56e7f431f43c}
     name: detsys-ts
     version: 1.0.0
     dependencies:
