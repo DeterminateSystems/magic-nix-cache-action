@@ -44767,165 +44767,6 @@ module.exports = Keyv;
 
 /***/ }),
 
-/***/ 6017:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-var __webpack_unused_export__;
-
-/*!
- * linux-release-info
- * Get Linux release info (distribution name, version, arch, release, etc.)
- * from '/etc/os-release' or '/usr/lib/os-release' files and from native os
- * module. On Windows and Darwin platforms it only returns common node os module
- * info (platform, hostname, release, and arch)
- *
- * Licensed under MIT
- * Copyright (c) 2018-2020 [Samuel Carreira]
- */
-__webpack_unused_export__ = ({ value: true });
-const fs = __nccwpck_require__(7147);
-const os = __nccwpck_require__(2037);
-const util_1 = __nccwpck_require__(3837);
-const readFileAsync = util_1.promisify(fs.readFile);
-const linuxReleaseInfoOptionsDefaults = {
-    mode: 'async',
-    custom_file: null,
-    debug: false
-};
-/**
- * Get OS release info from 'os-release' file and from native os module
- * on Windows or Darwin it only returns common os module info
- * (uses native fs module)
- * @returns {object} info from the current os
- */
-function releaseInfo(options) {
-    options = { ...linuxReleaseInfoOptionsDefaults, ...options };
-    const searchOsreleaseFileList = osreleaseFileList(options.custom_file);
-    async function readAsyncOsreleaseFile(searchOsreleaseFileList, options) {
-        let fileData = null;
-        for (let os_release_file of searchOsreleaseFileList) {
-            try {
-                if (options.debug) {
-                    console.log(`Trying to read '${os_release_file}'...`);
-                }
-                fileData = await readFileAsync(os_release_file, 'binary');
-                if (options.debug) {
-                    console.log('Read data:\n' + fileData);
-                }
-                break;
-            }
-            catch (error) {
-                if (options.debug) {
-                    console.error(error);
-                }
-            }
-        }
-        if (fileData === null) {
-            throw new Error('Cannot read os-release file!');
-            //return getOsInfo();
-        }
-        return formatFileData(getOsInfo(), fileData);
-    }
-    function readSyncOsreleaseFile(searchOsreleaseFileList, options) {
-        let fileData = null;
-        for (let os_release_file of searchOsreleaseFileList) {
-            try {
-                if (options.debug) {
-                    console.log(`Trying to read '${os_release_file}'...`);
-                }
-                fileData = fs.readFileSync(os_release_file, 'binary');
-                if (options.debug) {
-                    console.log('Read data:\n' + fileData);
-                }
-                break;
-            }
-            catch (error) {
-                if (options.debug) {
-                    console.error(error);
-                }
-            }
-        }
-        if (fileData === null) {
-            throw new Error('Cannot read os-release file!');
-            //return getOsInfo();
-        }
-        return formatFileData(getOsInfo(), fileData);
-    }
-    if (os.type() !== 'Linux') {
-        if (options.mode === 'sync') {
-            return getOsInfo();
-        }
-        else {
-            return Promise.resolve(getOsInfo());
-        }
-    }
-    if (options.mode === 'sync') {
-        return readSyncOsreleaseFile(searchOsreleaseFileList, options);
-    }
-    else {
-        return Promise.resolve(readAsyncOsreleaseFile(searchOsreleaseFileList, options));
-    }
-}
-exports.o = releaseInfo;
-/**
- * Format file data: convert data to object keys/values
- *
- * @param {object} sourceData Source object to be appended
- * @param {string} srcParseData Input file data to be parsed
- * @returns {object} Formated object
- */
-function formatFileData(sourceData, srcParseData) {
-    const lines = srcParseData.split('\n');
-    // @ts-ignore
-    lines.forEach(element => {
-        const linedata = element.split('=');
-        if (linedata.length === 2) {
-            linedata[1] = linedata[1].replace(/["'\r]/gi, ''); // remove quotes and return character
-            Object.defineProperty(sourceData, linedata[0].toLowerCase(), {
-                value: linedata[1],
-                writable: true,
-                enumerable: true,
-                configurable: true
-            });
-        }
-    });
-    return sourceData;
-}
-/**
- * Export a list of os-release files
- *
- * @param {string} customFile optional custom complete filepath
- * @returns {array} list of os-release files
- */
-function osreleaseFileList(customFile) {
-    const DEFAULT_OS_RELEASE_FILES = ['/etc/os-release', '/usr/lib/os-release'];
-    if (!customFile) {
-        return DEFAULT_OS_RELEASE_FILES;
-    }
-    else {
-        return Array(customFile);
-    }
-}
-/**
- * Get OS Basic Info
- * (uses node 'os' native module)
- *
- * @returns {object} os basic info
- */
-function getOsInfo() {
-    const osInfo = {
-        type: os.type(),
-        platform: os.platform(),
-        hostname: os.hostname(),
-        arch: os.arch(),
-        release: os.release()
-    };
-    return osInfo;
-}
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
 /***/ 4015:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -78917,7 +78758,7 @@ module.exports.implForWrapper = function (wrapper) {
 
 /***/ }),
 
-/***/ 1625:
+/***/ 6017:
 /***/ (function(module, __unused_webpack_exports, __nccwpck_require__) {
 
 // Generated by CoffeeScript 1.12.7
@@ -79194,7 +79035,7 @@ module.exports.implForWrapper = function (wrapper) {
 
   XMLDTDEntity = __nccwpck_require__(7969);
 
-  XMLDTDElement = __nccwpck_require__(1625);
+  XMLDTDElement = __nccwpck_require__(6017);
 
   XMLDTDNotation = __nccwpck_require__(7944);
 
@@ -79651,7 +79492,7 @@ module.exports.implForWrapper = function (wrapper) {
 
   XMLDTDEntity = __nccwpck_require__(7969);
 
-  XMLDTDElement = __nccwpck_require__(1625);
+  XMLDTDElement = __nccwpck_require__(6017);
 
   XMLDTDNotation = __nccwpck_require__(7944);
 
@@ -82065,7 +81906,7 @@ module.exports.implForWrapper = function (wrapper) {
 
   XMLDTDAttList = __nccwpck_require__(1325);
 
-  XMLDTDElement = __nccwpck_require__(1625);
+  XMLDTDElement = __nccwpck_require__(6017);
 
   XMLDTDEntity = __nccwpck_require__(7969);
 
@@ -93907,15 +93748,13 @@ const got = source_create(defaults);
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+exec@1.1.1/node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(7775);
-// EXTERNAL MODULE: ./node_modules/.pnpm/linux-release-info@3.0.0/node_modules/linux-release-info/dist/index.js
-var linux_release_info_dist = __nccwpck_require__(6017);
 // EXTERNAL MODULE: external "os"
 var external_os_ = __nccwpck_require__(2037);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@3.2.4/node_modules/@actions/cache/lib/cache.js
 var cache = __nccwpck_require__(6878);
 ;// CONCATENATED MODULE: external "node:stream/promises"
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@ea7ff7d4a2488e08b5397cda1a0c56e7f431f43c_3setax7rh56ntlp3ugygwj3gvy/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@56a244c061429692b1c7d80fc068d684db3ae4d2_nqhbjyaof246q4gvygpbo6m4na/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -93925,8 +93764,119 @@ var __export = (target, all) => {
 // package.json
 var version = "1.0.0";
 
-// src/actions-core-platform.ts
+// src/linux-release-info.ts
 
+
+
+var readFileAsync = (0,external_node_util_.promisify)(external_node_fs_namespaceObject.readFile);
+var linuxReleaseInfoOptionsDefaults = {
+  mode: "async",
+  customFile: null,
+  debug: false
+};
+function releaseInfo(infoOptions) {
+  const options = { ...linuxReleaseInfoOptionsDefaults, ...infoOptions };
+  const searchOsReleaseFileList = osReleaseFileList(
+    options.customFile
+  );
+  if (external_node_os_.type() !== "Linux") {
+    if (options.mode === "sync") {
+      return getOsInfo();
+    } else {
+      return Promise.resolve(getOsInfo());
+    }
+  }
+  if (options.mode === "sync") {
+    return readSyncOsreleaseFile(searchOsReleaseFileList, options);
+  } else {
+    return Promise.resolve(
+      readAsyncOsReleaseFile(searchOsReleaseFileList, options)
+    );
+  }
+}
+function formatFileData(sourceData, srcParseData) {
+  const lines = srcParseData.split("\n");
+  for (const line of lines) {
+    const lineData = line.split("=");
+    if (lineData.length === 2) {
+      lineData[1] = lineData[1].replace(/["'\r]/gi, "");
+      Object.defineProperty(sourceData, lineData[0].toLowerCase(), {
+        value: lineData[1],
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+    }
+  }
+  return sourceData;
+}
+function osReleaseFileList(customFile) {
+  const DEFAULT_OS_RELEASE_FILES = ["/etc/os-release", "/usr/lib/os-release"];
+  if (!customFile) {
+    return DEFAULT_OS_RELEASE_FILES;
+  } else {
+    return Array(customFile);
+  }
+}
+function getOsInfo() {
+  return {
+    type: external_node_os_.type(),
+    platform: external_node_os_.platform(),
+    hostname: external_node_os_.hostname(),
+    arch: external_node_os_.arch(),
+    release: external_node_os_.release()
+  };
+}
+async function readAsyncOsReleaseFile(fileList, options) {
+  let fileData = null;
+  for (const osReleaseFile of fileList) {
+    try {
+      if (options.debug) {
+        console.log(`Trying to read '${osReleaseFile}'...`);
+      }
+      fileData = await readFileAsync(osReleaseFile, "binary");
+      if (options.debug) {
+        console.log(`Read data:
+${fileData}`);
+      }
+      break;
+    } catch (error2) {
+      if (options.debug) {
+        console.error(error2);
+      }
+    }
+  }
+  if (fileData === null) {
+    throw new Error("Cannot read os-release file!");
+  }
+  return formatFileData(getOsInfo(), fileData);
+}
+function readSyncOsreleaseFile(releaseFileList, options) {
+  let fileData = null;
+  for (const osReleaseFile of releaseFileList) {
+    try {
+      if (options.debug) {
+        console.log(`Trying to read '${osReleaseFile}'...`);
+      }
+      fileData = external_node_fs_namespaceObject.readFileSync(osReleaseFile, "binary");
+      if (options.debug) {
+        console.log(`Read data:
+${fileData}`);
+      }
+      break;
+    } catch (error2) {
+      if (options.debug) {
+        console.error(error2);
+      }
+    }
+  }
+  if (fileData === null) {
+    throw new Error("Cannot read os-release file!");
+  }
+  return formatFileData(getOsInfo(), fileData);
+}
+
+// src/actions-core-platform.ts
 
 
 
@@ -93964,7 +93914,7 @@ var getMacOsInfo = async () => {
 var getLinuxInfo = async () => {
   let data = {};
   try {
-    data = (0,linux_release_info_dist/* releaseInfo */.o)({ mode: "sync" });
+    data = releaseInfo({ mode: "sync" });
     console.log(data);
   } catch (e) {
     core.debug(`Error collecting release info: ${e}`);
@@ -94001,16 +93951,16 @@ function getPropertyWithDefault(data, name, defaultValue) {
   }
   return value;
 }
-var platform = external_os_.platform();
-var arch = external_os_.arch();
-var isWindows = platform === "win32";
-var isMacOS = platform === "darwin";
-var isLinux = platform === "linux";
+var platform2 = external_os_.platform();
+var arch2 = external_os_.arch();
+var isWindows = platform2 === "win32";
+var isMacOS = platform2 === "darwin";
+var isLinux = platform2 === "linux";
 async function getDetails() {
   return {
     ...await (isWindows ? getWindowsInfo() : isMacOS ? getMacOsInfo() : getLinuxInfo()),
-    platform,
-    arch,
+    platform: platform2,
+    arch: arch2,
     isWindows,
     isMacOS,
     isLinux
@@ -94658,6 +94608,16 @@ function mungeDiagnosticEndpoint(inputUrl) {
   return inputUrl;
 }
 
+/*!
+ * linux-release-info
+ * Get Linux release info (distribution name, version, arch, release, etc.)
+ * from '/etc/os-release' or '/usr/lib/os-release' files and from native os
+ * module. On Windows and Darwin platforms it only returns common node os module
+ * info (platform, hostname, release, and arch)
+ *
+ * Licensed under MIT
+ * Copyright (c) 2018-2020 [Samuel Carreira]
+ */
 //# sourceMappingURL=index.js.map
 ;// CONCATENATED MODULE: ./dist/main.js
 // src/main.ts
