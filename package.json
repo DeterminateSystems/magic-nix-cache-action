@@ -28,9 +28,10 @@
     "@actions/exec": "^1.1.1",
     "@actions/github": "^5.1.1",
     "@actions/tool-cache": "^2.0.1",
-    "detsys-ts": "github:DeterminateSystems/detsys-ts",
+    "detsys-ts": "github:DeterminateSystems/detsys-ts#uuid-cleanup",
     "fetch-retry": "^5.0.6",
     "got": "^14.2.1",
+    "linux-release-info": "^3.0.0",
     "string-argv": "^0.3.2",
     "tail": "^2.2.6"
   },

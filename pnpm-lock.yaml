@@ -18,14 +18,17 @@ dependencies:
     specifier: ^2.0.1
     version: 2.0.1
   detsys-ts:
-    specifier: github:DeterminateSystems/detsys-ts
-    version: github.com/DeterminateSystems/detsys-ts/1b12595783709c71515245d26437934a9f336598
+    specifier: github:DeterminateSystems/detsys-ts#uuid-cleanup
+    version: github.com/DeterminateSystems/detsys-ts/6108a5ce5aacf32f809fa92c919cad046a6f2ae2
   fetch-retry:
     specifier: ^5.0.6
     version: 5.0.6
   got:
     specifier: ^14.2.1
     version: 14.2.1
+  linux-release-info:
+    specifier: ^3.0.0
+    version: 3.0.0
   string-argv:
     specifier: ^0.3.2
     version: 0.3.2
@@ -2876,6 +2879,11 @@ packages:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
     dev: true
 
+  /linux-release-info@3.0.0:
+    resolution: {integrity: sha512-qVARfxfp2uOM8XTlb+ZkzqVqvNDd6djySW7JL0ec+cnpB/SKZO2O/NJc9XR699fE7Wg1ERWN6aKcPm5Ejioj3A==}
+    engines: {node: '>=8.0'}
+    dev: false
+
   /load-tsconfig@0.2.5:
     resolution: {integrity: sha512-IXO6OCs9yg8tMKzfPZ1YmheJbZCiEsnBdcB03l0OcfK9prKnJb96siuHCr5Fl37/yo9DnKU+TLpxzTUspw9shg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -3847,11 +3855,6 @@ packages:
     hasBin: true
     dev: false
 
-  /uuid@9.0.1:
-    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
-    hasBin: true
-    dev: false
-
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
     dev: false
@@ -3981,19 +3984,15 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/DeterminateSystems/detsys-ts/1b12595783709c71515245d26437934a9f336598:
-    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/1b12595783709c71515245d26437934a9f336598}
+  github.com/DeterminateSystems/detsys-ts/6108a5ce5aacf32f809fa92c919cad046a6f2ae2:
+    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/6108a5ce5aacf32f809fa92c919cad046a6f2ae2}
     name: detsys-ts
     version: 1.0.0
     dependencies:
       '@actions/cache': 3.2.4
       '@actions/core': 1.10.1
       '@actions/exec': 1.1.1
-      '@actions/github': 5.1.1
-      fetch-retry: 5.0.6
       got: 14.2.1
-      string-argv: 0.3.2
-      uuid: 9.0.1
     transitivePeerDependencies:
       - encoding
     dev: false
