@@ -2,8 +2,8 @@
   "name": "magic-nix-cache-action",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/main.js",
-  "types": "./dist/main.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
     "build": "tsup",
