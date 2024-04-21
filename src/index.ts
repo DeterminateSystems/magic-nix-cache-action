@@ -1,15 +1,14 @@
+import * as core from "@actions/core";
+import { IdsToolbox } from "detsys-ts";
+import got from "got";
+import * as http from "http";
+import { SpawnOptions, exec, spawn } from "node:child_process";
+import { openSync, readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { spawn, exec, SpawnOptions } from "node:child_process";
-import { openSync, readFileSync } from "node:fs";
 import { inspect, promisify } from "node:util";
-import * as http from "http";
-
-import * as core from "@actions/core";
 import { Tail } from "tail";
-import got from "got";
-import { IdsToolbox } from "detsys-ts";
 
 const ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 

@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsup",
     "format": "prettier --write .",
+    "check-fmt": "prettier --check .",
     "lint": "eslint src/**/*.ts",
     "package": "ncc build",
     "all": "pnpm run format && pnpm run lint && pnpm run build && pnpm run package"
