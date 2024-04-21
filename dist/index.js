@@ -75419,672 +75419,6 @@ exports["default"] = _default;
 
 /***/ }),
 
-/***/ 711:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-var __webpack_unused_export__;
-
-
-__webpack_unused_export__ = ({
-  value: true
-});
-Object.defineProperty(exports, "zR", ({
-  enumerable: true,
-  get: function () {
-    return _nil.default;
-  }
-}));
-Object.defineProperty(exports, "Qc", ({
-  enumerable: true,
-  get: function () {
-    return _parse.default;
-  }
-}));
-Object.defineProperty(exports, "Pz", ({
-  enumerable: true,
-  get: function () {
-    return _stringify.default;
-  }
-}));
-Object.defineProperty(exports, "v1", ({
-  enumerable: true,
-  get: function () {
-    return _v.default;
-  }
-}));
-Object.defineProperty(exports, "v3", ({
-  enumerable: true,
-  get: function () {
-    return _v2.default;
-  }
-}));
-Object.defineProperty(exports, "v4", ({
-  enumerable: true,
-  get: function () {
-    return _v3.default;
-  }
-}));
-Object.defineProperty(exports, "v5", ({
-  enumerable: true,
-  get: function () {
-    return _v4.default;
-  }
-}));
-Object.defineProperty(exports, "Gu", ({
-  enumerable: true,
-  get: function () {
-    return _validate.default;
-  }
-}));
-Object.defineProperty(exports, "i8", ({
-  enumerable: true,
-  get: function () {
-    return _version.default;
-  }
-}));
-
-var _v = _interopRequireDefault(__nccwpck_require__(2426));
-
-var _v2 = _interopRequireDefault(__nccwpck_require__(5198));
-
-var _v3 = _interopRequireDefault(__nccwpck_require__(8452));
-
-var _v4 = _interopRequireDefault(__nccwpck_require__(7279));
-
-var _nil = _interopRequireDefault(__nccwpck_require__(6904));
-
-var _version = _interopRequireDefault(__nccwpck_require__(7018));
-
-var _validate = _interopRequireDefault(__nccwpck_require__(3497));
-
-var _stringify = _interopRequireDefault(__nccwpck_require__(1682));
-
-var _parse = _interopRequireDefault(__nccwpck_require__(8721));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/***/ }),
-
-/***/ 9434:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _crypto = _interopRequireDefault(__nccwpck_require__(6113));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function md5(bytes) {
-  if (Array.isArray(bytes)) {
-    bytes = Buffer.from(bytes);
-  } else if (typeof bytes === 'string') {
-    bytes = Buffer.from(bytes, 'utf8');
-  }
-
-  return _crypto.default.createHash('md5').update(bytes).digest();
-}
-
-var _default = md5;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 6626:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _crypto = _interopRequireDefault(__nccwpck_require__(6113));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var _default = {
-  randomUUID: _crypto.default.randomUUID
-};
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 6904:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-var _default = '00000000-0000-0000-0000-000000000000';
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 8721:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _validate = _interopRequireDefault(__nccwpck_require__(3497));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function parse(uuid) {
-  if (!(0, _validate.default)(uuid)) {
-    throw TypeError('Invalid UUID');
-  }
-
-  let v;
-  const arr = new Uint8Array(16); // Parse ########-....-....-....-............
-
-  arr[0] = (v = parseInt(uuid.slice(0, 8), 16)) >>> 24;
-  arr[1] = v >>> 16 & 0xff;
-  arr[2] = v >>> 8 & 0xff;
-  arr[3] = v & 0xff; // Parse ........-####-....-....-............
-
-  arr[4] = (v = parseInt(uuid.slice(9, 13), 16)) >>> 8;
-  arr[5] = v & 0xff; // Parse ........-....-####-....-............
-
-  arr[6] = (v = parseInt(uuid.slice(14, 18), 16)) >>> 8;
-  arr[7] = v & 0xff; // Parse ........-....-....-####-............
-
-  arr[8] = (v = parseInt(uuid.slice(19, 23), 16)) >>> 8;
-  arr[9] = v & 0xff; // Parse ........-....-....-....-############
-  // (Use "/" to avoid 32-bit truncation when bit-shifting high-order bytes)
-
-  arr[10] = (v = parseInt(uuid.slice(24, 36), 16)) / 0x10000000000 & 0xff;
-  arr[11] = v / 0x100000000 & 0xff;
-  arr[12] = v >>> 24 & 0xff;
-  arr[13] = v >>> 16 & 0xff;
-  arr[14] = v >>> 8 & 0xff;
-  arr[15] = v & 0xff;
-  return arr;
-}
-
-var _default = parse;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 7096:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-var _default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 1996:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = rng;
-
-var _crypto = _interopRequireDefault(__nccwpck_require__(6113));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const rnds8Pool = new Uint8Array(256); // # of random values to pre-allocate
-
-let poolPtr = rnds8Pool.length;
-
-function rng() {
-  if (poolPtr > rnds8Pool.length - 16) {
-    _crypto.default.randomFillSync(rnds8Pool);
-
-    poolPtr = 0;
-  }
-
-  return rnds8Pool.slice(poolPtr, poolPtr += 16);
-}
-
-/***/ }),
-
-/***/ 5259:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _crypto = _interopRequireDefault(__nccwpck_require__(6113));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function sha1(bytes) {
-  if (Array.isArray(bytes)) {
-    bytes = Buffer.from(bytes);
-  } else if (typeof bytes === 'string') {
-    bytes = Buffer.from(bytes, 'utf8');
-  }
-
-  return _crypto.default.createHash('sha1').update(bytes).digest();
-}
-
-var _default = sha1;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 1682:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-exports.unsafeStringify = unsafeStringify;
-
-var _validate = _interopRequireDefault(__nccwpck_require__(3497));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-const byteToHex = [];
-
-for (let i = 0; i < 256; ++i) {
-  byteToHex.push((i + 0x100).toString(16).slice(1));
-}
-
-function unsafeStringify(arr, offset = 0) {
-  // Note: Be careful editing this code!  It's been tuned for performance
-  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
-  return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
-}
-
-function stringify(arr, offset = 0) {
-  const uuid = unsafeStringify(arr, offset); // Consistency check for valid UUID.  If this throws, it's likely due to one
-  // of the following:
-  // - One or more input array values don't map to a hex octet (leading to
-  // "undefined" in the uuid)
-  // - Invalid input values for the RFC `version` or `variant` fields
-
-  if (!(0, _validate.default)(uuid)) {
-    throw TypeError('Stringified UUID is invalid');
-  }
-
-  return uuid;
-}
-
-var _default = stringify;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 2426:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _rng = _interopRequireDefault(__nccwpck_require__(1996));
-
-var _stringify = __nccwpck_require__(1682);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// **`v1()` - Generate time-based UUID**
-//
-// Inspired by https://github.com/LiosK/UUID.js
-// and http://docs.python.org/library/uuid.html
-let _nodeId;
-
-let _clockseq; // Previous uuid creation time
-
-
-let _lastMSecs = 0;
-let _lastNSecs = 0; // See https://github.com/uuidjs/uuid for API details
-
-function v1(options, buf, offset) {
-  let i = buf && offset || 0;
-  const b = buf || new Array(16);
-  options = options || {};
-  let node = options.node || _nodeId;
-  let clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq; // node and clockseq need to be initialized to random values if they're not
-  // specified.  We do this lazily to minimize issues related to insufficient
-  // system entropy.  See #189
-
-  if (node == null || clockseq == null) {
-    const seedBytes = options.random || (options.rng || _rng.default)();
-
-    if (node == null) {
-      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
-      node = _nodeId = [seedBytes[0] | 0x01, seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]];
-    }
-
-    if (clockseq == null) {
-      // Per 4.2.2, randomize (14 bit) clockseq
-      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
-    }
-  } // UUID timestamps are 100 nano-second units since the Gregorian epoch,
-  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
-  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
-  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
-
-
-  let msecs = options.msecs !== undefined ? options.msecs : Date.now(); // Per 4.2.1.2, use count of uuid's generated during the current clock
-  // cycle to simulate higher resolution clock
-
-  let nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1; // Time since last uuid creation (in msecs)
-
-  const dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 10000; // Per 4.2.1.2, Bump clockseq on clock regression
-
-  if (dt < 0 && options.clockseq === undefined) {
-    clockseq = clockseq + 1 & 0x3fff;
-  } // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
-  // time interval
-
-
-  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
-    nsecs = 0;
-  } // Per 4.2.1.2 Throw error if too many uuids are requested
-
-
-  if (nsecs >= 10000) {
-    throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
-  }
-
-  _lastMSecs = msecs;
-  _lastNSecs = nsecs;
-  _clockseq = clockseq; // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
-
-  msecs += 12219292800000; // `time_low`
-
-  const tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
-  b[i++] = tl >>> 24 & 0xff;
-  b[i++] = tl >>> 16 & 0xff;
-  b[i++] = tl >>> 8 & 0xff;
-  b[i++] = tl & 0xff; // `time_mid`
-
-  const tmh = msecs / 0x100000000 * 10000 & 0xfffffff;
-  b[i++] = tmh >>> 8 & 0xff;
-  b[i++] = tmh & 0xff; // `time_high_and_version`
-
-  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
-
-  b[i++] = tmh >>> 16 & 0xff; // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
-
-  b[i++] = clockseq >>> 8 | 0x80; // `clock_seq_low`
-
-  b[i++] = clockseq & 0xff; // `node`
-
-  for (let n = 0; n < 6; ++n) {
-    b[i + n] = node[n];
-  }
-
-  return buf || (0, _stringify.unsafeStringify)(b);
-}
-
-var _default = v1;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 5198:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _v = _interopRequireDefault(__nccwpck_require__(5192));
-
-var _md = _interopRequireDefault(__nccwpck_require__(9434));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const v3 = (0, _v.default)('v3', 0x30, _md.default);
-var _default = v3;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 5192:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports.URL = exports.DNS = void 0;
-exports["default"] = v35;
-
-var _stringify = __nccwpck_require__(1682);
-
-var _parse = _interopRequireDefault(__nccwpck_require__(8721));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function stringToBytes(str) {
-  str = unescape(encodeURIComponent(str)); // UTF8 escape
-
-  const bytes = [];
-
-  for (let i = 0; i < str.length; ++i) {
-    bytes.push(str.charCodeAt(i));
-  }
-
-  return bytes;
-}
-
-const DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-exports.DNS = DNS;
-const URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
-exports.URL = URL;
-
-function v35(name, version, hashfunc) {
-  function generateUUID(value, namespace, buf, offset) {
-    var _namespace;
-
-    if (typeof value === 'string') {
-      value = stringToBytes(value);
-    }
-
-    if (typeof namespace === 'string') {
-      namespace = (0, _parse.default)(namespace);
-    }
-
-    if (((_namespace = namespace) === null || _namespace === void 0 ? void 0 : _namespace.length) !== 16) {
-      throw TypeError('Namespace must be array-like (16 iterable integer values, 0-255)');
-    } // Compute hash of namespace and value, Per 4.3
-    // Future: Use spread syntax when supported on all platforms, e.g. `bytes =
-    // hashfunc([...namespace, ... value])`
-
-
-    let bytes = new Uint8Array(16 + value.length);
-    bytes.set(namespace);
-    bytes.set(value, namespace.length);
-    bytes = hashfunc(bytes);
-    bytes[6] = bytes[6] & 0x0f | version;
-    bytes[8] = bytes[8] & 0x3f | 0x80;
-
-    if (buf) {
-      offset = offset || 0;
-
-      for (let i = 0; i < 16; ++i) {
-        buf[offset + i] = bytes[i];
-      }
-
-      return buf;
-    }
-
-    return (0, _stringify.unsafeStringify)(bytes);
-  } // Function#name is not settable on some platforms (#270)
-
-
-  try {
-    generateUUID.name = name; // eslint-disable-next-line no-empty
-  } catch (err) {} // For CommonJS default export support
-
-
-  generateUUID.DNS = DNS;
-  generateUUID.URL = URL;
-  return generateUUID;
-}
-
-/***/ }),
-
-/***/ 8452:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _native = _interopRequireDefault(__nccwpck_require__(6626));
-
-var _rng = _interopRequireDefault(__nccwpck_require__(1996));
-
-var _stringify = __nccwpck_require__(1682);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function v4(options, buf, offset) {
-  if (_native.default.randomUUID && !buf && !options) {
-    return _native.default.randomUUID();
-  }
-
-  options = options || {};
-
-  const rnds = options.random || (options.rng || _rng.default)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-
-
-  rnds[6] = rnds[6] & 0x0f | 0x40;
-  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
-
-  if (buf) {
-    offset = offset || 0;
-
-    for (let i = 0; i < 16; ++i) {
-      buf[offset + i] = rnds[i];
-    }
-
-    return buf;
-  }
-
-  return (0, _stringify.unsafeStringify)(rnds);
-}
-
-var _default = v4;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 7279:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _v = _interopRequireDefault(__nccwpck_require__(5192));
-
-var _sha = _interopRequireDefault(__nccwpck_require__(5259));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const v5 = (0, _v.default)('v5', 0x50, _sha.default);
-var _default = v5;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 3497:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _regex = _interopRequireDefault(__nccwpck_require__(7096));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function validate(uuid) {
-  return typeof uuid === 'string' && _regex.default.test(uuid);
-}
-
-var _default = validate;
-exports["default"] = _default;
-
-/***/ }),
-
-/***/ 7018:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-
-var _validate = _interopRequireDefault(__nccwpck_require__(3497));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function version(uuid) {
-  if (!(0, _validate.default)(uuid)) {
-    throw TypeError('Invalid UUID');
-  }
-
-  return parseInt(uuid.slice(14, 15), 16);
-}
-
-var _default = version;
-exports["default"] = _default;
-
-/***/ }),
-
 /***/ 369:
 /***/ ((module) => {
 
@@ -94412,680 +93746,881 @@ const got = source_create(defaults);
 
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/correlation.js
-
-
-const OPTIONAL_VARIABLES = ["INVOCATION_ID"];
-function identify(projectName) {
-    const ident = {
-        correlation_source: "github-actions",
-        repository: hashEnvironmentVariables("GHR", [
-            "GITHUB_SERVER_URL",
-            "GITHUB_REPOSITORY_OWNER",
-            "GITHUB_REPOSITORY_OWNER_ID",
-            "GITHUB_REPOSITORY",
-            "GITHUB_REPOSITORY_ID",
-        ]),
-        workflow: hashEnvironmentVariables("GHW", [
-            "GITHUB_SERVER_URL",
-            "GITHUB_REPOSITORY_OWNER",
-            "GITHUB_REPOSITORY_OWNER_ID",
-            "GITHUB_REPOSITORY",
-            "GITHUB_REPOSITORY_ID",
-            "GITHUB_WORKFLOW",
-        ]),
-        job: hashEnvironmentVariables("GHWJ", [
-            "GITHUB_SERVER_URL",
-            "GITHUB_REPOSITORY_OWNER",
-            "GITHUB_REPOSITORY_OWNER_ID",
-            "GITHUB_REPOSITORY",
-            "GITHUB_REPOSITORY_ID",
-            "GITHUB_WORKFLOW",
-            "GITHUB_JOB",
-        ]),
-        run: hashEnvironmentVariables("GHWJR", [
-            "GITHUB_SERVER_URL",
-            "GITHUB_REPOSITORY_OWNER",
-            "GITHUB_REPOSITORY_OWNER_ID",
-            "GITHUB_REPOSITORY",
-            "GITHUB_REPOSITORY_ID",
-            "GITHUB_WORKFLOW",
-            "GITHUB_JOB",
-            "GITHUB_RUN_ID",
-        ]),
-        run_differentiator: hashEnvironmentVariables("GHWJA", [
-            "GITHUB_SERVER_URL",
-            "GITHUB_REPOSITORY_OWNER",
-            "GITHUB_REPOSITORY_OWNER_ID",
-            "GITHUB_REPOSITORY",
-            "GITHUB_REPOSITORY_ID",
-            "GITHUB_WORKFLOW",
-            "GITHUB_JOB",
-            "GITHUB_RUN_ID",
-            "GITHUB_RUN_NUMBER",
-            "GITHUB_RUN_ATTEMPT",
-            "INVOCATION_ID",
-        ]),
-        groups: {
-            ci: "github-actions",
-            project: projectName,
-            github_organization: hashEnvironmentVariables("GHO", [
-                "GITHUB_SERVER_URL",
-                "GITHUB_REPOSITORY_OWNER",
-                "GITHUB_REPOSITORY_OWNER_ID",
-            ]),
-        },
-    };
-    core.debug("Correlation data:");
-    core.debug(JSON.stringify(ident, null, 2));
-    return ident;
-}
-function hashEnvironmentVariables(prefix, variables) {
-    const hash = (0,external_node_crypto_namespaceObject.createHash)("sha256");
-    for (const varName of variables) {
-        let value = process.env[varName];
-        if (value === undefined) {
-            if (OPTIONAL_VARIABLES.includes(varName)) {
-                core.debug(`Optional environment variable not set: ${varName} -- substituting with the variable name`);
-                value = varName;
-            }
-            else {
-                core.debug(`Environment variable not set: ${varName} -- can't generate the requested identity`);
-                return undefined;
-            }
-        }
-        hash.update(value);
-        hash.update("\0");
-    }
-    return `${prefix}-${hash.digest("hex")}`;
-}
-
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/package.json
-const package_namespaceObject = {"i8":"1.0.0"};
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/platform.js
-/**
- * @packageDocumentation
- * Helpers for determining system attributes of the current runner.
- */
-
-/**
- * Get the current architecture plus OS. Examples include `X64-Linux` and `ARM64-macOS`.
- */
-function getArchOs() {
-    const envArch = process.env.RUNNER_ARCH;
-    const envOs = process.env.RUNNER_OS;
-    if (envArch && envOs) {
-        return `${envArch}-${envOs}`;
-    }
-    else {
-        core.error(`Can't identify the platform: RUNNER_ARCH or RUNNER_OS undefined (${envArch}-${envOs})`);
-        throw new Error("RUNNER_ARCH and/or RUNNER_OS is not defined");
-    }
-}
-/**
- * Get the current Nix system. Examples include `x86_64-linux` and `aarch64-darwin`.
- */
-function getNixPlatform(archOs) {
-    const archOsMap = new Map([
-        ["X64-macOS", "x86_64-darwin"],
-        ["ARM64-macOS", "aarch64-darwin"],
-        ["X64-Linux", "x86_64-linux"],
-        ["ARM64-Linux", "aarch64-linux"],
-    ]);
-    const mappedTo = archOsMap.get(archOs);
-    if (mappedTo) {
-        return mappedTo;
-    }
-    else {
-        core.error(`ArchOs (${archOs}) doesn't map to a supported Nix platform.`);
-        throw new Error(`Cannot convert ArchOs (${archOs}) to a supported Nix platform.`);
-    }
-}
-
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/inputs.js
-/**
- * @packageDocumentation
- * Helpers for getting values from an Action's configuration.
- */
-
-/**
- * Get a Boolean input from the Action's configuration by name.
- */
-const getBool = (name) => {
-    return actionsCore.getBooleanInput(name);
-};
-/**
- * Get a multi-line string input from the Action's configuration by name or return `null` if not set.
- */
-const getMultilineStringOrNull = (name) => {
-    const value = actionsCore.getMultilineInput(name);
-    if (value.length === 0) {
-        return null;
-    }
-    else {
-        return value;
-    }
-};
-/**
- * Get a number input from the Action's configuration by name or return `null` if not set.
- */
-const getNumberOrNull = (name) => {
-    const value = actionsCore.getInput(name);
-    if (value === "") {
-        return null;
-    }
-    else {
-        return Number(value);
-    }
-};
-/**
- * Get a string input from the Action's configuration.
- */
-const getString = (name) => {
-    return actionsCore.getInput(name);
-};
-/**
- * Get a string input from the Action's configuration by name or return `null` if not set.
- */
-const getStringOrNull = (name) => {
-    const value = actionsCore.getInput(name);
-    if (value === "") {
-        return null;
-    }
-    else {
-        return value;
-    }
-};
-/**
- * Get a string input from the Action's configuration by name or return `undefined` if not set.
- */
-const getStringOrUndefined = (name) => {
-    const value = core.getInput(name);
-    if (value === "") {
-        return undefined;
-    }
-    else {
-        return value;
-    }
-};
-
-
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/sourcedef.js
-
-
-function constructSourceParameters(legacyPrefix) {
-    const noisilyGetInput = (suffix) => {
-        const preferredInput = getStringOrUndefined(`source-${suffix}`);
-        if (!legacyPrefix) {
-            return preferredInput;
-        }
-        // Remaining is for handling cases where the legacy prefix
-        // should be examined.
-        const legacyInput = getStringOrUndefined(`${legacyPrefix}-${suffix}`);
-        if (preferredInput && legacyInput) {
-            core.warning(`The supported option source-${suffix} and the legacy option ${legacyPrefix}-${suffix} are both set. Preferring source-${suffix}. Please stop setting ${legacyPrefix}-${suffix}.`);
-            return preferredInput;
-        }
-        else if (legacyInput) {
-            core.warning(`The legacy option ${legacyPrefix}-${suffix} is set. Please migrate to source-${suffix}.`);
-            return legacyInput;
-        }
-        else {
-            return preferredInput;
-        }
-    };
-    return {
-        path: noisilyGetInput("path"),
-        url: noisilyGetInput("url"),
-        tag: noisilyGetInput("tag"),
-        pr: noisilyGetInput("pr"),
-        branch: noisilyGetInput("branch"),
-        revision: noisilyGetInput("revision"),
-    };
-}
-
+// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+exec@1.1.1/node_modules/@actions/exec/lib/exec.js
+var exec = __nccwpck_require__(7775);
+// EXTERNAL MODULE: external "os"
+var external_os_ = __nccwpck_require__(2037);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@3.2.4/node_modules/@actions/cache/lib/cache.js
 var cache = __nccwpck_require__(6878);
 ;// CONCATENATED MODULE: external "node:stream/promises"
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
-// EXTERNAL MODULE: ./node_modules/.pnpm/uuid@9.0.1/node_modules/uuid/dist/index.js
-var uuid_dist = __nccwpck_require__(711);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/uuid@9.0.1/node_modules/uuid/wrapper.mjs
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@56a244c061429692b1c7d80fc068d684db3ae4d2_nqhbjyaof246q4gvygpbo6m4na/node_modules/detsys-ts/dist/index.js
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 
-const v1 = uuid_dist.v1;
-const v3 = uuid_dist.v3;
-const v4 = uuid_dist.v4;
-const v5 = uuid_dist.v5;
-const NIL = uuid_dist/* NIL */.zR;
-const version = uuid_dist/* version */.i8;
-const validate = uuid_dist/* validate */.Gu;
-const stringify = uuid_dist/* stringify */.Pz;
-const parse = uuid_dist/* parse */.Qc;
+// package.json
+var version = "1.0.0";
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@1b12595783709c71515245d26437934a9f336598_b6j756lg3cqeptkcpq5wzeu4sa/node_modules/detsys-ts/dist/main.js
-/**
- * @packageDocumentation
- * Determinate Systems' TypeScript library for creating GitHub Actions logic.
- */
-
-// eslint-disable-next-line import/extensions
+// src/linux-release-info.ts
 
 
 
-
-
-
-
-
-
-
-
-
-
-const DEFAULT_IDS_HOST = "https://install.determinate.systems";
-const IDS_HOST = process.env["IDS_HOST"] ?? DEFAULT_IDS_HOST;
-const EVENT_EXCEPTION = "exception";
-const EVENT_ARTIFACT_CACHE_HIT = "artifact_cache_hit";
-const EVENT_ARTIFACT_CACHE_MISS = "artifact_cache_miss";
-const FACT_ENDED_WITH_EXCEPTION = "ended_with_exception";
-const FACT_FINAL_EXCEPTION = "final_exception";
-class IdsToolbox {
-    constructor(actionOptions) {
-        this.actionOptions = makeOptionsConfident(actionOptions);
-        this.hookMain = undefined;
-        this.hookPost = undefined;
-        this.events = [];
-        this.client = got_dist_source.extend({
-            retry: {
-                limit: 3,
-                methods: ["GET", "HEAD"],
-            },
-            hooks: {
-                beforeRetry: [
-                    (error, retryCount) => {
-                        core.info(`Retrying after error ${error.code}, retry #: ${retryCount}`);
-                    },
-                ],
-            },
-        });
-        this.facts = {
-            $lib: "idslib",
-            $lib_version: package_namespaceObject.i8,
-            project: this.actionOptions.name,
-            ids_project: this.actionOptions.idsProjectName,
-        };
-        const params = [
-            ["github_action_ref", "GITHUB_ACTION_REF"],
-            ["github_action_repository", "GITHUB_ACTION_REPOSITORY"],
-            ["github_event_name", "GITHUB_EVENT_NAME"],
-            ["$os", "RUNNER_OS"],
-            ["arch", "RUNNER_ARCH"],
-        ];
-        for (const [target, env] of params) {
-            const value = process.env[env];
-            if (value) {
-                this.facts[target] = value;
-            }
-        }
-        this.identity = identify(this.actionOptions.name);
-        this.archOs = getArchOs();
-        this.nixSystem = getNixPlatform(this.archOs);
-        this.facts.arch_os = this.archOs;
-        this.facts.nix_system = this.nixSystem;
-        {
-            const phase = core.getState("idstoolbox_execution_phase");
-            if (phase === "") {
-                core.saveState("idstoolbox_execution_phase", "post");
-                this.executionPhase = "main";
-            }
-            else {
-                this.executionPhase = "post";
-            }
-            this.facts.execution_phase = this.executionPhase;
-        }
-        if (this.actionOptions.fetchStyle === "gh-env-style") {
-            this.architectureFetchSuffix = this.archOs;
-        }
-        else if (this.actionOptions.fetchStyle === "nix-style") {
-            this.architectureFetchSuffix = this.nixSystem;
-        }
-        else if (this.actionOptions.fetchStyle === "universal") {
-            this.architectureFetchSuffix = "universal";
-        }
-        else {
-            throw new Error(`fetchStyle ${this.actionOptions.fetchStyle} is not a valid style`);
-        }
-        this.sourceParameters = constructSourceParameters(this.actionOptions.legacySourcePrefix);
-        this.recordEvent(`begin_${this.executionPhase}`);
+var readFileAsync = (0,external_node_util_.promisify)(external_node_fs_namespaceObject.readFile);
+var linuxReleaseInfoOptionsDefaults = {
+  mode: "async",
+  customFile: null,
+  debug: false
+};
+function releaseInfo(infoOptions) {
+  const options = { ...linuxReleaseInfoOptionsDefaults, ...infoOptions };
+  const searchOsReleaseFileList = osReleaseFileList(
+    options.customFile
+  );
+  if (external_node_os_.type() !== "Linux") {
+    if (options.mode === "sync") {
+      return getOsInfo();
+    } else {
+      return Promise.resolve(getOsInfo());
     }
-    onMain(callback) {
-        this.hookMain = callback;
-    }
-    onPost(callback) {
-        this.hookPost = callback;
-    }
-    execute() {
-        // eslint-disable-next-line github/no-then
-        this.executeAsync().catch((error) => {
-            // eslint-disable-next-line no-console
-            console.log(error);
-            process.exitCode = 1;
-        });
-    }
-    async executeAsync() {
-        try {
-            process.env.DETSYS_CORRELATION = JSON.stringify(this.getCorrelationHashes());
-            if (!(await this.preflightRequireNix())) {
-                this.recordEvent("preflight-require-nix-denied");
-                return;
-            }
-            if (this.executionPhase === "main" && this.hookMain) {
-                await this.hookMain();
-            }
-            else if (this.executionPhase === "post" && this.hookPost) {
-                await this.hookPost();
-            }
-            this.addFact(FACT_ENDED_WITH_EXCEPTION, false);
-        }
-        catch (error) {
-            this.addFact(FACT_ENDED_WITH_EXCEPTION, true);
-            const reportable = error instanceof Error || typeof error == "string"
-                ? error.toString()
-                : JSON.stringify(error);
-            this.addFact(FACT_FINAL_EXCEPTION, reportable);
-            if (this.executionPhase === "post") {
-                core.warning(reportable);
-            }
-            else {
-                core.setFailed(reportable);
-            }
-            this.recordEvent(EVENT_EXCEPTION);
-        }
-        finally {
-            await this.complete();
-        }
-    }
-    addFact(key, value) {
-        this.facts[key] = value;
-    }
-    getDiagnosticsUrl() {
-        return this.actionOptions.diagnosticsUrl;
-    }
-    getUniqueId() {
-        return (this.identity.run_differentiator ||
-            process.env.RUNNER_TRACKING_ID ||
-            (0,external_node_crypto_namespaceObject.randomUUID)());
-    }
-    getCorrelationHashes() {
-        return this.identity;
-    }
-    recordEvent(eventName, context = {}) {
-        this.events.push({
-            event_name: `${this.actionOptions.eventPrefix}${eventName}`,
-            context,
-            correlation: this.identity,
-            facts: this.facts,
-            timestamp: new Date(),
-        });
-    }
-    async fetch() {
-        core.info(`Fetching from ${this.getUrl()}`);
-        const correlatedUrl = this.getUrl();
-        correlatedUrl.searchParams.set("ci", "github");
-        correlatedUrl.searchParams.set("correlation", JSON.stringify(this.identity));
-        const versionCheckup = await this.client.head(correlatedUrl);
-        if (versionCheckup.headers.etag) {
-            const v = versionCheckup.headers.etag;
-            core.debug(`Checking the tool cache for ${this.getUrl()} at ${v}`);
-            const cached = await this.getCachedVersion(v);
-            if (cached) {
-                this.facts["artifact_fetched_from_cache"] = true;
-                core.debug(`Tool cache hit.`);
-                return cached;
-            }
-        }
-        this.facts["artifact_fetched_from_cache"] = false;
-        core.debug(`No match from the cache, re-fetching from the redirect: ${versionCheckup.url}`);
-        const destFile = this.getTemporaryName();
-        const fetchStream = this.client.stream(versionCheckup.url);
-        await (0,external_node_stream_promises_namespaceObject.pipeline)(fetchStream, (0,external_node_fs_namespaceObject.createWriteStream)(destFile, {
-            encoding: "binary",
-            mode: 0o755,
-        }));
-        if (fetchStream.response?.headers.etag) {
-            const v = fetchStream.response.headers.etag;
-            try {
-                await this.saveCachedVersion(v, destFile);
-            }
-            catch (e) {
-                core.debug(`Error caching the artifact: ${e}`);
-            }
-        }
-        return destFile;
-    }
-    async fetchExecutable() {
-        const binaryPath = await this.fetch();
-        await (0,promises_namespaceObject.chmod)(binaryPath, promises_namespaceObject.constants.S_IXUSR | promises_namespaceObject.constants.S_IXGRP);
-        return binaryPath;
-    }
-    async complete() {
-        this.recordEvent(`complete_${this.executionPhase}`);
-        await this.submitEvents();
-    }
-    getUrl() {
-        const p = this.sourceParameters;
-        if (p.url) {
-            return new URL(p.url);
-        }
-        const fetchUrl = new URL(IDS_HOST);
-        fetchUrl.pathname += this.actionOptions.idsProjectName;
-        if (p.tag) {
-            fetchUrl.pathname += `/tag/${p.tag}`;
-        }
-        else if (p.pr) {
-            fetchUrl.pathname += `/pr/${p.pr}`;
-        }
-        else if (p.branch) {
-            fetchUrl.pathname += `/branch/${p.branch}`;
-        }
-        else if (p.revision) {
-            fetchUrl.pathname += `/rev/${p.revision}`;
-        }
-        else {
-            fetchUrl.pathname += `/stable`;
-        }
-        fetchUrl.pathname += `/${this.architectureFetchSuffix}`;
-        return fetchUrl;
-    }
-    cacheKey(version) {
-        const cleanedVersion = version.replace(/[^a-zA-Z0-9-+.]/g, "");
-        return `determinatesystem-${this.actionOptions.name}-${this.architectureFetchSuffix}-${cleanedVersion}`;
-    }
-    async getCachedVersion(version) {
-        const startCwd = process.cwd();
-        try {
-            const tempDir = this.getTemporaryName();
-            await (0,promises_namespaceObject.mkdir)(tempDir);
-            process.chdir(tempDir);
-            // extremely evil shit right here:
-            process.env.GITHUB_WORKSPACE_BACKUP = process.env.GITHUB_WORKSPACE;
-            delete process.env.GITHUB_WORKSPACE;
-            if (await cache.restoreCache([this.actionOptions.name], this.cacheKey(version), [], undefined, true)) {
-                this.recordEvent(EVENT_ARTIFACT_CACHE_HIT);
-                return `${tempDir}/${this.actionOptions.name}`;
-            }
-            this.recordEvent(EVENT_ARTIFACT_CACHE_MISS);
-            return undefined;
-        }
-        finally {
-            process.env.GITHUB_WORKSPACE = process.env.GITHUB_WORKSPACE_BACKUP;
-            delete process.env.GITHUB_WORKSPACE_BACKUP;
-            process.chdir(startCwd);
-        }
-    }
-    async saveCachedVersion(version, toolPath) {
-        const startCwd = process.cwd();
-        try {
-            const tempDir = this.getTemporaryName();
-            await (0,promises_namespaceObject.mkdir)(tempDir);
-            process.chdir(tempDir);
-            await (0,promises_namespaceObject.copyFile)(toolPath, `${tempDir}/${this.actionOptions.name}`);
-            // extremely evil shit right here:
-            process.env.GITHUB_WORKSPACE_BACKUP = process.env.GITHUB_WORKSPACE;
-            delete process.env.GITHUB_WORKSPACE;
-            await cache.saveCache([this.actionOptions.name], this.cacheKey(version), undefined, true);
-            this.recordEvent(EVENT_ARTIFACT_CACHE_HIT);
-        }
-        finally {
-            process.env.GITHUB_WORKSPACE = process.env.GITHUB_WORKSPACE_BACKUP;
-            delete process.env.GITHUB_WORKSPACE_BACKUP;
-            process.chdir(startCwd);
-        }
-    }
-    async preflightRequireNix() {
-        let nixLocation;
-        const pathParts = (process.env["PATH"] || "").split(":");
-        for (const location of pathParts) {
-            const candidateNix = external_node_path_namespaceObject.join(location, "nix");
-            try {
-                await promises_namespaceObject.access(candidateNix, promises_namespaceObject.constants.X_OK);
-                core.debug(`Found Nix at ${candidateNix}`);
-                nixLocation = candidateNix;
-            }
-            catch {
-                core.debug(`Nix not at ${candidateNix}`);
-            }
-        }
-        this.addFact("nix_location", nixLocation || "");
-        if (this.actionOptions.requireNix === "ignore") {
-            return true;
-        }
-        const currentNotFoundState = core.getState("idstoolbox_nix_not_found");
-        if (currentNotFoundState === "not-found") {
-            // It was previously not found, so don't run subsequent actions
-            return false;
-        }
-        if (nixLocation !== undefined) {
-            return true;
-        }
-        core.saveState("idstoolbox_nix_not_found", "not-found");
-        switch (this.actionOptions.requireNix) {
-            case "fail":
-                core.setFailed("This action can only be used when Nix is installed." +
-                    " Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow.");
-                break;
-            case "warn":
-                core.warning("This action is in no-op mode because Nix is not installed." +
-                    " Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow.");
-                break;
-        }
-        return false;
-    }
-    async submitEvents() {
-        if (!this.actionOptions.diagnosticsUrl) {
-            core.debug("Diagnostics are disabled. Not sending the following events:");
-            core.debug(JSON.stringify(this.events, undefined, 2));
-            return;
-        }
-        const batch = {
-            type: "eventlog",
-            sent_at: new Date(),
-            events: this.events,
-        };
-        try {
-            await this.client.post(this.actionOptions.diagnosticsUrl, {
-                json: batch,
-            });
-        }
-        catch (error) {
-            core.debug(`Error submitting diagnostics event: ${error}`);
-        }
-        this.events = [];
-    }
-    getTemporaryName() {
-        const _tmpdir = process.env["RUNNER_TEMP"] || (0,external_node_os_.tmpdir)();
-        return external_node_path_namespaceObject.join(_tmpdir, `${this.actionOptions.name}-${v4()}`);
-    }
+  }
+  if (options.mode === "sync") {
+    return readSyncOsreleaseFile(searchOsReleaseFileList, options);
+  } else {
+    return Promise.resolve(
+      readAsyncOsReleaseFile(searchOsReleaseFileList, options)
+    );
+  }
 }
-function makeOptionsConfident(actionOptions) {
-    const idsProjectName = actionOptions.idsProjectName ?? actionOptions.name;
-    const finalOpts = {
-        name: actionOptions.name,
-        idsProjectName,
-        eventPrefix: actionOptions.eventPrefix || "action:",
-        fetchStyle: actionOptions.fetchStyle,
-        legacySourcePrefix: actionOptions.legacySourcePrefix,
-        requireNix: actionOptions.requireNix,
-        diagnosticsUrl: determineDiagnosticsUrl(idsProjectName, actionOptions.diagnosticsUrl),
+function formatFileData(sourceData, srcParseData) {
+  const lines = srcParseData.split("\n");
+  for (const line of lines) {
+    const lineData = line.split("=");
+    if (lineData.length === 2) {
+      lineData[1] = lineData[1].replace(/["'\r]/gi, "");
+      Object.defineProperty(sourceData, lineData[0].toLowerCase(), {
+        value: lineData[1],
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+    }
+  }
+  return sourceData;
+}
+function osReleaseFileList(customFile) {
+  const DEFAULT_OS_RELEASE_FILES = ["/etc/os-release", "/usr/lib/os-release"];
+  if (!customFile) {
+    return DEFAULT_OS_RELEASE_FILES;
+  } else {
+    return Array(customFile);
+  }
+}
+function getOsInfo() {
+  return {
+    type: external_node_os_.type(),
+    platform: external_node_os_.platform(),
+    hostname: external_node_os_.hostname(),
+    arch: external_node_os_.arch(),
+    release: external_node_os_.release()
+  };
+}
+async function readAsyncOsReleaseFile(fileList, options) {
+  let fileData = null;
+  for (const osReleaseFile of fileList) {
+    try {
+      if (options.debug) {
+        console.log(`Trying to read '${osReleaseFile}'...`);
+      }
+      fileData = await readFileAsync(osReleaseFile, "binary");
+      if (options.debug) {
+        console.log(`Read data:
+${fileData}`);
+      }
+      break;
+    } catch (error2) {
+      if (options.debug) {
+        console.error(error2);
+      }
+    }
+  }
+  if (fileData === null) {
+    throw new Error("Cannot read os-release file!");
+  }
+  return formatFileData(getOsInfo(), fileData);
+}
+function readSyncOsreleaseFile(releaseFileList, options) {
+  let fileData = null;
+  for (const osReleaseFile of releaseFileList) {
+    try {
+      if (options.debug) {
+        console.log(`Trying to read '${osReleaseFile}'...`);
+      }
+      fileData = external_node_fs_namespaceObject.readFileSync(osReleaseFile, "binary");
+      if (options.debug) {
+        console.log(`Read data:
+${fileData}`);
+      }
+      break;
+    } catch (error2) {
+      if (options.debug) {
+        console.error(error2);
+      }
+    }
+  }
+  if (fileData === null) {
+    throw new Error("Cannot read os-release file!");
+  }
+  return formatFileData(getOsInfo(), fileData);
+}
+
+// src/actions-core-platform.ts
+
+
+
+var getWindowsInfo = async () => {
+  const { stdout: version2 } = await exec.getExecOutput(
+    'powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"',
+    void 0,
+    {
+      silent: true
+    }
+  );
+  const { stdout: name } = await exec.getExecOutput(
+    'powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Caption"',
+    void 0,
+    {
+      silent: true
+    }
+  );
+  return {
+    name: name.trim(),
+    version: version2.trim()
+  };
+};
+var getMacOsInfo = async () => {
+  const { stdout } = await exec.getExecOutput("sw_vers", void 0, {
+    silent: true
+  });
+  const version2 = stdout.match(/ProductVersion:\s*(.+)/)?.[1] ?? "";
+  const name = stdout.match(/ProductName:\s*(.+)/)?.[1] ?? "";
+  return {
+    name,
+    version: version2
+  };
+};
+var getLinuxInfo = async () => {
+  let data = {};
+  try {
+    data = releaseInfo({ mode: "sync" });
+    console.log(data);
+  } catch (e) {
+    core.debug(`Error collecting release info: ${e}`);
+  }
+  return {
+    name: getPropertyViaWithDefault(
+      data,
+      ["id", "name", "pretty_name", "id_like"],
+      "unknown"
+    ),
+    version: getPropertyViaWithDefault(
+      data,
+      ["version_id", "version", "version_codename"],
+      "unknown"
+    )
+  };
+};
+function getPropertyViaWithDefault(data, names, defaultValue) {
+  for (const name of names) {
+    const ret = getPropertyWithDefault(data, name, defaultValue);
+    if (ret !== defaultValue) {
+      return ret;
+    }
+  }
+  return defaultValue;
+}
+function getPropertyWithDefault(data, name, defaultValue) {
+  if (!data.hasOwnProperty(name)) {
+    return defaultValue;
+  }
+  const value = data[name];
+  if (typeof value !== typeof defaultValue) {
+    return defaultValue;
+  }
+  return value;
+}
+var platform2 = external_os_.platform();
+var arch2 = external_os_.arch();
+var isWindows = platform2 === "win32";
+var isMacOS = platform2 === "darwin";
+var isLinux = platform2 === "linux";
+async function getDetails() {
+  return {
+    ...await (isWindows ? getWindowsInfo() : isMacOS ? getMacOsInfo() : getLinuxInfo()),
+    platform: platform2,
+    arch: arch2,
+    isWindows,
+    isMacOS,
+    isLinux
+  };
+}
+
+// src/correlation.ts
+
+
+var OPTIONAL_VARIABLES = ["INVOCATION_ID"];
+function identify(projectName) {
+  const ident = {
+    correlation_source: "github-actions",
+    repository: hashEnvironmentVariables("GHR", [
+      "GITHUB_SERVER_URL",
+      "GITHUB_REPOSITORY_OWNER",
+      "GITHUB_REPOSITORY_OWNER_ID",
+      "GITHUB_REPOSITORY",
+      "GITHUB_REPOSITORY_ID"
+    ]),
+    workflow: hashEnvironmentVariables("GHW", [
+      "GITHUB_SERVER_URL",
+      "GITHUB_REPOSITORY_OWNER",
+      "GITHUB_REPOSITORY_OWNER_ID",
+      "GITHUB_REPOSITORY",
+      "GITHUB_REPOSITORY_ID",
+      "GITHUB_WORKFLOW"
+    ]),
+    job: hashEnvironmentVariables("GHWJ", [
+      "GITHUB_SERVER_URL",
+      "GITHUB_REPOSITORY_OWNER",
+      "GITHUB_REPOSITORY_OWNER_ID",
+      "GITHUB_REPOSITORY",
+      "GITHUB_REPOSITORY_ID",
+      "GITHUB_WORKFLOW",
+      "GITHUB_JOB"
+    ]),
+    run: hashEnvironmentVariables("GHWJR", [
+      "GITHUB_SERVER_URL",
+      "GITHUB_REPOSITORY_OWNER",
+      "GITHUB_REPOSITORY_OWNER_ID",
+      "GITHUB_REPOSITORY",
+      "GITHUB_REPOSITORY_ID",
+      "GITHUB_WORKFLOW",
+      "GITHUB_JOB",
+      "GITHUB_RUN_ID"
+    ]),
+    run_differentiator: hashEnvironmentVariables("GHWJA", [
+      "GITHUB_SERVER_URL",
+      "GITHUB_REPOSITORY_OWNER",
+      "GITHUB_REPOSITORY_OWNER_ID",
+      "GITHUB_REPOSITORY",
+      "GITHUB_REPOSITORY_ID",
+      "GITHUB_WORKFLOW",
+      "GITHUB_JOB",
+      "GITHUB_RUN_ID",
+      "GITHUB_RUN_NUMBER",
+      "GITHUB_RUN_ATTEMPT",
+      "INVOCATION_ID"
+    ]),
+    groups: {
+      ci: "github-actions",
+      project: projectName,
+      github_organization: hashEnvironmentVariables("GHO", [
+        "GITHUB_SERVER_URL",
+        "GITHUB_REPOSITORY_OWNER",
+        "GITHUB_REPOSITORY_OWNER_ID"
+      ])
+    }
+  };
+  core.debug("Correlation data:");
+  core.debug(JSON.stringify(ident, null, 2));
+  return ident;
+}
+function hashEnvironmentVariables(prefix, variables) {
+  const hash = (0,external_node_crypto_namespaceObject.createHash)("sha256");
+  for (const varName of variables) {
+    let value = process.env[varName];
+    if (value === void 0) {
+      if (OPTIONAL_VARIABLES.includes(varName)) {
+        core.debug(
+          `Optional environment variable not set: ${varName} -- substituting with the variable name`
+        );
+        value = varName;
+      } else {
+        core.debug(
+          `Environment variable not set: ${varName} -- can't generate the requested identity`
+        );
+        return void 0;
+      }
+    }
+    hash.update(value);
+    hash.update("\0");
+  }
+  return `${prefix}-${hash.digest("hex")}`;
+}
+
+// src/platform.ts
+var platform_exports = {};
+__export(platform_exports, {
+  getArchOs: () => getArchOs,
+  getNixPlatform: () => getNixPlatform
+});
+
+function getArchOs() {
+  const envArch = process.env.RUNNER_ARCH;
+  const envOs = process.env.RUNNER_OS;
+  if (envArch && envOs) {
+    return `${envArch}-${envOs}`;
+  } else {
+    core.error(
+      `Can't identify the platform: RUNNER_ARCH or RUNNER_OS undefined (${envArch}-${envOs})`
+    );
+    throw new Error("RUNNER_ARCH and/or RUNNER_OS is not defined");
+  }
+}
+function getNixPlatform(archOs) {
+  const archOsMap = /* @__PURE__ */ new Map([
+    ["X64-macOS", "x86_64-darwin"],
+    ["ARM64-macOS", "aarch64-darwin"],
+    ["X64-Linux", "x86_64-linux"],
+    ["ARM64-Linux", "aarch64-linux"]
+  ]);
+  const mappedTo = archOsMap.get(archOs);
+  if (mappedTo) {
+    return mappedTo;
+  } else {
+    core.error(
+      `ArchOs (${archOs}) doesn't map to a supported Nix platform.`
+    );
+    throw new Error(
+      `Cannot convert ArchOs (${archOs}) to a supported Nix platform.`
+    );
+  }
+}
+
+// src/inputs.ts
+var inputs_exports = {};
+__export(inputs_exports, {
+  getBool: () => getBool,
+  getMultilineStringOrNull: () => getMultilineStringOrNull,
+  getNumberOrNull: () => getNumberOrNull,
+  getString: () => getString,
+  getStringOrNull: () => getStringOrNull,
+  getStringOrUndefined: () => getStringOrUndefined
+});
+
+var getBool = (name) => {
+  return core.getBooleanInput(name);
+};
+var getMultilineStringOrNull = (name) => {
+  const value = core.getMultilineInput(name);
+  if (value.length === 0) {
+    return null;
+  } else {
+    return value;
+  }
+};
+var getNumberOrNull = (name) => {
+  const value = core.getInput(name);
+  if (value === "") {
+    return null;
+  } else {
+    return Number(value);
+  }
+};
+var getString = (name) => {
+  return core.getInput(name);
+};
+var getStringOrNull = (name) => {
+  const value = core.getInput(name);
+  if (value === "") {
+    return null;
+  } else {
+    return value;
+  }
+};
+var getStringOrUndefined = (name) => {
+  const value = core.getInput(name);
+  if (value === "") {
+    return void 0;
+  } else {
+    return value;
+  }
+};
+
+// src/sourcedef.ts
+
+function constructSourceParameters(legacyPrefix) {
+  const noisilyGetInput = (suffix) => {
+    const preferredInput = getStringOrUndefined(`source-${suffix}`);
+    if (!legacyPrefix) {
+      return preferredInput;
+    }
+    const legacyInput = getStringOrUndefined(`${legacyPrefix}-${suffix}`);
+    if (preferredInput && legacyInput) {
+      core.warning(
+        `The supported option source-${suffix} and the legacy option ${legacyPrefix}-${suffix} are both set. Preferring source-${suffix}. Please stop setting ${legacyPrefix}-${suffix}.`
+      );
+      return preferredInput;
+    } else if (legacyInput) {
+      core.warning(
+        `The legacy option ${legacyPrefix}-${suffix} is set. Please migrate to source-${suffix}.`
+      );
+      return legacyInput;
+    } else {
+      return preferredInput;
+    }
+  };
+  return {
+    path: noisilyGetInput("path"),
+    url: noisilyGetInput("url"),
+    tag: noisilyGetInput("tag"),
+    pr: noisilyGetInput("pr"),
+    branch: noisilyGetInput("branch"),
+    revision: noisilyGetInput("revision")
+  };
+}
+
+// src/index.ts
+
+
+
+
+
+
+
+
+
+var DEFAULT_IDS_HOST = "https://install.determinate.systems";
+var IDS_HOST = process.env["IDS_HOST"] ?? DEFAULT_IDS_HOST;
+var EVENT_EXCEPTION = "exception";
+var EVENT_ARTIFACT_CACHE_HIT = "artifact_cache_hit";
+var EVENT_ARTIFACT_CACHE_MISS = "artifact_cache_miss";
+var FACT_ENDED_WITH_EXCEPTION = "ended_with_exception";
+var FACT_FINAL_EXCEPTION = "final_exception";
+var IdsToolbox = class {
+  constructor(actionOptions) {
+    this.actionOptions = makeOptionsConfident(actionOptions);
+    this.hookMain = void 0;
+    this.hookPost = void 0;
+    this.events = [];
+    this.client = got_dist_source.extend({
+      retry: {
+        limit: 3,
+        methods: ["GET", "HEAD"]
+      },
+      hooks: {
+        beforeRetry: [
+          (error2, retryCount) => {
+            core.info(
+              `Retrying after error ${error2.code}, retry #: ${retryCount}`
+            );
+          }
+        ]
+      }
+    });
+    this.facts = {
+      $lib: "idslib",
+      $lib_version: version,
+      project: this.actionOptions.name,
+      ids_project: this.actionOptions.idsProjectName
     };
-    core.debug("idslib options:");
-    core.debug(JSON.stringify(finalOpts, undefined, 2));
-    return finalOpts;
-}
-function determineDiagnosticsUrl(idsProjectName, urlOption) {
-    if (urlOption === null) {
-        // Disable diagnostict events
-        return undefined;
+    const params = [
+      ["github_action_ref", "GITHUB_ACTION_REF"],
+      ["github_action_repository", "GITHUB_ACTION_REPOSITORY"],
+      ["github_event_name", "GITHUB_EVENT_NAME"],
+      ["$os", "RUNNER_OS"],
+      ["arch", "RUNNER_ARCH"]
+    ];
+    for (const [target, env] of params) {
+      const value = process.env[env];
+      if (value) {
+        this.facts[target] = value;
+      }
     }
-    if (urlOption !== undefined) {
-        // Caller specified a specific diagnostics URL
-        return urlOption;
+    this.identity = identify(this.actionOptions.name);
+    this.archOs = getArchOs();
+    this.nixSystem = getNixPlatform(this.archOs);
+    this.facts.arch_os = this.archOs;
+    this.facts.nix_system = this.nixSystem;
+    {
+      getDetails().then((details) => {
+        if (details.name !== "unknown") {
+          this.addFact("$os", details.name);
+        }
+        if (details.version !== "unknown") {
+          this.addFact("$os_version", details.version);
+        }
+      }).catch((e) => {
+        core.debug(`Failure getting platform details: ${e}`);
+      });
     }
     {
-        // Attempt to use the action input's diagnostic-endpoint option.
-        // Note: we don't use actionsCore.getInput('diagnostic-endpoint') on purpose:
-        // getInput silently converts absent data to an empty string.
-        const providedDiagnosticEndpoint = process.env["INPUT_DIAGNOSTIC-ENDPOINT"];
-        if (providedDiagnosticEndpoint === "") {
-            // User probably explicitly turned it off
-            return undefined;
-        }
-        if (providedDiagnosticEndpoint !== undefined) {
-            try {
-                return mungeDiagnosticEndpoint(new URL(providedDiagnosticEndpoint));
-            }
-            catch (e) {
-                core.info(`User-provided diagnostic endpoint ignored: not a valid URL: ${e}`);
-            }
-        }
+      const phase = core.getState("idstoolbox_execution_phase");
+      if (phase === "") {
+        core.saveState("idstoolbox_execution_phase", "post");
+        this.executionPhase = "main";
+      } else {
+        this.executionPhase = "post";
+      }
+      this.facts.execution_phase = this.executionPhase;
     }
+    if (this.actionOptions.fetchStyle === "gh-env-style") {
+      this.architectureFetchSuffix = this.archOs;
+    } else if (this.actionOptions.fetchStyle === "nix-style") {
+      this.architectureFetchSuffix = this.nixSystem;
+    } else if (this.actionOptions.fetchStyle === "universal") {
+      this.architectureFetchSuffix = "universal";
+    } else {
+      throw new Error(
+        `fetchStyle ${this.actionOptions.fetchStyle} is not a valid style`
+      );
+    }
+    this.sourceParameters = constructSourceParameters(
+      this.actionOptions.legacySourcePrefix
+    );
+    this.recordEvent(`begin_${this.executionPhase}`);
+  }
+  onMain(callback) {
+    this.hookMain = callback;
+  }
+  onPost(callback) {
+    this.hookPost = callback;
+  }
+  execute() {
+    this.executeAsync().catch((error2) => {
+      console.log(error2);
+      process.exitCode = 1;
+    });
+  }
+  async executeAsync() {
     try {
-        const diagnosticUrl = new URL(IDS_HOST);
-        diagnosticUrl.pathname += idsProjectName;
-        diagnosticUrl.pathname += "/diagnostics";
-        return diagnosticUrl;
+      process.env.DETSYS_CORRELATION = JSON.stringify(
+        this.getCorrelationHashes()
+      );
+      if (!await this.preflightRequireNix()) {
+        this.recordEvent("preflight-require-nix-denied");
+        return;
+      }
+      if (this.executionPhase === "main" && this.hookMain) {
+        await this.hookMain();
+      } else if (this.executionPhase === "post" && this.hookPost) {
+        await this.hookPost();
+      }
+      this.addFact(FACT_ENDED_WITH_EXCEPTION, false);
+    } catch (error2) {
+      this.addFact(FACT_ENDED_WITH_EXCEPTION, true);
+      const reportable = error2 instanceof Error || typeof error2 == "string" ? error2.toString() : JSON.stringify(error2);
+      this.addFact(FACT_FINAL_EXCEPTION, reportable);
+      if (this.executionPhase === "post") {
+        core.warning(reportable);
+      } else {
+        core.setFailed(reportable);
+      }
+      this.recordEvent(EVENT_EXCEPTION);
+    } finally {
+      await this.complete();
     }
-    catch (e) {
-        core.info(`Generated diagnostic endpoint ignored: not a valid URL: ${e}`);
+  }
+  addFact(key, value) {
+    this.facts[key] = value;
+  }
+  getDiagnosticsUrl() {
+    return this.actionOptions.diagnosticsUrl;
+  }
+  getUniqueId() {
+    return this.identity.run_differentiator || process.env.RUNNER_TRACKING_ID || (0,external_node_crypto_namespaceObject.randomUUID)();
+  }
+  getCorrelationHashes() {
+    return this.identity;
+  }
+  recordEvent(eventName, context = {}) {
+    this.events.push({
+      event_name: `${this.actionOptions.eventPrefix}${eventName}`,
+      context,
+      correlation: this.identity,
+      facts: this.facts,
+      timestamp: /* @__PURE__ */ new Date(),
+      uuid: (0,external_node_crypto_namespaceObject.randomUUID)()
+    });
+  }
+  async fetch() {
+    core.info(`Fetching from ${this.getUrl()}`);
+    const correlatedUrl = this.getUrl();
+    correlatedUrl.searchParams.set("ci", "github");
+    correlatedUrl.searchParams.set(
+      "correlation",
+      JSON.stringify(this.identity)
+    );
+    const versionCheckup = await this.client.head(correlatedUrl);
+    if (versionCheckup.headers.etag) {
+      const v = versionCheckup.headers.etag;
+      core.debug(`Checking the tool cache for ${this.getUrl()} at ${v}`);
+      const cached = await this.getCachedVersion(v);
+      if (cached) {
+        this.facts["artifact_fetched_from_cache"] = true;
+        core.debug(`Tool cache hit.`);
+        return cached;
+      }
     }
-    return undefined;
+    this.facts["artifact_fetched_from_cache"] = false;
+    core.debug(
+      `No match from the cache, re-fetching from the redirect: ${versionCheckup.url}`
+    );
+    const destFile = this.getTemporaryName();
+    const fetchStream = this.client.stream(versionCheckup.url);
+    await (0,external_node_stream_promises_namespaceObject.pipeline)(
+      fetchStream,
+      (0,external_node_fs_namespaceObject.createWriteStream)(destFile, {
+        encoding: "binary",
+        mode: 493
+      })
+    );
+    if (fetchStream.response?.headers.etag) {
+      const v = fetchStream.response.headers.etag;
+      try {
+        await this.saveCachedVersion(v, destFile);
+      } catch (e) {
+        core.debug(`Error caching the artifact: ${e}`);
+      }
+    }
+    return destFile;
+  }
+  async fetchExecutable() {
+    const binaryPath = await this.fetch();
+    await (0,promises_namespaceObject.chmod)(binaryPath, promises_namespaceObject.constants.S_IXUSR | promises_namespaceObject.constants.S_IXGRP);
+    return binaryPath;
+  }
+  async complete() {
+    this.recordEvent(`complete_${this.executionPhase}`);
+    await this.submitEvents();
+  }
+  getUrl() {
+    const p = this.sourceParameters;
+    if (p.url) {
+      return new URL(p.url);
+    }
+    const fetchUrl = new URL(IDS_HOST);
+    fetchUrl.pathname += this.actionOptions.idsProjectName;
+    if (p.tag) {
+      fetchUrl.pathname += `/tag/${p.tag}`;
+    } else if (p.pr) {
+      fetchUrl.pathname += `/pr/${p.pr}`;
+    } else if (p.branch) {
+      fetchUrl.pathname += `/branch/${p.branch}`;
+    } else if (p.revision) {
+      fetchUrl.pathname += `/rev/${p.revision}`;
+    } else {
+      fetchUrl.pathname += `/stable`;
+    }
+    fetchUrl.pathname += `/${this.architectureFetchSuffix}`;
+    return fetchUrl;
+  }
+  cacheKey(version2) {
+    const cleanedVersion = version2.replace(/[^a-zA-Z0-9-+.]/g, "");
+    return `determinatesystem-${this.actionOptions.name}-${this.architectureFetchSuffix}-${cleanedVersion}`;
+  }
+  async getCachedVersion(version2) {
+    const startCwd = process.cwd();
+    try {
+      const tempDir = this.getTemporaryName();
+      await (0,promises_namespaceObject.mkdir)(tempDir);
+      process.chdir(tempDir);
+      process.env.GITHUB_WORKSPACE_BACKUP = process.env.GITHUB_WORKSPACE;
+      delete process.env.GITHUB_WORKSPACE;
+      if (await cache.restoreCache(
+        [this.actionOptions.name],
+        this.cacheKey(version2),
+        [],
+        void 0,
+        true
+      )) {
+        this.recordEvent(EVENT_ARTIFACT_CACHE_HIT);
+        return `${tempDir}/${this.actionOptions.name}`;
+      }
+      this.recordEvent(EVENT_ARTIFACT_CACHE_MISS);
+      return void 0;
+    } finally {
+      process.env.GITHUB_WORKSPACE = process.env.GITHUB_WORKSPACE_BACKUP;
+      delete process.env.GITHUB_WORKSPACE_BACKUP;
+      process.chdir(startCwd);
+    }
+  }
+  async saveCachedVersion(version2, toolPath) {
+    const startCwd = process.cwd();
+    try {
+      const tempDir = this.getTemporaryName();
+      await (0,promises_namespaceObject.mkdir)(tempDir);
+      process.chdir(tempDir);
+      await (0,promises_namespaceObject.copyFile)(toolPath, `${tempDir}/${this.actionOptions.name}`);
+      process.env.GITHUB_WORKSPACE_BACKUP = process.env.GITHUB_WORKSPACE;
+      delete process.env.GITHUB_WORKSPACE;
+      await cache.saveCache(
+        [this.actionOptions.name],
+        this.cacheKey(version2),
+        void 0,
+        true
+      );
+      this.recordEvent(EVENT_ARTIFACT_CACHE_HIT);
+    } finally {
+      process.env.GITHUB_WORKSPACE = process.env.GITHUB_WORKSPACE_BACKUP;
+      delete process.env.GITHUB_WORKSPACE_BACKUP;
+      process.chdir(startCwd);
+    }
+  }
+  async preflightRequireNix() {
+    let nixLocation;
+    const pathParts = (process.env["PATH"] || "").split(":");
+    for (const location of pathParts) {
+      const candidateNix = external_node_path_namespaceObject.join(location, "nix");
+      try {
+        await promises_namespaceObject.access(candidateNix, promises_namespaceObject.constants.X_OK);
+        core.debug(`Found Nix at ${candidateNix}`);
+        nixLocation = candidateNix;
+      } catch {
+        core.debug(`Nix not at ${candidateNix}`);
+      }
+    }
+    this.addFact("nix_location", nixLocation || "");
+    if (this.actionOptions.requireNix === "ignore") {
+      return true;
+    }
+    const currentNotFoundState = core.getState(
+      "idstoolbox_nix_not_found"
+    );
+    if (currentNotFoundState === "not-found") {
+      return false;
+    }
+    if (nixLocation !== void 0) {
+      return true;
+    }
+    core.saveState("idstoolbox_nix_not_found", "not-found");
+    switch (this.actionOptions.requireNix) {
+      case "fail":
+        core.setFailed(
+          "This action can only be used when Nix is installed. Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow."
+        );
+        break;
+      case "warn":
+        core.warning(
+          "This action is in no-op mode because Nix is not installed. Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow."
+        );
+        break;
+    }
+    return false;
+  }
+  async submitEvents() {
+    if (!this.actionOptions.diagnosticsUrl) {
+      core.debug(
+        "Diagnostics are disabled. Not sending the following events:"
+      );
+      core.debug(JSON.stringify(this.events, void 0, 2));
+      return;
+    }
+    const batch = {
+      type: "eventlog",
+      sent_at: /* @__PURE__ */ new Date(),
+      events: this.events
+    };
+    try {
+      await this.client.post(this.actionOptions.diagnosticsUrl, {
+        json: batch
+      });
+    } catch (error2) {
+      core.debug(`Error submitting diagnostics event: ${error2}`);
+    }
+    this.events = [];
+  }
+  getTemporaryName() {
+    const _tmpdir = process.env["RUNNER_TEMP"] || (0,external_node_os_.tmpdir)();
+    return external_node_path_namespaceObject.join(_tmpdir, `${this.actionOptions.name}-${(0,external_node_crypto_namespaceObject.randomUUID)()}`);
+  }
+};
+function makeOptionsConfident(actionOptions) {
+  const idsProjectName = actionOptions.idsProjectName ?? actionOptions.name;
+  const finalOpts = {
+    name: actionOptions.name,
+    idsProjectName,
+    eventPrefix: actionOptions.eventPrefix || "action:",
+    fetchStyle: actionOptions.fetchStyle,
+    legacySourcePrefix: actionOptions.legacySourcePrefix,
+    requireNix: actionOptions.requireNix,
+    diagnosticsUrl: determineDiagnosticsUrl(
+      idsProjectName,
+      actionOptions.diagnosticsUrl
+    )
+  };
+  core.debug("idslib options:");
+  core.debug(JSON.stringify(finalOpts, void 0, 2));
+  return finalOpts;
+}
+function determineDiagnosticsUrl(idsProjectName, urlOption) {
+  if (urlOption === null) {
+    return void 0;
+  }
+  if (urlOption !== void 0) {
+    return urlOption;
+  }
+  {
+    const providedDiagnosticEndpoint = process.env["INPUT_DIAGNOSTIC-ENDPOINT"];
+    if (providedDiagnosticEndpoint === "") {
+      return void 0;
+    }
+    if (providedDiagnosticEndpoint !== void 0) {
+      try {
+        return mungeDiagnosticEndpoint(new URL(providedDiagnosticEndpoint));
+      } catch (e) {
+        core.info(
+          `User-provided diagnostic endpoint ignored: not a valid URL: ${e}`
+        );
+      }
+    }
+  }
+  try {
+    const diagnosticUrl = new URL(IDS_HOST);
+    diagnosticUrl.pathname += idsProjectName;
+    diagnosticUrl.pathname += "/diagnostics";
+    return diagnosticUrl;
+  } catch (e) {
+    core.info(
+      `Generated diagnostic endpoint ignored: not a valid URL: ${e}`
+    );
+  }
+  return void 0;
 }
 function mungeDiagnosticEndpoint(inputUrl) {
-    if (DEFAULT_IDS_HOST === IDS_HOST) {
-        return inputUrl;
-    }
-    try {
-        const defaultIdsHost = new URL(DEFAULT_IDS_HOST);
-        const currentIdsHost = new URL(IDS_HOST);
-        if (inputUrl.origin !== defaultIdsHost.origin) {
-            return inputUrl;
-        }
-        inputUrl.protocol = currentIdsHost.protocol;
-        inputUrl.host = currentIdsHost.host;
-        inputUrl.username = currentIdsHost.username;
-        inputUrl.password = currentIdsHost.password;
-        return inputUrl;
-    }
-    catch (e) {
-        core.info(`Default or overridden IDS host isn't a valid URL: ${e}`);
-    }
+  if (DEFAULT_IDS_HOST === IDS_HOST) {
     return inputUrl;
+  }
+  try {
+    const defaultIdsHost = new URL(DEFAULT_IDS_HOST);
+    const currentIdsHost = new URL(IDS_HOST);
+    if (inputUrl.origin !== defaultIdsHost.origin) {
+      return inputUrl;
+    }
+    inputUrl.protocol = currentIdsHost.protocol;
+    inputUrl.host = currentIdsHost.host;
+    inputUrl.username = currentIdsHost.username;
+    inputUrl.password = currentIdsHost.password;
+    return inputUrl;
+  } catch (e) {
+    core.info(`Default or overridden IDS host isn't a valid URL: ${e}`);
+  }
+  return inputUrl;
 }
-// Public exports from other files
 
-
-
+/*!
+ * linux-release-info
+ * Get Linux release info (distribution name, version, arch, release, etc.)
+ * from '/etc/os-release' or '/usr/lib/os-release' files and from native os
+ * module. On Windows and Darwin platforms it only returns common node os module
+ * info (platform, hostname, release, and arch)
+ *
+ * Licensed under MIT
+ * Copyright (c) 2018-2020 [Samuel Carreira]
+ */
+//# sourceMappingURL=index.js.map
 ;// CONCATENATED MODULE: ./dist/index.js
+// src/index.ts
 
 
 
@@ -95097,266 +94632,254 @@ function mungeDiagnosticEndpoint(inputUrl) {
 
 
 
-const ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
-const gotClient = got_dist_source.extend({
-    retry: {
-        limit: 1,
-        methods: ["POST", "GET", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE"],
-    },
-    hooks: {
-        beforeRetry: [
-            (error, retryCount) => {
-                core.info(`Retrying after error ${error.code}, retry #: ${retryCount}`);
-            },
-        ],
-    },
+var ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var gotClient = got_dist_source.extend({
+  retry: {
+    limit: 1,
+    methods: ["POST", "GET", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE"]
+  },
+  hooks: {
+    beforeRetry: [
+      (error, retryCount) => {
+        core.info(`Retrying after error ${error.code}, retry #: ${retryCount}`);
+      }
+    ]
+  }
 });
 async function fetchAutoCacher(toolbox) {
-    const closurePath = await toolbox.fetch();
-    toolbox.recordEvent("load_closure");
-    const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(`cat "${closurePath}" | xz -d | nix-store --import`);
-    const paths = stdout.split(external_node_os_.EOL);
-    // Since the export is in reverse topologically sorted order, magic-nix-cache is always the penultimate entry in the list (the empty string left by split being the last).
-    const last_path = paths.at(-2);
-    return `${last_path}/bin/magic-nix-cache`;
+  const closurePath = await toolbox.fetch();
+  toolbox.recordEvent("load_closure");
+  const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(
+    `cat "${closurePath}" | xz -d | nix-store --import`
+  );
+  const paths = stdout.split(external_node_os_.EOL);
+  const last_path = paths.at(-2);
+  return `${last_path}/bin/magic-nix-cache`;
 }
 function tailLog(daemonDir) {
-    const log = new tail/* Tail */.x(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
-    core.debug(`tailing daemon.log...`);
-    log.on("line", (line) => {
-        core.info(line);
-    });
-    return log;
+  const log = new tail/* Tail */.x(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
+  core.debug(`tailing daemon.log...`);
+  log.on("line", (line) => {
+    core.info(line);
+  });
+  return log;
 }
 async function setUpAutoCache(toolbox) {
-    const tmpdir = process.env["RUNNER_TEMP"] || external_node_os_.tmpdir();
-    const required_env = [
-        "ACTIONS_CACHE_URL",
-        "ACTIONS_RUNTIME_URL",
-        "ACTIONS_RUNTIME_TOKEN",
-    ];
-    let anyMissing = false;
-    for (const n of required_env) {
-        if (!process.env.hasOwnProperty(n)) {
-            anyMissing = true;
-            core.warning(`Disabling automatic caching since required environment ${n} isn't available`);
-        }
+  const tmpdir2 = process.env["RUNNER_TEMP"] || external_node_os_.tmpdir();
+  const required_env = [
+    "ACTIONS_CACHE_URL",
+    "ACTIONS_RUNTIME_URL",
+    "ACTIONS_RUNTIME_TOKEN"
+  ];
+  let anyMissing = false;
+  for (const n of required_env) {
+    if (!process.env.hasOwnProperty(n)) {
+      anyMissing = true;
+      core.warning(
+        `Disabling automatic caching since required environment ${n} isn't available`
+      );
     }
-    if (anyMissing) {
-        return;
-    }
-    core.debug(`GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`);
-    const daemonDir = await promises_namespaceObject.mkdtemp(external_node_path_namespaceObject.join(tmpdir, "magic-nix-cache-"));
-    let daemonBin;
-    if (core.getInput("source-binary")) {
-        daemonBin = core.getInput("source-binary");
-    }
-    else {
-        daemonBin = await fetchAutoCacher(toolbox);
-    }
-    let runEnv;
-    if (core.isDebug()) {
-        runEnv = {
-            RUST_LOG: "trace,magic_nix_cache=debug,gha_cache=debug",
-            RUST_BACKTRACE: "full",
-            ...process.env,
-        };
-    }
-    else {
-        runEnv = process.env;
-    }
-    const notifyPort = core.getInput("startup-notification-port");
-    const notifyPromise = new Promise((resolveListening) => {
-        const promise = new Promise(async (resolveQuit) => {
-            const notifyServer = external_http_.createServer((req, res) => {
-                if (req.method === "POST" && req.url === "/") {
-                    core.debug(`Notify server shutting down.`);
-                    res.writeHead(200, { "Content-Type": "application/json" });
-                    res.end("{}");
-                    notifyServer.close(() => {
-                        resolveQuit();
-                    });
-                }
-            });
-            notifyServer.listen(notifyPort, () => {
-                core.debug(`Notify server running.`);
-                resolveListening(promise);
-            });
-        });
-    });
-    // Start tailing the daemon log.
-    const outputPath = `${daemonDir}/daemon.log`;
-    const output = (0,external_node_fs_namespaceObject.openSync)(outputPath, "a");
-    const log = tailLog(daemonDir);
-    const netrc = await netrcPath();
-    const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
-    const daemonCliFlags = [
-        "--startup-notification-url",
-        `http://127.0.0.1:${notifyPort}`,
-        "--listen",
-        core.getInput("listen"),
-        "--upstream",
-        core.getInput("upstream-cache"),
-        "--diagnostic-endpoint",
-        core.getInput("diagnostic-endpoint"),
-        "--nix-conf",
-        nixConfPath,
-    ]
-        .concat(core.getBooleanInput("use-flakehub")
-        ? [
-            "--use-flakehub",
-            "--flakehub-cache-server",
-            core.getInput("flakehub-cache-server"),
-            "--flakehub-api-server",
-            core.getInput("flakehub-api-server"),
-            "--flakehub-api-server-netrc",
-            netrc,
-            "--flakehub-flake-name",
-            core.getInput("flakehub-flake-name"),
-        ]
-        : [])
-        .concat(core.getBooleanInput("use-gha-cache") ? ["--use-gha-cache"] : []);
-    const opts = {
-        stdio: ["ignore", output, output],
-        env: runEnv,
-        detached: true,
+  }
+  if (anyMissing) {
+    return;
+  }
+  core.debug(`GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`);
+  const daemonDir = await promises_namespaceObject.mkdtemp(external_node_path_namespaceObject.join(tmpdir2, "magic-nix-cache-"));
+  let daemonBin;
+  if (core.getInput("source-binary")) {
+    daemonBin = core.getInput("source-binary");
+  } else {
+    daemonBin = await fetchAutoCacher(toolbox);
+  }
+  let runEnv;
+  if (core.isDebug()) {
+    runEnv = {
+      RUST_LOG: "trace,magic_nix_cache=debug,gha_cache=debug",
+      RUST_BACKTRACE: "full",
+      ...process.env
     };
-    // Display the final command for debugging purposes
-    core.debug("Full daemon start command:");
-    core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
-    // Start the server. Once it is ready, it will notify us via the notification server.
-    const daemon = (0,external_node_child_process_namespaceObject.spawn)(daemonBin, daemonCliFlags, opts);
-    const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
-    await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
-    core.info("Waiting for magic-nix-cache to start...");
-    await new Promise((resolve, reject) => {
-        notifyPromise
-            // eslint-disable-next-line github/no-then
-            .then((_value) => {
-            resolve();
-        })
-            // eslint-disable-next-line github/no-then
-            .catch((err) => {
-            reject(new Error(`error in notifyPromise: ${err}`));
-        });
-        daemon.on("exit", async (code, signal) => {
-            if (signal) {
-                reject(new Error(`Daemon was killed by signal ${signal}`));
-            }
-            else if (code) {
-                reject(new Error(`Daemon exited with code ${code}`));
-            }
-            else {
-                reject(new Error(`Daemon unexpectedly exited`));
-            }
-        });
+  } else {
+    runEnv = process.env;
+  }
+  const notifyPort = core.getInput("startup-notification-port");
+  const notifyPromise = new Promise((resolveListening) => {
+    const promise = new Promise(async (resolveQuit) => {
+      const notifyServer = external_http_.createServer((req, res) => {
+        if (req.method === "POST" && req.url === "/") {
+          core.debug(`Notify server shutting down.`);
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end("{}");
+          notifyServer.close(() => {
+            resolveQuit();
+          });
+        }
+      });
+      notifyServer.listen(notifyPort, () => {
+        core.debug(`Notify server running.`);
+        resolveListening(promise);
+      });
     });
-    daemon.unref();
-    core.info("Launched Magic Nix Cache");
-    core.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
-    log.unwatch();
+  });
+  const outputPath = `${daemonDir}/daemon.log`;
+  const output = (0,external_node_fs_namespaceObject.openSync)(outputPath, "a");
+  const log = tailLog(daemonDir);
+  const netrc = await netrcPath();
+  const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
+  const daemonCliFlags = [
+    "--startup-notification-url",
+    `http://127.0.0.1:${notifyPort}`,
+    "--listen",
+    core.getInput("listen"),
+    "--upstream",
+    core.getInput("upstream-cache"),
+    "--diagnostic-endpoint",
+    core.getInput("diagnostic-endpoint"),
+    "--nix-conf",
+    nixConfPath
+  ].concat(
+    core.getBooleanInput("use-flakehub") ? [
+      "--use-flakehub",
+      "--flakehub-cache-server",
+      core.getInput("flakehub-cache-server"),
+      "--flakehub-api-server",
+      core.getInput("flakehub-api-server"),
+      "--flakehub-api-server-netrc",
+      netrc,
+      "--flakehub-flake-name",
+      core.getInput("flakehub-flake-name")
+    ] : []
+  ).concat(core.getBooleanInput("use-gha-cache") ? ["--use-gha-cache"] : []);
+  const opts = {
+    stdio: ["ignore", output, output],
+    env: runEnv,
+    detached: true
+  };
+  core.debug("Full daemon start command:");
+  core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
+  const daemon = (0,external_node_child_process_namespaceObject.spawn)(daemonBin, daemonCliFlags, opts);
+  const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
+  await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
+  core.info("Waiting for magic-nix-cache to start...");
+  await new Promise((resolve, reject) => {
+    notifyPromise.then((_value) => {
+      resolve();
+    }).catch((err) => {
+      reject(new Error(`error in notifyPromise: ${err}`));
+    });
+    daemon.on("exit", async (code, signal) => {
+      if (signal) {
+        reject(new Error(`Daemon was killed by signal ${signal}`));
+      } else if (code) {
+        reject(new Error(`Daemon exited with code ${code}`));
+      } else {
+        reject(new Error(`Daemon unexpectedly exited`));
+      }
+    });
+  });
+  daemon.unref();
+  core.info("Launched Magic Nix Cache");
+  core.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
+  log.unwatch();
 }
 async function notifyAutoCache() {
-    const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
-    if (!daemonDir) {
-        return;
-    }
-    try {
-        core.debug(`Indicating workflow start`);
-        const res = await gotClient
-            .post(`http://${core.getInput("listen")}/api/workflow-start`)
-            .json();
-        core.debug(`back from post: ${res}`);
-    }
-    catch (e) {
-        core.info(`Error marking the workflow as started:`);
-        core.info((0,external_node_util_.inspect)(e));
-        core.info(`Magic Nix Cache may not be running for this workflow.`);
-    }
+  const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+  if (!daemonDir) {
+    return;
+  }
+  try {
+    core.debug(`Indicating workflow start`);
+    const res = await gotClient.post(`http://${core.getInput("listen")}/api/workflow-start`).json();
+    core.debug(`back from post: ${res}`);
+  } catch (e) {
+    core.info(`Error marking the workflow as started:`);
+    core.info((0,external_node_util_.inspect)(e));
+    core.info(`Magic Nix Cache may not be running for this workflow.`);
+  }
 }
 async function netrcPath() {
-    const expectedNetrcPath = external_node_path_namespaceObject.join(process.env["RUNNER_TEMP"] || external_node_os_.tmpdir(), "determinate-nix-installer-netrc");
+  const expectedNetrcPath = external_node_path_namespaceObject.join(
+    process.env["RUNNER_TEMP"] || external_node_os_.tmpdir(),
+    "determinate-nix-installer-netrc"
+  );
+  try {
+    await promises_namespaceObject.access(expectedNetrcPath);
+    return expectedNetrcPath;
+  } catch {
+    const destinedNetrcPath = external_node_path_namespaceObject.join(
+      process.env["RUNNER_TEMP"] || external_node_os_.tmpdir(),
+      "magic-nix-cache-netrc"
+    );
     try {
-        await promises_namespaceObject.access(expectedNetrcPath);
-        return expectedNetrcPath;
+      await flakehub_login(destinedNetrcPath);
+    } catch (e) {
+      core.info("FlakeHub cache disabled.");
+      core.debug(`Error while logging into FlakeHub: ${e}`);
     }
-    catch {
-        // `nix-installer` was not used, the user may be registered with FlakeHub though.
-        const destinedNetrcPath = external_node_path_namespaceObject.join(process.env["RUNNER_TEMP"] || external_node_os_.tmpdir(), "magic-nix-cache-netrc");
-        try {
-            await flakehub_login(destinedNetrcPath);
-        }
-        catch (e) {
-            core.info("FlakeHub cache disabled.");
-            core.debug(`Error while logging into FlakeHub: ${e}`);
-        }
-        return destinedNetrcPath;
-    }
+    return destinedNetrcPath;
+  }
 }
 async function flakehub_login(netrc) {
-    const jwt = await core.getIDToken("api.flakehub.com");
-    await promises_namespaceObject.writeFile(netrc, [
-        `machine api.flakehub.com login flakehub password ${jwt}`,
-        `machine flakehub.com login flakehub password ${jwt}`,
-        `machine cache.flakehub.com login flakehub password ${jwt}`,
-    ].join("\n"));
-    core.info("Logged in to FlakeHub.");
+  const jwt = await core.getIDToken("api.flakehub.com");
+  await promises_namespaceObject.writeFile(
+    netrc,
+    [
+      `machine api.flakehub.com login flakehub password ${jwt}`,
+      `machine flakehub.com login flakehub password ${jwt}`,
+      `machine cache.flakehub.com login flakehub password ${jwt}`
+    ].join("\n")
+  );
+  core.info("Logged in to FlakeHub.");
 }
 async function tearDownAutoCache() {
-    const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
-    if (!daemonDir) {
-        core.debug("magic-nix-cache not started - Skipping");
-        return;
+  const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+  if (!daemonDir) {
+    core.debug("magic-nix-cache not started - Skipping");
+    return;
+  }
+  const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
+  const pid = parseInt(await promises_namespaceObject.readFile(pidFile, { encoding: "ascii" }));
+  core.debug(`found daemon pid: ${pid}`);
+  if (!pid) {
+    throw new Error("magic-nix-cache did not start successfully");
+  }
+  const log = tailLog(daemonDir);
+  try {
+    core.debug(`about to post to localhost`);
+    const res = await gotClient.post(`http://${core.getInput("listen")}/api/workflow-finish`).json();
+    core.debug(`back from post: ${res}`);
+  } finally {
+    core.debug(`unwatching the daemon log`);
+    log.unwatch();
+  }
+  core.debug(`killing`);
+  try {
+    process.kill(pid, "SIGTERM");
+  } catch (e) {
+    if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
+      throw e;
     }
-    const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
-    const pid = parseInt(await promises_namespaceObject.readFile(pidFile, { encoding: "ascii" }));
-    core.debug(`found daemon pid: ${pid}`);
-    if (!pid) {
-        throw new Error("magic-nix-cache did not start successfully");
+  } finally {
+    if (core.isDebug()) {
+      core.info("Entire log:");
+      const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
+      core.info(entireLog.toString());
     }
-    const log = tailLog(daemonDir);
-    try {
-        core.debug(`about to post to localhost`);
-        const res = await gotClient
-            .post(`http://${core.getInput("listen")}/api/workflow-finish`)
-            .json();
-        core.debug(`back from post: ${res}`);
-    }
-    finally {
-        core.debug(`unwatching the daemon log`);
-        log.unwatch();
-    }
-    core.debug(`killing`);
-    try {
-        process.kill(pid, "SIGTERM");
-    }
-    catch (e) {
-        if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-            throw e;
-        }
-    }
-    finally {
-        if (core.isDebug()) {
-            core.info("Entire log:");
-            const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
-            core.info(entireLog.toString());
-        }
-    }
+  }
 }
-const idslib = new IdsToolbox({
-    name: "magic-nix-cache",
-    fetchStyle: "gh-env-style",
-    idsProjectName: "magic-nix-cache-closure",
-    requireNix: "warn",
+var idslib = new IdsToolbox({
+  name: "magic-nix-cache",
+  fetchStyle: "gh-env-style",
+  idsProjectName: "magic-nix-cache-closure",
+  requireNix: "warn"
 });
 idslib.onMain(async () => {
-    await setUpAutoCache(idslib);
-    await notifyAutoCache();
+  await setUpAutoCache(idslib);
+  await notifyAutoCache();
 });
 idslib.onPost(async () => {
-    await tearDownAutoCache();
+  await tearDownAutoCache();
 });
 idslib.execute();
-
+//# sourceMappingURL=index.js.map
 })();
 

@@ -29,7 +29,7 @@ jobs:
       - name: Package
         run: nix develop --command pnpm run package
       - run: git status --porcelain=v1
-      - run: test $(git status --porcelain=v1 2>/dev/null | wc -l) -eq 0
+      - run: git diff --exit-code
 
   test-no-nix:
     name: "Test: Nix not installed"
