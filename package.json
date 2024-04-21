@@ -9,7 +9,7 @@
     "build": "tsup",
     "format": "prettier --write .",
     "lint": "eslint src/**/*.ts",
-    "package": "ncc build ./dist/main.js",
+    "package": "ncc build",
     "all": "pnpm run format && pnpm run lint && pnpm run build && pnpm run package"
   },
   "repository": {

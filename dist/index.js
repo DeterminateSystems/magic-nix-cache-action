@@ -94619,8 +94619,8 @@ function mungeDiagnosticEndpoint(inputUrl) {
  * Copyright (c) 2018-2020 [Samuel Carreira]
  */
 //# sourceMappingURL=index.js.map
-;// CONCATENATED MODULE: ./dist/main.js
-// src/main.ts
+;// CONCATENATED MODULE: ./dist/index.js
+// src/index.ts
 
 
 
@@ -94880,6 +94880,6 @@ idslib.onPost(async () => {
   await tearDownAutoCache();
 });
 idslib.execute();
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=index.js.map
 })();
 
