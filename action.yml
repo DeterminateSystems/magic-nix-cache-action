@@ -14,23 +14,6 @@ inputs:
   upstream-cache:
     description: Your preferred upstream cache. Store paths in this store will not be cached in GitHub Actions' cache.
     default: https://cache.nixos.org
-  source-binary:
-    description: Run a version of the cache binary from somewhere already on disk. Conflicts with all other `source-*` options.
-  source-branch:
-    description: The branch of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
-    required: false
-  source-pr:
-    description: The PR of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
-    required: false
-  source-revision:
-    description: The revision of `nix-magic-nix-cache` to use. Conflicts with all other `source-*` options.
-    required: false
-  source-tag:
-    description: The tag of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
-    required: false
-  source-url:
-    description: A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options.
-    required: false
   diagnostic-endpoint:
     description: "Diagnostic endpoint url where diagnostics and performance data is sent. To disable set this to an empty string."
     default: "https://install.determinate.systems/magic-nix-cache/perf"
@@ -51,6 +34,23 @@ inputs:
   startup-notification-port:
     description: "The port magic-nix-cache uses for daemon startup notification."
     default: 41239
+  source-binary:
+    description: Run a version of the cache binary from somewhere already on disk. Conflicts with all other `source-*` options.
+  source-branch:
+    description: The branch of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
+    required: false
+  source-pr:
+    description: The PR of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
+    required: false
+  source-revision:
+    description: The revision of `nix-magic-nix-cache` to use. Conflicts with all other `source-*` options.
+    required: false
+  source-tag:
+    description: The tag of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
+    required: false
+  source-url:
+    description: A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options.
+    required: false
 
 runs:
   using: "node20"
