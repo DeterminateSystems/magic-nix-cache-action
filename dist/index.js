@@ -86779,10 +86779,16 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+core@1.10.1/node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(9093);
-;// CONCATENATED MODULE: external "node:fs"
-const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs");
+;// CONCATENATED MODULE: external "node:fs/promises"
+const promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs/promises");
 // EXTERNAL MODULE: external "node:os"
 var external_node_os_ = __nccwpck_require__(612);
+;// CONCATENATED MODULE: external "node:path"
+const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
+// EXTERNAL MODULE: ./node_modules/.pnpm/tail@2.2.6/node_modules/tail/lib/tail.js
+var tail = __nccwpck_require__(3707);
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs");
 // EXTERNAL MODULE: external "node:util"
 var external_node_util_ = __nccwpck_require__(7261);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+exec@1.1.1/node_modules/@actions/exec/lib/exec.js
@@ -86793,7 +86799,7 @@ var external_os_ = __nccwpck_require__(2037);
 const external_node_crypto_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:crypto");
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@3.2.4/node_modules/@actions/cache/lib/cache.js
 var cache = __nccwpck_require__(6878);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@sindresorhus+is@6.2.0/node_modules/@sindresorhus/is/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@sindresorhus+is@6.3.0/node_modules/@sindresorhus/is/dist/index.js
 const typedArrayTypeNames = [
     'Int8Array',
     'Uint8Array',
@@ -87645,458 +87651,458 @@ function assertAny(predicate, ...values) {
         throw new TypeError(typeErrorMessageMultipleValues(expectedTypes, values));
     }
 }
-function assertArray(value, assertion) {
+function assertArray(value, assertion, message) {
     if (!isArray(value)) {
-        throw new TypeError(typeErrorMessage('Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Array', value));
     }
     if (assertion) {
         // eslint-disable-next-line unicorn/no-array-for-each, unicorn/no-array-callback-reference
         value.forEach(assertion);
     }
 }
-function assertArrayBuffer(value) {
+function assertArrayBuffer(value, message) {
     if (!isArrayBuffer(value)) {
-        throw new TypeError(typeErrorMessage('ArrayBuffer', value));
+        throw new TypeError(message ?? typeErrorMessage('ArrayBuffer', value));
     }
 }
-function assertArrayLike(value) {
+function assertArrayLike(value, message) {
     if (!isArrayLike(value)) {
-        throw new TypeError(typeErrorMessage('array-like', value));
+        throw new TypeError(message ?? typeErrorMessage('array-like', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertAsyncFunction(value) {
+function assertAsyncFunction(value, message) {
     if (!isAsyncFunction(value)) {
-        throw new TypeError(typeErrorMessage('AsyncFunction', value));
+        throw new TypeError(message ?? typeErrorMessage('AsyncFunction', value));
     }
 }
-function assertAsyncGenerator(value) {
+function assertAsyncGenerator(value, message) {
     if (!isAsyncGenerator(value)) {
-        throw new TypeError(typeErrorMessage('AsyncGenerator', value));
+        throw new TypeError(message ?? typeErrorMessage('AsyncGenerator', value));
     }
 }
-function assertAsyncGeneratorFunction(value) {
+function assertAsyncGeneratorFunction(value, message) {
     if (!isAsyncGeneratorFunction(value)) {
-        throw new TypeError(typeErrorMessage('AsyncGeneratorFunction', value));
+        throw new TypeError(message ?? typeErrorMessage('AsyncGeneratorFunction', value));
     }
 }
-function assertAsyncIterable(value) {
+function assertAsyncIterable(value, message) {
     if (!isAsyncIterable(value)) {
-        throw new TypeError(typeErrorMessage('AsyncIterable', value));
+        throw new TypeError(message ?? typeErrorMessage('AsyncIterable', value));
     }
 }
-function assertBigint(value) {
+function assertBigint(value, message) {
     if (!isBigint(value)) {
-        throw new TypeError(typeErrorMessage('bigint', value));
+        throw new TypeError(message ?? typeErrorMessage('bigint', value));
     }
 }
-function assertBigInt64Array(value) {
+function assertBigInt64Array(value, message) {
     if (!isBigInt64Array(value)) {
-        throw new TypeError(typeErrorMessage('BigInt64Array', value));
+        throw new TypeError(message ?? typeErrorMessage('BigInt64Array', value));
     }
 }
-function assertBigUint64Array(value) {
+function assertBigUint64Array(value, message) {
     if (!isBigUint64Array(value)) {
-        throw new TypeError(typeErrorMessage('BigUint64Array', value));
+        throw new TypeError(message ?? typeErrorMessage('BigUint64Array', value));
     }
 }
-function assertBlob(value) {
+function assertBlob(value, message) {
     if (!isBlob(value)) {
-        throw new TypeError(typeErrorMessage('Blob', value));
+        throw new TypeError(message ?? typeErrorMessage('Blob', value));
     }
 }
-function assertBoolean(value) {
+function assertBoolean(value, message) {
     if (!isBoolean(value)) {
-        throw new TypeError(typeErrorMessage('boolean', value));
+        throw new TypeError(message ?? typeErrorMessage('boolean', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertBoundFunction(value) {
+function assertBoundFunction(value, message) {
     if (!isBoundFunction(value)) {
-        throw new TypeError(typeErrorMessage('Function', value));
+        throw new TypeError(message ?? typeErrorMessage('Function', value));
     }
 }
-function assertBuffer(value) {
+function assertBuffer(value, message) {
     if (!isBuffer(value)) {
-        throw new TypeError(typeErrorMessage('Buffer', value));
+        throw new TypeError(message ?? typeErrorMessage('Buffer', value));
     }
 }
-function assertClass(value) {
+function assertClass(value, message) {
     if (!isClass(value)) {
-        throw new TypeError(typeErrorMessage('Class', value));
+        throw new TypeError(message ?? typeErrorMessage('Class', value));
     }
 }
-function assertDataView(value) {
+function assertDataView(value, message) {
     if (!isDataView(value)) {
-        throw new TypeError(typeErrorMessage('DataView', value));
+        throw new TypeError(message ?? typeErrorMessage('DataView', value));
     }
 }
-function assertDate(value) {
+function assertDate(value, message) {
     if (!isDate(value)) {
-        throw new TypeError(typeErrorMessage('Date', value));
+        throw new TypeError(message ?? typeErrorMessage('Date', value));
     }
 }
-function assertDirectInstanceOf(instance, class_) {
+function assertDirectInstanceOf(instance, class_, message) {
     if (!isDirectInstanceOf(instance, class_)) {
-        throw new TypeError(typeErrorMessage('T', instance));
+        throw new TypeError(message ?? typeErrorMessage('T', instance));
     }
 }
-function assertEmptyArray(value) {
+function assertEmptyArray(value, message) {
     if (!isEmptyArray(value)) {
-        throw new TypeError(typeErrorMessage('empty array', value));
+        throw new TypeError(message ?? typeErrorMessage('empty array', value));
     }
 }
-function assertEmptyMap(value) {
+function assertEmptyMap(value, message) {
     if (!isEmptyMap(value)) {
-        throw new TypeError(typeErrorMessage('empty map', value));
+        throw new TypeError(message ?? typeErrorMessage('empty map', value));
     }
 }
-function assertEmptyObject(value) {
+function assertEmptyObject(value, message) {
     if (!isEmptyObject(value)) {
-        throw new TypeError(typeErrorMessage('empty object', value));
+        throw new TypeError(message ?? typeErrorMessage('empty object', value));
     }
 }
-function assertEmptySet(value) {
+function assertEmptySet(value, message) {
     if (!isEmptySet(value)) {
-        throw new TypeError(typeErrorMessage('empty set', value));
+        throw new TypeError(message ?? typeErrorMessage('empty set', value));
     }
 }
-function assertEmptyString(value) {
+function assertEmptyString(value, message) {
     if (!isEmptyString(value)) {
-        throw new TypeError(typeErrorMessage('empty string', value));
+        throw new TypeError(message ?? typeErrorMessage('empty string', value));
     }
 }
-function assertEmptyStringOrWhitespace(value) {
+function assertEmptyStringOrWhitespace(value, message) {
     if (!isEmptyStringOrWhitespace(value)) {
-        throw new TypeError(typeErrorMessage('empty string or whitespace', value));
+        throw new TypeError(message ?? typeErrorMessage('empty string or whitespace', value));
     }
 }
-function assertEnumCase(value, targetEnum) {
+function assertEnumCase(value, targetEnum, message) {
     if (!isEnumCase(value, targetEnum)) {
-        throw new TypeError(typeErrorMessage('EnumCase', value));
+        throw new TypeError(message ?? typeErrorMessage('EnumCase', value));
     }
 }
-function assertError(value) {
+function assertError(value, message) {
     if (!isError(value)) {
-        throw new TypeError(typeErrorMessage('Error', value));
+        throw new TypeError(message ?? typeErrorMessage('Error', value));
     }
 }
-function assertEvenInteger(value) {
+function assertEvenInteger(value, message) {
     if (!isEvenInteger(value)) {
-        throw new TypeError(typeErrorMessage('even integer', value));
+        throw new TypeError(message ?? typeErrorMessage('even integer', value));
     }
 }
-function assertFalsy(value) {
+function assertFalsy(value, message) {
     if (!isFalsy(value)) {
-        throw new TypeError(typeErrorMessage('falsy', value));
+        throw new TypeError(message ?? typeErrorMessage('falsy', value));
     }
 }
-function assertFloat32Array(value) {
+function assertFloat32Array(value, message) {
     if (!isFloat32Array(value)) {
-        throw new TypeError(typeErrorMessage('Float32Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Float32Array', value));
     }
 }
-function assertFloat64Array(value) {
+function assertFloat64Array(value, message) {
     if (!isFloat64Array(value)) {
-        throw new TypeError(typeErrorMessage('Float64Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Float64Array', value));
     }
 }
-function assertFormData(value) {
+function assertFormData(value, message) {
     if (!isFormData(value)) {
-        throw new TypeError(typeErrorMessage('FormData', value));
+        throw new TypeError(message ?? typeErrorMessage('FormData', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertFunction(value) {
+function assertFunction(value, message) {
     if (!isFunction(value)) {
-        throw new TypeError(typeErrorMessage('Function', value));
+        throw new TypeError(message ?? typeErrorMessage('Function', value));
     }
 }
-function assertGenerator(value) {
+function assertGenerator(value, message) {
     if (!isGenerator(value)) {
-        throw new TypeError(typeErrorMessage('Generator', value));
+        throw new TypeError(message ?? typeErrorMessage('Generator', value));
     }
 }
-function assertGeneratorFunction(value) {
+function assertGeneratorFunction(value, message) {
     if (!isGeneratorFunction(value)) {
-        throw new TypeError(typeErrorMessage('GeneratorFunction', value));
+        throw new TypeError(message ?? typeErrorMessage('GeneratorFunction', value));
     }
 }
-function assertHtmlElement(value) {
+function assertHtmlElement(value, message) {
     if (!isHtmlElement(value)) {
-        throw new TypeError(typeErrorMessage('HTMLElement', value));
+        throw new TypeError(message ?? typeErrorMessage('HTMLElement', value));
     }
 }
-function assertInfinite(value) {
+function assertInfinite(value, message) {
     if (!isInfinite(value)) {
-        throw new TypeError(typeErrorMessage('infinite number', value));
+        throw new TypeError(message ?? typeErrorMessage('infinite number', value));
     }
 }
-function assertInRange(value, range) {
+function assertInRange(value, range, message) {
     if (!isInRange(value, range)) {
-        throw new TypeError(typeErrorMessage('in range', value));
+        throw new TypeError(message ?? typeErrorMessage('in range', value));
     }
 }
-function assertInt16Array(value) {
+function assertInt16Array(value, message) {
     if (!isInt16Array(value)) {
-        throw new TypeError(typeErrorMessage('Int16Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Int16Array', value));
     }
 }
-function assertInt32Array(value) {
+function assertInt32Array(value, message) {
     if (!isInt32Array(value)) {
-        throw new TypeError(typeErrorMessage('Int32Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Int32Array', value));
     }
 }
-function assertInt8Array(value) {
+function assertInt8Array(value, message) {
     if (!isInt8Array(value)) {
-        throw new TypeError(typeErrorMessage('Int8Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Int8Array', value));
     }
 }
-function assertInteger(value) {
+function assertInteger(value, message) {
     if (!isInteger(value)) {
-        throw new TypeError(typeErrorMessage('integer', value));
+        throw new TypeError(message ?? typeErrorMessage('integer', value));
     }
 }
-function assertIterable(value) {
+function assertIterable(value, message) {
     if (!isIterable(value)) {
-        throw new TypeError(typeErrorMessage('Iterable', value));
+        throw new TypeError(message ?? typeErrorMessage('Iterable', value));
     }
 }
-function assertMap(value) {
+function assertMap(value, message) {
     if (!isMap(value)) {
-        throw new TypeError(typeErrorMessage('Map', value));
+        throw new TypeError(message ?? typeErrorMessage('Map', value));
     }
 }
-function assertNan(value) {
+function assertNan(value, message) {
     if (!isNan(value)) {
-        throw new TypeError(typeErrorMessage('NaN', value));
+        throw new TypeError(message ?? typeErrorMessage('NaN', value));
     }
 }
-function assertNativePromise(value) {
+function assertNativePromise(value, message) {
     if (!isNativePromise(value)) {
-        throw new TypeError(typeErrorMessage('native Promise', value));
+        throw new TypeError(message ?? typeErrorMessage('native Promise', value));
     }
 }
-function assertNegativeNumber(value) {
+function assertNegativeNumber(value, message) {
     if (!isNegativeNumber(value)) {
-        throw new TypeError(typeErrorMessage('negative number', value));
+        throw new TypeError(message ?? typeErrorMessage('negative number', value));
     }
 }
-function assertNodeStream(value) {
+function assertNodeStream(value, message) {
     if (!isNodeStream(value)) {
-        throw new TypeError(typeErrorMessage('Node.js Stream', value));
+        throw new TypeError(message ?? typeErrorMessage('Node.js Stream', value));
     }
 }
-function assertNonEmptyArray(value) {
+function assertNonEmptyArray(value, message) {
     if (!isNonEmptyArray(value)) {
-        throw new TypeError(typeErrorMessage('non-empty array', value));
+        throw new TypeError(message ?? typeErrorMessage('non-empty array', value));
     }
 }
-function assertNonEmptyMap(value) {
+function assertNonEmptyMap(value, message) {
     if (!isNonEmptyMap(value)) {
-        throw new TypeError(typeErrorMessage('non-empty map', value));
+        throw new TypeError(message ?? typeErrorMessage('non-empty map', value));
     }
 }
-function assertNonEmptyObject(value) {
+function assertNonEmptyObject(value, message) {
     if (!isNonEmptyObject(value)) {
-        throw new TypeError(typeErrorMessage('non-empty object', value));
+        throw new TypeError(message ?? typeErrorMessage('non-empty object', value));
     }
 }
-function assertNonEmptySet(value) {
+function assertNonEmptySet(value, message) {
     if (!isNonEmptySet(value)) {
-        throw new TypeError(typeErrorMessage('non-empty set', value));
+        throw new TypeError(message ?? typeErrorMessage('non-empty set', value));
     }
 }
-function assertNonEmptyString(value) {
+function assertNonEmptyString(value, message) {
     if (!isNonEmptyString(value)) {
-        throw new TypeError(typeErrorMessage('non-empty string', value));
+        throw new TypeError(message ?? typeErrorMessage('non-empty string', value));
     }
 }
-function assertNonEmptyStringAndNotWhitespace(value) {
+function assertNonEmptyStringAndNotWhitespace(value, message) {
     if (!isNonEmptyStringAndNotWhitespace(value)) {
-        throw new TypeError(typeErrorMessage('non-empty string and not whitespace', value));
+        throw new TypeError(message ?? typeErrorMessage('non-empty string and not whitespace', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertNull(value) {
+function assertNull(value, message) {
     if (!isNull(value)) {
-        throw new TypeError(typeErrorMessage('null', value));
+        throw new TypeError(message ?? typeErrorMessage('null', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertNullOrUndefined(value) {
+function assertNullOrUndefined(value, message) {
     if (!isNullOrUndefined(value)) {
-        throw new TypeError(typeErrorMessage('null or undefined', value));
+        throw new TypeError(message ?? typeErrorMessage('null or undefined', value));
     }
 }
-function assertNumber(value) {
+function assertNumber(value, message) {
     if (!isNumber(value)) {
-        throw new TypeError(typeErrorMessage('number', value));
+        throw new TypeError(message ?? typeErrorMessage('number', value));
     }
 }
-function assertNumericString(value) {
+function assertNumericString(value, message) {
     if (!isNumericString(value)) {
-        throw new TypeError(typeErrorMessage('string with a number', value));
+        throw new TypeError(message ?? typeErrorMessage('string with a number', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertObject(value) {
+function assertObject(value, message) {
     if (!isObject(value)) {
-        throw new TypeError(typeErrorMessage('Object', value));
+        throw new TypeError(message ?? typeErrorMessage('Object', value));
     }
 }
-function assertObservable(value) {
+function assertObservable(value, message) {
     if (!isObservable(value)) {
-        throw new TypeError(typeErrorMessage('Observable', value));
+        throw new TypeError(message ?? typeErrorMessage('Observable', value));
     }
 }
-function assertOddInteger(value) {
+function assertOddInteger(value, message) {
     if (!isOddInteger(value)) {
-        throw new TypeError(typeErrorMessage('odd integer', value));
+        throw new TypeError(message ?? typeErrorMessage('odd integer', value));
     }
 }
-function assertPlainObject(value) {
+function assertPlainObject(value, message) {
     if (!isPlainObject(value)) {
-        throw new TypeError(typeErrorMessage('plain object', value));
+        throw new TypeError(message ?? typeErrorMessage('plain object', value));
     }
 }
-function assertPositiveNumber(value) {
+function assertPositiveNumber(value, message) {
     if (!isPositiveNumber(value)) {
-        throw new TypeError(typeErrorMessage('positive number', value));
+        throw new TypeError(message ?? typeErrorMessage('positive number', value));
     }
 }
-function assertPrimitive(value) {
+function assertPrimitive(value, message) {
     if (!isPrimitive(value)) {
-        throw new TypeError(typeErrorMessage('primitive', value));
+        throw new TypeError(message ?? typeErrorMessage('primitive', value));
     }
 }
-function assertPromise(value) {
+function assertPromise(value, message) {
     if (!isPromise(value)) {
-        throw new TypeError(typeErrorMessage('Promise', value));
+        throw new TypeError(message ?? typeErrorMessage('Promise', value));
     }
 }
-function assertPropertyKey(value) {
+function assertPropertyKey(value, message) {
     if (!isPropertyKey(value)) {
-        throw new TypeError(typeErrorMessage('PropertyKey', value));
+        throw new TypeError(message ?? typeErrorMessage('PropertyKey', value));
     }
 }
-function assertRegExp(value) {
+function assertRegExp(value, message) {
     if (!isRegExp(value)) {
-        throw new TypeError(typeErrorMessage('RegExp', value));
+        throw new TypeError(message ?? typeErrorMessage('RegExp', value));
     }
 }
-function assertSafeInteger(value) {
+function assertSafeInteger(value, message) {
     if (!isSafeInteger(value)) {
-        throw new TypeError(typeErrorMessage('integer', value));
+        throw new TypeError(message ?? typeErrorMessage('integer', value));
     }
 }
-function assertSet(value) {
+function assertSet(value, message) {
     if (!isSet(value)) {
-        throw new TypeError(typeErrorMessage('Set', value));
+        throw new TypeError(message ?? typeErrorMessage('Set', value));
     }
 }
-function assertSharedArrayBuffer(value) {
+function assertSharedArrayBuffer(value, message) {
     if (!isSharedArrayBuffer(value)) {
-        throw new TypeError(typeErrorMessage('SharedArrayBuffer', value));
+        throw new TypeError(message ?? typeErrorMessage('SharedArrayBuffer', value));
     }
 }
-function assertString(value) {
+function assertString(value, message) {
     if (!isString(value)) {
-        throw new TypeError(typeErrorMessage('string', value));
+        throw new TypeError(message ?? typeErrorMessage('string', value));
     }
 }
-function assertSymbol(value) {
+function assertSymbol(value, message) {
     if (!isSymbol(value)) {
-        throw new TypeError(typeErrorMessage('symbol', value));
+        throw new TypeError(message ?? typeErrorMessage('symbol', value));
     }
 }
-function assertTruthy(value) {
+function assertTruthy(value, message) {
     if (!isTruthy(value)) {
-        throw new TypeError(typeErrorMessage('truthy', value));
+        throw new TypeError(message ?? typeErrorMessage('truthy', value));
     }
 }
-function assertTupleLike(value, guards) {
+function assertTupleLike(value, guards, message) {
     if (!isTupleLike(value, guards)) {
-        throw new TypeError(typeErrorMessage('tuple-like', value));
+        throw new TypeError(message ?? typeErrorMessage('tuple-like', value));
     }
 }
-function assertTypedArray(value) {
+function assertTypedArray(value, message) {
     if (!isTypedArray(value)) {
-        throw new TypeError(typeErrorMessage('TypedArray', value));
+        throw new TypeError(message ?? typeErrorMessage('TypedArray', value));
     }
 }
-function assertUint16Array(value) {
+function assertUint16Array(value, message) {
     if (!isUint16Array(value)) {
-        throw new TypeError(typeErrorMessage('Uint16Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Uint16Array', value));
     }
 }
-function assertUint32Array(value) {
+function assertUint32Array(value, message) {
     if (!isUint32Array(value)) {
-        throw new TypeError(typeErrorMessage('Uint32Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Uint32Array', value));
     }
 }
-function assertUint8Array(value) {
+function assertUint8Array(value, message) {
     if (!isUint8Array(value)) {
-        throw new TypeError(typeErrorMessage('Uint8Array', value));
+        throw new TypeError(message ?? typeErrorMessage('Uint8Array', value));
     }
 }
-function assertUint8ClampedArray(value) {
+function assertUint8ClampedArray(value, message) {
     if (!isUint8ClampedArray(value)) {
-        throw new TypeError(typeErrorMessage('Uint8ClampedArray', value));
+        throw new TypeError(message ?? typeErrorMessage('Uint8ClampedArray', value));
     }
 }
-function assertUndefined(value) {
+function assertUndefined(value, message) {
     if (!isUndefined(value)) {
-        throw new TypeError(typeErrorMessage('undefined', value));
+        throw new TypeError(message ?? typeErrorMessage('undefined', value));
     }
 }
-function assertUrlInstance(value) {
+function assertUrlInstance(value, message) {
     if (!isUrlInstance(value)) {
-        throw new TypeError(typeErrorMessage('URL', value));
+        throw new TypeError(message ?? typeErrorMessage('URL', value));
     }
 }
 // eslint-disable-next-line unicorn/prevent-abbreviations
-function assertUrlSearchParams(value) {
+function assertUrlSearchParams(value, message) {
     if (!isUrlSearchParams(value)) {
-        throw new TypeError(typeErrorMessage('URLSearchParams', value));
+        throw new TypeError(message ?? typeErrorMessage('URLSearchParams', value));
     }
 }
-function assertUrlString(value) {
+function assertUrlString(value, message) {
     if (!isUrlString(value)) {
-        throw new TypeError(typeErrorMessage('string with a URL', value));
+        throw new TypeError(message ?? typeErrorMessage('string with a URL', value));
     }
 }
-function assertValidDate(value) {
+function assertValidDate(value, message) {
     if (!isValidDate(value)) {
-        throw new TypeError(typeErrorMessage('valid Date', value));
+        throw new TypeError(message ?? typeErrorMessage('valid Date', value));
     }
 }
-function assertValidLength(value) {
+function assertValidLength(value, message) {
     if (!isValidLength(value)) {
-        throw new TypeError(typeErrorMessage('valid length', value));
+        throw new TypeError(message ?? typeErrorMessage('valid length', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertWeakMap(value) {
+function assertWeakMap(value, message) {
     if (!isWeakMap(value)) {
-        throw new TypeError(typeErrorMessage('WeakMap', value));
+        throw new TypeError(message ?? typeErrorMessage('WeakMap', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertWeakRef(value) {
+function assertWeakRef(value, message) {
     if (!isWeakRef(value)) {
-        throw new TypeError(typeErrorMessage('WeakRef', value));
+        throw new TypeError(message ?? typeErrorMessage('WeakRef', value));
     }
 }
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertWeakSet(value) {
+function assertWeakSet(value, message) {
     if (!isWeakSet(value)) {
-        throw new TypeError(typeErrorMessage('WeakSet', value));
+        throw new TypeError(message ?? typeErrorMessage('WeakSet', value));
     }
 }
-function assertWhitespaceString(value) {
+function assertWhitespaceString(value, message) {
     if (!isWhitespaceString(value)) {
-        throw new TypeError(typeErrorMessage('whitespace string', value));
+        throw new TypeError(message ?? typeErrorMessage('whitespace string', value));
     }
 }
 /* harmony default export */ const dist = (is);
@@ -93742,13 +93748,9 @@ const got = source_create(defaults);
 
 
 
-;// CONCATENATED MODULE: external "node:fs/promises"
-const promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs/promises");
-;// CONCATENATED MODULE: external "node:path"
-const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
 ;// CONCATENATED MODULE: external "node:stream/promises"
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@56a244c061429692b1c7d80fc068d684db3ae4d2_nqhbjyaof246q4gvygpbo6m4na/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@5abcb239472d24b114a53f70800f0e42fc30819c_ey4bwtjkop43mcem42nicbf3we/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -93909,7 +93911,7 @@ var getLinuxInfo = async () => {
   let data = {};
   try {
     data = releaseInfo({ mode: "sync" });
-    console.log(data);
+    core.debug(`Identified release info: ${JSON.stringify(data)}`);
   } catch (e) {
     core.debug(`Error collecting release info: ${e}`);
   }
@@ -94338,46 +94340,55 @@ var IdsToolbox = class {
     });
   }
   async fetch() {
-    core.info(`Fetching from ${this.getUrl()}`);
-    const correlatedUrl = this.getUrl();
-    correlatedUrl.searchParams.set("ci", "github");
-    correlatedUrl.searchParams.set(
-      "correlation",
-      JSON.stringify(this.identity)
+    core.startGroup(
+      `Downloading ${this.actionOptions.name} for ${this.architectureFetchSuffix}`
     );
-    const versionCheckup = await this.client.head(correlatedUrl);
-    if (versionCheckup.headers.etag) {
-      const v = versionCheckup.headers.etag;
-      core.debug(`Checking the tool cache for ${this.getUrl()} at ${v}`);
-      const cached = await this.getCachedVersion(v);
-      if (cached) {
-        this.facts["artifact_fetched_from_cache"] = true;
-        core.debug(`Tool cache hit.`);
-        return cached;
+    try {
+      core.info(`Fetching from ${this.getUrl()}`);
+      const correlatedUrl = this.getUrl();
+      correlatedUrl.searchParams.set("ci", "github");
+      correlatedUrl.searchParams.set(
+        "correlation",
+        JSON.stringify(this.identity)
+      );
+      const versionCheckup = await this.client.head(correlatedUrl);
+      if (versionCheckup.headers.etag) {
+        const v = versionCheckup.headers.etag;
+        core.debug(
+          `Checking the tool cache for ${this.getUrl()} at ${v}`
+        );
+        const cached = await this.getCachedVersion(v);
+        if (cached) {
+          this.facts["artifact_fetched_from_cache"] = true;
+          core.debug(`Tool cache hit.`);
+          return cached;
+        }
       }
-    }
-    this.facts["artifact_fetched_from_cache"] = false;
-    core.debug(
-      `No match from the cache, re-fetching from the redirect: ${versionCheckup.url}`
-    );
-    const destFile = this.getTemporaryName();
-    const fetchStream = this.client.stream(versionCheckup.url);
-    await (0,external_node_stream_promises_namespaceObject.pipeline)(
-      fetchStream,
-      (0,external_node_fs_namespaceObject.createWriteStream)(destFile, {
-        encoding: "binary",
-        mode: 493
-      })
-    );
-    if (fetchStream.response?.headers.etag) {
-      const v = fetchStream.response.headers.etag;
-      try {
-        await this.saveCachedVersion(v, destFile);
-      } catch (e) {
-        core.debug(`Error caching the artifact: ${e}`);
+      this.facts["artifact_fetched_from_cache"] = false;
+      core.debug(
+        `No match from the cache, re-fetching from the redirect: ${versionCheckup.url}`
+      );
+      const destFile = this.getTemporaryName();
+      const fetchStream = this.client.stream(versionCheckup.url);
+      await (0,external_node_stream_promises_namespaceObject.pipeline)(
+        fetchStream,
+        (0,external_node_fs_namespaceObject.createWriteStream)(destFile, {
+          encoding: "binary",
+          mode: 493
+        })
+      );
+      if (fetchStream.response?.headers.etag) {
+        const v = fetchStream.response.headers.etag;
+        try {
+          await this.saveCachedVersion(v, destFile);
+        } catch (e) {
+          core.debug(`Error caching the artifact: ${e}`);
+        }
       }
+      return destFile;
+    } finally {
+      core.endGroup();
     }
-    return destFile;
   }
   async fetchExecutable() {
     const binaryPath = await this.fetch();
@@ -94617,45 +94628,13 @@ function mungeDiagnosticEndpoint(inputUrl) {
 var external_http_ = __nccwpck_require__(3685);
 ;// CONCATENATED MODULE: external "node:child_process"
 const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
-// EXTERNAL MODULE: ./node_modules/.pnpm/tail@2.2.6/node_modules/tail/lib/tail.js
-var tail = __nccwpck_require__(3707);
 ;// CONCATENATED MODULE: ./dist/index.js
-// src/index.ts
+// src/helpers.ts
 
 
 
 
 
-
-
-
-
-
-
-var ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
-var gotClient = got_dist_source.extend({
-  retry: {
-    limit: 1,
-    methods: ["POST", "GET", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE"]
-  },
-  hooks: {
-    beforeRetry: [
-      (error, retryCount) => {
-        core.info(`Retrying after error ${error.code}, retry #: ${retryCount}`);
-      }
-    ]
-  }
-});
-async function fetchAutoCacher(toolbox) {
-  const closurePath = await toolbox.fetch();
-  toolbox.recordEvent("load_closure");
-  const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(
-    `cat "${closurePath}" | xz -d | nix-store --import`
-  );
-  const paths = stdout.split(external_node_os_.EOL);
-  const last_path = paths.at(-2);
-  return `${last_path}/bin/magic-nix-cache`;
-}
 function tailLog(daemonDir) {
   const log = new tail/* Tail */.x(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
   core.debug(`tailing daemon.log...`);
@@ -94663,138 +94642,6 @@ function tailLog(daemonDir) {
     core.info(line);
   });
   return log;
-}
-async function setUpAutoCache(toolbox) {
-  const tmpdir2 = process.env["RUNNER_TEMP"] || external_node_os_.tmpdir();
-  const required_env = [
-    "ACTIONS_CACHE_URL",
-    "ACTIONS_RUNTIME_URL",
-    "ACTIONS_RUNTIME_TOKEN"
-  ];
-  let anyMissing = false;
-  for (const n of required_env) {
-    if (!process.env.hasOwnProperty(n)) {
-      anyMissing = true;
-      core.warning(
-        `Disabling automatic caching since required environment ${n} isn't available`
-      );
-    }
-  }
-  if (anyMissing) {
-    return;
-  }
-  core.debug(`GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`);
-  const daemonDir = await promises_namespaceObject.mkdtemp(external_node_path_namespaceObject.join(tmpdir2, "magic-nix-cache-"));
-  let daemonBin;
-  if (core.getInput("source-binary")) {
-    daemonBin = core.getInput("source-binary");
-  } else {
-    daemonBin = await fetchAutoCacher(toolbox);
-  }
-  let runEnv;
-  if (core.isDebug()) {
-    runEnv = {
-      RUST_LOG: "trace,magic_nix_cache=debug,gha_cache=debug",
-      RUST_BACKTRACE: "full",
-      ...process.env
-    };
-  } else {
-    runEnv = process.env;
-  }
-  const notifyPort = core.getInput("startup-notification-port");
-  const notifyPromise = new Promise((resolveListening) => {
-    const promise = new Promise(async (resolveQuit) => {
-      const notifyServer = external_http_.createServer((req, res) => {
-        if (req.method === "POST" && req.url === "/") {
-          core.debug(`Notify server shutting down.`);
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end("{}");
-          notifyServer.close(() => {
-            resolveQuit();
-          });
-        }
-      });
-      notifyServer.listen(notifyPort, () => {
-        core.debug(`Notify server running.`);
-        resolveListening(promise);
-      });
-    });
-  });
-  const outputPath = `${daemonDir}/daemon.log`;
-  const output = (0,external_node_fs_namespaceObject.openSync)(outputPath, "a");
-  const log = tailLog(daemonDir);
-  const netrc = await netrcPath();
-  const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
-  const daemonCliFlags = [
-    "--startup-notification-url",
-    `http://127.0.0.1:${notifyPort}`,
-    "--listen",
-    core.getInput("listen"),
-    "--upstream",
-    core.getInput("upstream-cache"),
-    "--diagnostic-endpoint",
-    core.getInput("diagnostic-endpoint"),
-    "--nix-conf",
-    nixConfPath
-  ].concat(
-    core.getBooleanInput("use-flakehub") ? [
-      "--use-flakehub",
-      "--flakehub-cache-server",
-      core.getInput("flakehub-cache-server"),
-      "--flakehub-api-server",
-      core.getInput("flakehub-api-server"),
-      "--flakehub-api-server-netrc",
-      netrc,
-      "--flakehub-flake-name",
-      core.getInput("flakehub-flake-name")
-    ] : []
-  ).concat(core.getBooleanInput("use-gha-cache") ? ["--use-gha-cache"] : []);
-  const opts = {
-    stdio: ["ignore", output, output],
-    env: runEnv,
-    detached: true
-  };
-  core.debug("Full daemon start command:");
-  core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
-  const daemon = (0,external_node_child_process_namespaceObject.spawn)(daemonBin, daemonCliFlags, opts);
-  const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
-  await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
-  core.info("Waiting for magic-nix-cache to start...");
-  await new Promise((resolve, reject) => {
-    notifyPromise.then((_value) => {
-      resolve();
-    }).catch((err) => {
-      reject(new Error(`error in notifyPromise: ${err}`));
-    });
-    daemon.on("exit", async (code, signal) => {
-      if (signal) {
-        reject(new Error(`Daemon was killed by signal ${signal}`));
-      } else if (code) {
-        reject(new Error(`Daemon exited with code ${code}`));
-      } else {
-        reject(new Error(`Daemon unexpectedly exited`));
-      }
-    });
-  });
-  daemon.unref();
-  core.info("Launched Magic Nix Cache");
-  core.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
-  log.unwatch();
-}
-async function notifyAutoCache() {
-  const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
-  if (!daemonDir) {
-    return;
-  }
-  try {
-    core.debug(`Indicating workflow start`);
-    const res = await gotClient.post(`http://${core.getInput("listen")}/api/workflow-start`).json();
-    core.debug(`back from post: ${res}`);
-  } catch (e) {
-    core.info(`Error marking the workflow as started:`);
-    core.info((0,external_node_util_.inspect)(e));
-    core.info(`Magic Nix Cache may not be running for this workflow.`);
-  }
 }
 async function netrcPath() {
   const expectedNetrcPath = external_node_path_namespaceObject.join(
@@ -94810,7 +94657,7 @@ async function netrcPath() {
       "magic-nix-cache-netrc"
     );
     try {
-      await flakehub_login(destinedNetrcPath);
+      await flakeHubLogin(destinedNetrcPath);
     } catch (e) {
       core.info("FlakeHub cache disabled.");
       core.debug(`Error while logging into FlakeHub: ${e}`);
@@ -94818,7 +94665,7 @@ async function netrcPath() {
     return destinedNetrcPath;
   }
 }
-async function flakehub_login(netrc) {
+async function flakeHubLogin(netrc) {
   const jwt = await core.getIDToken("api.flakehub.com");
   await promises_namespaceObject.writeFile(
     netrc,
@@ -94830,56 +94677,242 @@ async function flakehub_login(netrc) {
   );
   core.info("Logged in to FlakeHub.");
 }
-async function tearDownAutoCache() {
-  const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
-  if (!daemonDir) {
-    core.debug("magic-nix-cache not started - Skipping");
-    return;
+
+// src/index.ts
+
+
+
+
+
+
+
+
+
+
+var ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var MagicNixCacheAction = class {
+  constructor() {
+    this.idslib = new IdsToolbox({
+      name: "magic-nix-cache",
+      fetchStyle: "gh-env-style",
+      idsProjectName: "magic-nix-cache-closure",
+      requireNix: "warn"
+    });
+    this.client = got_dist_source.extend({
+      retry: {
+        limit: 1,
+        methods: ["POST", "GET", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE"]
+      },
+      hooks: {
+        beforeRetry: [
+          (error, retryCount) => {
+            core.info(
+              `Retrying after error ${error.code}, retry #: ${retryCount}`
+            );
+          }
+        ]
+      }
+    });
   }
-  const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
-  const pid = parseInt(await promises_namespaceObject.readFile(pidFile, { encoding: "ascii" }));
-  core.debug(`found daemon pid: ${pid}`);
-  if (!pid) {
-    throw new Error("magic-nix-cache did not start successfully");
-  }
-  const log = tailLog(daemonDir);
-  try {
-    core.debug(`about to post to localhost`);
-    const res = await gotClient.post(`http://${core.getInput("listen")}/api/workflow-finish`).json();
-    core.debug(`back from post: ${res}`);
-  } finally {
-    core.debug(`unwatching the daemon log`);
+  async setUpAutoCache() {
+    const tmpdir3 = process.env["RUNNER_TEMP"] || external_node_os_.tmpdir();
+    const requiredEnv = [
+      "ACTIONS_CACHE_URL",
+      "ACTIONS_RUNTIME_URL",
+      "ACTIONS_RUNTIME_TOKEN"
+    ];
+    let anyMissing = false;
+    for (const n of requiredEnv) {
+      if (!process.env.hasOwnProperty(n)) {
+        anyMissing = true;
+        core.warning(
+          `Disabling automatic caching since required environment ${n} isn't available`
+        );
+      }
+    }
+    if (anyMissing) {
+      return;
+    }
+    core.debug(
+      `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
+    );
+    const daemonDir = await promises_namespaceObject.mkdtemp(external_node_path_namespaceObject.join(tmpdir3, "magic-nix-cache-"));
+    const sourceBinary = inputs_exports.getStringOrNull("source-binary");
+    const daemonBin = sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
+    let runEnv;
+    if (core.isDebug()) {
+      runEnv = {
+        RUST_LOG: "trace,magic_nix_cache=debug,gha_cache=debug",
+        RUST_BACKTRACE: "full",
+        ...process.env
+      };
+    } else {
+      runEnv = process.env;
+    }
+    const notifyPort = inputs_exports.getString("startup-notification-port");
+    const notifyPromise = new Promise((resolveListening) => {
+      const promise = new Promise(async (resolveQuit) => {
+        const notifyServer = external_http_.createServer((req, res) => {
+          if (req.method === "POST" && req.url === "/") {
+            core.debug(`Notify server shutting down.`);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("{}");
+            notifyServer.close(() => {
+              resolveQuit();
+            });
+          }
+        });
+        notifyServer.listen(notifyPort, () => {
+          core.debug(`Notify server running.`);
+          resolveListening(promise);
+        });
+      });
+    });
+    const outputPath = `${daemonDir}/daemon.log`;
+    const output = (0,external_node_fs_namespaceObject.openSync)(outputPath, "a");
+    const log = tailLog(daemonDir);
+    const netrc = await netrcPath();
+    const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
+    const hostAndPort = inputs_exports.getString("listen");
+    const upstreamCache = inputs_exports.getString("upstream-cache");
+    const diagnosticEndpoint = inputs_exports.getString("diagnostic-endpoint");
+    const useFlakeHub = inputs_exports.getBool("use-flakehub");
+    const flakeHubCacheServer = inputs_exports.getString("flakehub-cache-server");
+    const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
+    const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
+    const useGhaCache = inputs_exports.getBool("use-gha-cache");
+    const daemonCliFlags = [
+      "--startup-notification-url",
+      `http://127.0.0.1:${notifyPort}`,
+      "--listen",
+      hostAndPort,
+      "--upstream",
+      upstreamCache,
+      "--diagnostic-endpoint",
+      diagnosticEndpoint,
+      "--nix-conf",
+      nixConfPath
+    ].concat(
+      useFlakeHub ? [
+        "--use-flakehub",
+        "--flakehub-cache-server",
+        flakeHubCacheServer,
+        "--flakehub-api-server",
+        flakeHubApiServer,
+        "--flakehub-api-server-netrc",
+        netrc,
+        "--flakehub-flake-name",
+        flakeHubFlakeName
+      ] : []
+    ).concat(useGhaCache ? ["--use-gha-cache"] : []);
+    const opts = {
+      stdio: ["ignore", output, output],
+      env: runEnv,
+      detached: true
+    };
+    core.debug("Full daemon start command:");
+    core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
+    const daemon = (0,external_node_child_process_namespaceObject.spawn)(daemonBin, daemonCliFlags, opts);
+    const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
+    await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
+    core.info("Waiting for magic-nix-cache to start...");
+    await new Promise((resolve, reject) => {
+      notifyPromise.then((_value) => {
+        resolve();
+      }).catch((err) => {
+        reject(new Error(`error in notifyPromise: ${err}`));
+      });
+      daemon.on("exit", async (code, signal) => {
+        if (signal) {
+          reject(new Error(`Daemon was killed by signal ${signal}`));
+        } else if (code) {
+          reject(new Error(`Daemon exited with code ${code}`));
+        } else {
+          reject(new Error(`Daemon unexpectedly exited`));
+        }
+      });
+    });
+    daemon.unref();
+    core.info("Launched Magic Nix Cache");
+    core.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
     log.unwatch();
   }
-  core.debug(`killing`);
-  try {
-    process.kill(pid, "SIGTERM");
-  } catch (e) {
-    if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-      throw e;
+  async fetchAutoCacher() {
+    const closurePath = await this.idslib.fetch();
+    this.idslib.recordEvent("load_closure");
+    const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(
+      `cat "${closurePath}" | xz -d | nix-store --import`
+    );
+    const paths = stdout.split(external_node_os_.EOL);
+    const lastPath = paths.at(-2);
+    return `${lastPath}/bin/magic-nix-cache`;
+  }
+  async notifyAutoCache() {
+    const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+    if (!daemonDir) {
+      return;
     }
-  } finally {
-    if (core.isDebug()) {
-      core.info("Entire log:");
-      const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
-      core.info(entireLog.toString());
+    try {
+      core.debug(`Indicating workflow start`);
+      const hostAndPort = inputs_exports.getString("listen");
+      const res = await this.client.post(`http://${hostAndPort}/api/workflow-start`).json();
+      core.debug(`back from post: ${res}`);
+    } catch (e) {
+      core.info(`Error marking the workflow as started:`);
+      core.info((0,external_node_util_.inspect)(e));
+      core.info(`Magic Nix Cache may not be running for this workflow.`);
     }
   }
+  async tearDownAutoCache() {
+    const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+    if (!daemonDir) {
+      core.debug("magic-nix-cache not started - Skipping");
+      return;
+    }
+    const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
+    const pid = parseInt(await promises_namespaceObject.readFile(pidFile, { encoding: "ascii" }));
+    core.debug(`found daemon pid: ${pid}`);
+    if (!pid) {
+      throw new Error("magic-nix-cache did not start successfully");
+    }
+    const log = tailLog(daemonDir);
+    try {
+      core.debug(`about to post to localhost`);
+      const hostAndPort = inputs_exports.getString("listen");
+      const res = await this.client.post(`http://${hostAndPort}/api/workflow-finish`).json();
+      core.debug(`back from post: ${res}`);
+    } finally {
+      core.debug(`unwatching the daemon log`);
+      log.unwatch();
+    }
+    core.debug(`killing`);
+    try {
+      process.kill(pid, "SIGTERM");
+    } catch (e) {
+      if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
+        throw e;
+      }
+    } finally {
+      if (core.isDebug()) {
+        core.info("Entire log:");
+        const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
+        core.info(entireLog.toString());
+      }
+    }
+  }
+};
+function main() {
+  const cacheAction = new MagicNixCacheAction();
+  cacheAction.idslib.onMain(async () => {
+    await cacheAction.setUpAutoCache();
+    await cacheAction.notifyAutoCache();
+  });
+  cacheAction.idslib.onPost(async () => {
+    await cacheAction.tearDownAutoCache();
+  });
+  cacheAction.idslib.execute();
 }
-var idslib = new IdsToolbox({
-  name: "magic-nix-cache",
-  fetchStyle: "gh-env-style",
-  idsProjectName: "magic-nix-cache-closure",
-  requireNix: "warn"
-});
-idslib.onMain(async () => {
-  await setUpAutoCache(idslib);
-  await notifyAutoCache();
-});
-idslib.onPost(async () => {
-  await tearDownAutoCache();
-});
-idslib.execute();
+main();
 //# sourceMappingURL=index.js.map
 })();
 
