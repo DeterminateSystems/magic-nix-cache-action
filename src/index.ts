@@ -4,17 +4,23 @@ import { IdsToolbox, inputs } from "detsys-ts";
 import got, { Got } from "got";
 import * as http from "http";
 import { SpawnOptions, exec, spawn } from "node:child_process";
-import { openSync, readFileSync } from "node:fs";
+import { mkdirSync, openSync, readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { inspect, promisify } from "node:util";
 
 const ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+const ENV_CACHE_STARTED = "MAGIC_NIX_CACHE_STARTED";
+
+const STARTED_HINT = "true";
 
 class MagicNixCacheAction {
   idslib: IdsToolbox;
   private client: Got;
+
+  private daemonDir: string;
+  private daemonStarted: boolean;
 
   constructor() {
     this.idslib = new IdsToolbox({
@@ -39,10 +45,24 @@ class MagicNixCacheAction {
         ],
       },
     });
+
+    this.daemonStarted = process.env[ENV_CACHE_STARTED] === STARTED_HINT;
+
+    if (process.env[ENV_CACHE_DAEMONDIR]) {
+      this.daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+    } else {
+      this.daemonDir = this.idslib.getTemporaryName();
+      mkdirSync(this.daemonDir);
+      actionsCore.exportVariable(ENV_CACHE_DAEMONDIR, this.daemonDir);
+    }
+
+    this.idslib.stapleFile(
+      "daemon.log",
+      path.join(this.daemonDir, "daemon.log"),
+    );
   }
 
   async setUpAutoCache(): Promise<void> {
-    const tmpdir = process.env["RUNNER_TEMP"] || os.tmpdir();
     const requiredEnv = [
       "ACTIONS_CACHE_URL",
       "ACTIONS_RUNTIME_URL",
@@ -67,7 +87,8 @@ class MagicNixCacheAction {
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`,
     );
 
-    const daemonDir = await fs.mkdtemp(path.join(tmpdir, "magic-nix-cache-"));
+    this.daemonStarted = true;
+    actionsCore.exportVariable(ENV_CACHE_STARTED, STARTED_HINT);
     const sourceBinary = inputs.getStringOrNull("source-binary");
     const daemonBin =
       sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
@@ -106,9 +127,9 @@ class MagicNixCacheAction {
     });
 
     // Start tailing the daemon log.
-    const outputPath = `${daemonDir}/daemon.log`;
+    const outputPath = `${this.daemonDir}/daemon.log`;
     const output = openSync(outputPath, "a");
-    const log = tailLog(daemonDir);
+    const log = tailLog(this.daemonDir);
     const netrc = await netrcPath();
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
 
@@ -163,7 +184,7 @@ class MagicNixCacheAction {
     // Start the server. Once it is ready, it will notify us via the notification server.
     const daemon = spawn(daemonBin, daemonCliFlags, opts);
 
-    const pidFile = path.join(daemonDir, "daemon.pid");
+    const pidFile = path.join(this.daemonDir, "daemon.pid");
     await fs.writeFile(pidFile, `${daemon.pid}`);
 
     actionsCore.info("Waiting for magic-nix-cache to start...");
@@ -192,7 +213,6 @@ class MagicNixCacheAction {
     daemon.unref();
 
     actionsCore.info("Launched Magic Nix Cache");
-    actionsCore.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
 
     log.unwatch();
   }
@@ -211,9 +231,8 @@ class MagicNixCacheAction {
   }
 
   async notifyAutoCache(): Promise<void> {
-    const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
-
-    if (!daemonDir) {
+    if (!this.daemonStarted) {
+      actionsCore.debug("magic-nix-cache not started - Skipping");
       return;
     }
 
@@ -232,21 +251,19 @@ class MagicNixCacheAction {
   }
 
   async tearDownAutoCache(): Promise<void> {
-    const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
-
-    if (!daemonDir) {
+    if (!this.daemonStarted) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;
     }
 
-    const pidFile = path.join(daemonDir, "daemon.pid");
+    const pidFile = path.join(this.daemonDir, "daemon.pid");
     const pid = parseInt(await fs.readFile(pidFile, { encoding: "ascii" }));
     actionsCore.debug(`found daemon pid: ${pid}`);
     if (!pid) {
       throw new Error("magic-nix-cache did not start successfully");
     }
 
-    const log = tailLog(daemonDir);
+    const log = tailLog(this.daemonDir);
 
     try {
       actionsCore.debug(`about to post to localhost`);
@@ -270,7 +287,7 @@ class MagicNixCacheAction {
     } finally {
       if (actionsCore.isDebug()) {
         actionsCore.info("Entire log:");
-        const entireLog = readFileSync(path.join(daemonDir, "daemon.log"));
+        const entireLog = readFileSync(path.join(this.daemonDir, "daemon.log"));
         actionsCore.info(entireLog.toString());
       }
     }
