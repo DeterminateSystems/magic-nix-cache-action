@@ -129,6 +129,8 @@ jobs:
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
         uses: ./
+        with:
+          source-pr: 61
       - name: goodbye
         run: |
           kill "$(cat "$MAGIC_NIX_CACHE_DAEMONDIR/daemon.pid")"
