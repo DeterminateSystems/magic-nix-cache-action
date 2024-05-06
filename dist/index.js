@@ -94765,6 +94765,10 @@ var MagicNixCacheAction = class {
       this.unsafeDaemonDir = this.idslib.getTemporaryName();
       core.exportVariable(ENV_CACHE_DAEMONDIR, this.unsafeDaemonDir);
     }
+    this.idslib.stapleFile(
+      "daemon.log",
+      external_node_path_namespaceObject.join(this.unsafeDaemonDir, "daemon.log")
+    );
   }
   async getDaemonDir() {
     if (this.daemonDir === void 0) {
@@ -94911,6 +94915,10 @@ var MagicNixCacheAction = class {
     return `${lastPath}/bin/magic-nix-cache`;
   }
   async notifyAutoCache() {
+    if (!await this.daemonDirExists()) {
+      core.debug("magic-nix-cache not started - Skipping");
+      return;
+    }
     try {
       core.debug(`Indicating workflow start`);
       const hostAndPort = inputs_exports.getString("listen");
@@ -94923,7 +94931,7 @@ var MagicNixCacheAction = class {
     }
   }
   async tearDownAutoCache() {
-    if (await this.daemonDirExists()) {
+    if (!await this.daemonDirExists()) {
       core.debug("magic-nix-cache not started - Skipping");
       return;
     }

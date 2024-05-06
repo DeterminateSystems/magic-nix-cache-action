@@ -50,6 +50,10 @@ class MagicNixCacheAction {
       this.unsafeDaemonDir = this.idslib.getTemporaryName();
       actionsCore.exportVariable(ENV_CACHE_DAEMONDIR, this.unsafeDaemonDir);
     }
+    this.idslib.stapleFile(
+      "daemon.log",
+      path.join(this.unsafeDaemonDir, "daemon.log"),
+    );
   }
 
   async getDaemonDir(): Promise<string> {
@@ -235,7 +239,7 @@ class MagicNixCacheAction {
   }
 
   async notifyAutoCache(): Promise<void> {
-    if (!await this.daemonDirExists()) {
+    if (!(await this.daemonDirExists())) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;
     }
@@ -255,7 +259,7 @@ class MagicNixCacheAction {
   }
 
   async tearDownAutoCache(): Promise<void> {
-    if (!await this.daemonDirExists()) {
+    if (!(await this.daemonDirExists())) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;
     }
