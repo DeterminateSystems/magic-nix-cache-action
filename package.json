@@ -27,7 +27,7 @@
   "dependencies": {
     "@actions/core": "^1.10.1",
     "@actions/exec": "^1.1.1",
-    "detsys-ts": "github:DeterminateSystems/detsys-ts",
+    "detsys-ts": "github:DeterminateSystems/detsys-ts#error-condition",
     "got": "^14.2.1",
     "tail": "^2.2.6"
   },

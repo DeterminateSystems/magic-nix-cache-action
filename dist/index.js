@@ -93750,7 +93750,9 @@ const got = source_create(defaults);
 
 ;// CONCATENATED MODULE: external "node:stream/promises"
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@5abcb239472d24b114a53f70800f0e42fc30819c_ey4bwtjkop43mcem42nicbf3we/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: external "node:zlib"
+const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3baa96b315ee9f6b26033191a123eb9015522791_2fnsfzpup2itrpjvndt6evj3qu/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94096,16 +94098,26 @@ function getNixPlatform(archOs) {
 // src/inputs.ts
 var inputs_exports = {};
 __export(inputs_exports, {
+  getArrayOfStrings: () => getArrayOfStrings,
   getBool: () => getBool,
   getMultilineStringOrNull: () => getMultilineStringOrNull,
   getNumberOrNull: () => getNumberOrNull,
   getString: () => getString,
   getStringOrNull: () => getStringOrNull,
-  getStringOrUndefined: () => getStringOrUndefined
+  getStringOrUndefined: () => getStringOrUndefined,
+  handleString: () => handleString
 });
 
 var getBool = (name) => {
   return core.getBooleanInput(name);
+};
+var getArrayOfStrings = (name, separator) => {
+  const original = getString(name);
+  return handleString(original, separator);
+};
+var handleString = (input, separator) => {
+  const sepChar = separator === "comma" ? "," : /\s+/;
+  return input.trim().split(sepChar).map((s) => s.trim());
 };
 var getMultilineStringOrNull = (name) => {
   const value = core.getMultilineInput(name);
@@ -94186,18 +94198,24 @@ function constructSourceParameters(legacyPrefix) {
 
 
 
+
+
 var DEFAULT_IDS_HOST = "https://install.determinate.systems";
 var IDS_HOST = process.env["IDS_HOST"] ?? DEFAULT_IDS_HOST;
 var EVENT_EXCEPTION = "exception";
 var EVENT_ARTIFACT_CACHE_HIT = "artifact_cache_hit";
 var EVENT_ARTIFACT_CACHE_MISS = "artifact_cache_miss";
+var EVENT_ARTIFACT_CACHE_PERSIST = "artifact_cache_persist";
 var FACT_ENDED_WITH_EXCEPTION = "ended_with_exception";
 var FACT_FINAL_EXCEPTION = "final_exception";
+var FACT_SOURCE_URL = "source_url";
+var FACT_SOURCE_URL_ETAG = "source_url_etag";
 var IdsToolbox = class {
   constructor(actionOptions) {
     this.actionOptions = makeOptionsConfident(actionOptions);
     this.hookMain = void 0;
     this.hookPost = void 0;
+    this.exceptionAttachments = /* @__PURE__ */ new Map();
     this.events = [];
     this.client = got_dist_source.extend({
       retry: {
@@ -94276,6 +94294,10 @@ var IdsToolbox = class {
     );
     this.recordEvent(`begin_${this.executionPhase}`);
   }
+  // Attach a file to the diagnostics data in error conditions.
+  stapleFile(name, location) {
+    this.exceptionAttachments.set(name, location);
+  }
   onMain(callback) {
     this.hookMain = callback;
   }
@@ -94287,6 +94309,9 @@ var IdsToolbox = class {
       console.log(error2);
       process.exitCode = 1;
     });
+  }
+  stringifyError(error2) {
+    return error2 instanceof Error || typeof error2 == "string" ? error2.toString() : JSON.stringify(error2);
   }
   async executeAsync() {
     try {
@@ -94305,14 +94330,29 @@ var IdsToolbox = class {
       this.addFact(FACT_ENDED_WITH_EXCEPTION, false);
     } catch (error2) {
       this.addFact(FACT_ENDED_WITH_EXCEPTION, true);
-      const reportable = error2 instanceof Error || typeof error2 == "string" ? error2.toString() : JSON.stringify(error2);
+      const reportable = this.stringifyError(error2);
       this.addFact(FACT_FINAL_EXCEPTION, reportable);
       if (this.executionPhase === "post") {
         core.warning(reportable);
       } else {
         core.setFailed(reportable);
       }
-      this.recordEvent(EVENT_EXCEPTION);
+      const do_deflate = (0,external_node_util_.promisify)(external_node_zlib_namespaceObject.deflate);
+      const exceptionContext = /* @__PURE__ */ new Map();
+      for (const [attachmentLabel, filePath] of this.exceptionAttachments) {
+        let logText;
+        try {
+          logText = (0,external_node_fs_namespaceObject.readFileSync)(filePath);
+        } catch (e) {
+          logText = Buffer.from(this.stringifyError(e));
+        }
+        const buf = await do_deflate(logText);
+        exceptionContext.set(
+          `staple_${attachmentLabel}`,
+          buf.toString("base64")
+        );
+      }
+      this.recordEvent(EVENT_EXCEPTION, Object.fromEntries(exceptionContext));
     } finally {
       await this.complete();
     }
@@ -94354,6 +94394,7 @@ var IdsToolbox = class {
       const versionCheckup = await this.client.head(correlatedUrl);
       if (versionCheckup.headers.etag) {
         const v = versionCheckup.headers.etag;
+        this.addFact(FACT_SOURCE_URL_ETAG, v);
         core.debug(
           `Checking the tool cache for ${this.getUrl()} at ${v}`
         );
@@ -94402,6 +94443,7 @@ var IdsToolbox = class {
   getUrl() {
     const p = this.sourceParameters;
     if (p.url) {
+      this.addFact(FACT_SOURCE_URL, p.url);
       return new URL(p.url);
     }
     const fetchUrl = new URL(IDS_HOST);
@@ -94418,6 +94460,7 @@ var IdsToolbox = class {
       fetchUrl.pathname += `/stable`;
     }
     fetchUrl.pathname += `/${this.architectureFetchSuffix}`;
+    this.addFact(FACT_SOURCE_URL, fetchUrl.toString());
     return fetchUrl;
   }
   cacheKey(version2) {
@@ -94465,7 +94508,7 @@ var IdsToolbox = class {
         void 0,
         true
       );
-      this.recordEvent(EVENT_ARTIFACT_CACHE_HIT);
+      this.recordEvent(EVENT_ARTIFACT_CACHE_PERSIST);
     } finally {
       process.env.GITHUB_WORKSPACE = process.env.GITHUB_WORKSPACE_BACKUP;
       delete process.env.GITHUB_WORKSPACE_BACKUP;
@@ -94624,6 +94667,8 @@ function mungeDiagnosticEndpoint(inputUrl) {
  * Copyright (c) 2018-2020 [Samuel Carreira]
  */
 //# sourceMappingURL=index.js.map
+;// CONCATENATED MODULE: external "fs/promises"
+const external_fs_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("fs/promises");
 // EXTERNAL MODULE: external "http"
 var external_http_ = __nccwpck_require__(3685);
 ;// CONCATENATED MODULE: external "node:child_process"
@@ -94689,6 +94734,7 @@ async function flakeHubLogin(netrc) {
 
 
 
+
 var ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var MagicNixCacheAction = class {
   constructor() {
@@ -94713,9 +94759,27 @@ var MagicNixCacheAction = class {
         ]
       }
     });
+    if (process.env[ENV_CACHE_DAEMONDIR]) {
+      this.unsafeDaemonDir = process.env[ENV_CACHE_DAEMONDIR];
+    } else {
+      this.unsafeDaemonDir = this.idslib.getTemporaryName();
+      core.exportVariable(ENV_CACHE_DAEMONDIR, this.unsafeDaemonDir);
+    }
+  }
+  async getDaemonDir() {
+    if (this.daemonDir === void 0) {
+      await (0,external_fs_promises_namespaceObject.mkdir)(this.unsafeDaemonDir, { recursive: true });
+      this.daemonDir = this.unsafeDaemonDir;
+      return this.unsafeDaemonDir;
+    } else {
+      return this.daemonDir;
+    }
+  }
+  async daemonDirExists() {
+    const statRes = await (0,external_fs_promises_namespaceObject.stat)(this.unsafeDaemonDir);
+    return statRes.isDirectory();
   }
   async setUpAutoCache() {
-    const tmpdir3 = process.env["RUNNER_TEMP"] || external_node_os_.tmpdir();
     const requiredEnv = [
       "ACTIONS_CACHE_URL",
       "ACTIONS_RUNTIME_URL",
@@ -94736,7 +94800,6 @@ var MagicNixCacheAction = class {
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
-    const daemonDir = await promises_namespaceObject.mkdtemp(external_node_path_namespaceObject.join(tmpdir3, "magic-nix-cache-"));
     const sourceBinary = inputs_exports.getStringOrNull("source-binary");
     const daemonBin = sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
     let runEnv;
@@ -94768,6 +94831,7 @@ var MagicNixCacheAction = class {
         });
       });
     });
+    const daemonDir = await this.getDaemonDir();
     const outputPath = `${daemonDir}/daemon.log`;
     const output = (0,external_node_fs_namespaceObject.openSync)(outputPath, "a");
     const log = tailLog(daemonDir);
@@ -94834,7 +94898,6 @@ var MagicNixCacheAction = class {
     });
     daemon.unref();
     core.info("Launched Magic Nix Cache");
-    core.exportVariable(ENV_CACHE_DAEMONDIR, daemonDir);
     log.unwatch();
   }
   async fetchAutoCacher() {
@@ -94848,10 +94911,6 @@ var MagicNixCacheAction = class {
     return `${lastPath}/bin/magic-nix-cache`;
   }
   async notifyAutoCache() {
-    const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
-    if (!daemonDir) {
-      return;
-    }
     try {
       core.debug(`Indicating workflow start`);
       const hostAndPort = inputs_exports.getString("listen");
@@ -94864,11 +94923,11 @@ var MagicNixCacheAction = class {
     }
   }
   async tearDownAutoCache() {
-    const daemonDir = process.env[ENV_CACHE_DAEMONDIR];
-    if (!daemonDir) {
+    if (await this.daemonDirExists()) {
       core.debug("magic-nix-cache not started - Skipping");
       return;
     }
+    const daemonDir = await this.getDaemonDir();
     const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
     const pid = parseInt(await promises_namespaceObject.readFile(pidFile, { encoding: "ascii" }));
     core.debug(`found daemon pid: ${pid}`);
