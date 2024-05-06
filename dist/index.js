@@ -93752,7 +93752,7 @@ const got = source_create(defaults);
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@3baa96b315ee9f6b26033191a123eb9015522791_2fnsfzpup2itrpjvndt6evj3qu/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@18bb980856ca8e53010275c6cee06979b1f74812_77wefdmg4gqibnywltmqqgybxm/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94337,7 +94337,7 @@ var IdsToolbox = class {
       } else {
         core.setFailed(reportable);
       }
-      const do_deflate = (0,external_node_util_.promisify)(external_node_zlib_namespaceObject.deflate);
+      const do_gzip = (0,external_node_util_.promisify)(external_node_zlib_namespaceObject.gzip);
       const exceptionContext = /* @__PURE__ */ new Map();
       for (const [attachmentLabel, filePath] of this.exceptionAttachments) {
         let logText;
@@ -94346,7 +94346,7 @@ var IdsToolbox = class {
         } catch (e) {
           logText = Buffer.from(this.stringifyError(e));
         }
-        const buf = await do_deflate(logText);
+        const buf = await do_gzip(logText);
         exceptionContext.set(
           `staple_${attachmentLabel}`,
           buf.toString("base64")
