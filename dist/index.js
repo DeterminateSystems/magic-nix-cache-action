@@ -94676,8 +94676,6 @@ function mungeDiagnosticEndpoint(inputUrl) {
  * Copyright (c) 2018-2020 [Samuel Carreira]
  */
 //# sourceMappingURL=index.js.map
-;// CONCATENATED MODULE: external "fs/promises"
-const external_fs_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("fs/promises");
 // EXTERNAL MODULE: external "http"
 var external_http_ = __nccwpck_require__(3685);
 ;// CONCATENATED MODULE: external "node:child_process"
@@ -94743,8 +94741,9 @@ async function flakeHubLogin(netrc) {
 
 
 
-
 var ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var ENV_CACHE_STARTED = "MAGIC_NIX_CACHE_STARTED";
+var STARTED_HINT = "true";
 var MagicNixCacheAction = class {
   constructor() {
     this.idslib = new IdsToolbox({
@@ -94768,29 +94767,18 @@ var MagicNixCacheAction = class {
         ]
       }
     });
+    this.daemonStarted = process.env[ENV_CACHE_STARTED] === STARTED_HINT;
     if (process.env[ENV_CACHE_DAEMONDIR]) {
-      this.unsafeDaemonDir = process.env[ENV_CACHE_DAEMONDIR];
+      this.daemonDir = process.env[ENV_CACHE_DAEMONDIR];
     } else {
-      this.unsafeDaemonDir = this.idslib.getTemporaryName();
-      core.exportVariable(ENV_CACHE_DAEMONDIR, this.unsafeDaemonDir);
+      this.daemonDir = this.idslib.getTemporaryName();
+      (0,external_node_fs_namespaceObject.mkdirSync)(this.daemonDir);
+      core.exportVariable(ENV_CACHE_DAEMONDIR, this.daemonDir);
     }
     this.idslib.stapleFile(
       "daemon.log",
-      external_node_path_namespaceObject.join(this.unsafeDaemonDir, "daemon.log")
+      external_node_path_namespaceObject.join(this.daemonDir, "daemon.log")
     );
-  }
-  async getDaemonDir() {
-    if (this.daemonDir === void 0) {
-      await (0,external_fs_promises_namespaceObject.mkdir)(this.unsafeDaemonDir, { recursive: true });
-      this.daemonDir = this.unsafeDaemonDir;
-      return this.unsafeDaemonDir;
-    } else {
-      return this.daemonDir;
-    }
-  }
-  async daemonDirExists() {
-    const statRes = await (0,external_fs_promises_namespaceObject.stat)(this.unsafeDaemonDir);
-    return statRes.isDirectory();
   }
   async setUpAutoCache() {
     const requiredEnv = [
@@ -94844,10 +94832,9 @@ var MagicNixCacheAction = class {
         });
       });
     });
-    const daemonDir = await this.getDaemonDir();
-    const outputPath = `${daemonDir}/daemon.log`;
+    const outputPath = `${this.daemonDir}/daemon.log`;
     const output = (0,external_node_fs_namespaceObject.openSync)(outputPath, "a");
-    const log = tailLog(daemonDir);
+    const log = tailLog(this.daemonDir);
     const netrc = await netrcPath();
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
     const hostAndPort = inputs_exports.getString("listen");
@@ -94890,7 +94877,7 @@ var MagicNixCacheAction = class {
     core.debug("Full daemon start command:");
     core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
     const daemon = (0,external_node_child_process_namespaceObject.spawn)(daemonBin, daemonCliFlags, opts);
-    const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
+    const pidFile = external_node_path_namespaceObject.join(this.daemonDir, "daemon.pid");
     await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
     core.info("Waiting for magic-nix-cache to start...");
     await new Promise((resolve, reject) => {
@@ -94924,7 +94911,7 @@ var MagicNixCacheAction = class {
     return `${lastPath}/bin/magic-nix-cache`;
   }
   async notifyAutoCache() {
-    if (!await this.daemonDirExists()) {
+    if (!this.daemonStarted) {
       core.debug("magic-nix-cache not started - Skipping");
       return;
     }
@@ -94940,18 +94927,17 @@ var MagicNixCacheAction = class {
     }
   }
   async tearDownAutoCache() {
-    if (!await this.daemonDirExists()) {
+    if (!this.daemonStarted) {
       core.debug("magic-nix-cache not started - Skipping");
       return;
     }
-    const daemonDir = await this.getDaemonDir();
-    const pidFile = external_node_path_namespaceObject.join(daemonDir, "daemon.pid");
+    const pidFile = external_node_path_namespaceObject.join(this.daemonDir, "daemon.pid");
     const pid = parseInt(await promises_namespaceObject.readFile(pidFile, { encoding: "ascii" }));
     core.debug(`found daemon pid: ${pid}`);
     if (!pid) {
       throw new Error("magic-nix-cache did not start successfully");
     }
-    const log = tailLog(daemonDir);
+    const log = tailLog(this.daemonDir);
     try {
       core.debug(`about to post to localhost`);
       const hostAndPort = inputs_exports.getString("listen");
@@ -94971,7 +94957,7 @@ var MagicNixCacheAction = class {
     } finally {
       if (core.isDebug()) {
         core.info("Entire log:");
-        const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
+        const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
         core.info(entireLog.toString());
       }
     }
