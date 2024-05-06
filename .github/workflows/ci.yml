@@ -110,3 +110,26 @@ jobs:
       - name: Check the cache for liveness
         run: |
           .github/workflows/cache-test.sh
+
+  run-x86_64-linux-staple:
+    name: Run x86_64 Linux (staple)
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: "write"
+      contents: "read"
+    env:
+      ACTIONS_STEP_DEBUG: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          flakehub: true
+          extra-conf: |
+            narinfo-cache-negative-ttl = 0
+      - name: Cache the store
+        uses: ./
+      - name: goodbye
+        run: |
+          kill "$(cat "$MAGIC_NIX_CACHE_DAEMONDIR/daemon.pid")"
+          nix-build .github/workflows/cache-tester.nix --argstr seed "$(date)"
