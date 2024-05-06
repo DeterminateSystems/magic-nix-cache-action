@@ -94801,6 +94801,8 @@ var MagicNixCacheAction = class {
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
+    this.daemonStarted = true;
+    core.exportVariable(ENV_CACHE_STARTED, STARTED_HINT);
     const sourceBinary = inputs_exports.getStringOrNull("source-binary");
     const daemonBin = sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
     let runEnv;
