@@ -93752,7 +93752,7 @@ const got = source_create(defaults);
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@18bb980856ca8e53010275c6cee06979b1f74812_77wefdmg4gqibnywltmqqgybxm/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@b2ff406239cb9d311fa9dad332ccfee2669ce6dc_o2lwkok3rvt3rnal2ayts63upe/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94294,7 +94294,14 @@ var IdsToolbox = class {
     );
     this.recordEvent(`begin_${this.executionPhase}`);
   }
-  // Attach a file to the diagnostics data in error conditions.
+  /**
+   * Attach a file to the diagnostics data in error conditions.
+   *
+   * The file at `location` doesn't need to exist when stapleFile is called.
+   *
+   * If the file doesn't exist or is unreadable when trying to staple the attachments, the JS error will be stored in a context value at `staple_failure_{name}`.
+   * If the file is readable, the file's contents will be stored in a context value at `staple_value_{name}`.
+   */
   stapleFile(name, location) {
     this.exceptionAttachments.set(name, location);
   }
@@ -94340,17 +94347,19 @@ var IdsToolbox = class {
       const do_gzip = (0,external_node_util_.promisify)(external_node_zlib_namespaceObject.gzip);
       const exceptionContext = /* @__PURE__ */ new Map();
       for (const [attachmentLabel, filePath] of this.exceptionAttachments) {
-        let logText;
         try {
-          logText = (0,external_node_fs_namespaceObject.readFileSync)(filePath);
+          const logText = (0,external_node_fs_namespaceObject.readFileSync)(filePath);
+          const buf = await do_gzip(logText);
+          exceptionContext.set(
+            `staple_value_${attachmentLabel}`,
+            buf.toString("base64")
+          );
         } catch (e) {
-          logText = Buffer.from(this.stringifyError(e));
+          exceptionContext.set(
+            `staple_failure_${attachmentLabel}`,
+            this.stringifyError(e)
+          );
         }
-        const buf = await do_gzip(logText);
-        exceptionContext.set(
-          `staple_${attachmentLabel}`,
-          buf.toString("base64")
-        );
       }
       this.recordEvent(EVENT_EXCEPTION, Object.fromEntries(exceptionContext));
     } finally {
