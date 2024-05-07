@@ -94749,6 +94749,7 @@ var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
+var NOOP_TEXT = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
 var MagicNixCacheAction = class {
   constructor() {
     this.idslib = new IdsToolbox({
@@ -94812,9 +94813,7 @@ var MagicNixCacheAction = class {
       return;
     }
     if (this.noopMode) {
-      core.warning(
-        "Magic Nix Cache is already running, this workflow job is in noop mode."
-      );
+      core.warning(NOOP_TEXT);
       return;
     }
     if (this.daemonStarted) {
@@ -94937,9 +94936,7 @@ var MagicNixCacheAction = class {
   }
   async notifyAutoCache() {
     if (this.noopMode) {
-      core.warning(
-        "Magic Nix Cache is already running, this workflow job is in noop mode."
-      );
+      core.debug(NOOP_TEXT);
       return;
     }
     if (!this.daemonStarted) {
@@ -94959,9 +94956,7 @@ var MagicNixCacheAction = class {
   }
   async tearDownAutoCache() {
     if (this.noopMode) {
-      core.warning(
-        "Magic Nix Cache is already running, this workflow job is in noop mode."
-      );
+      core.warning(NOOP_TEXT);
       return;
     }
     if (!this.daemonStarted) {

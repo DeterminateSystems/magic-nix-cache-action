@@ -19,6 +19,9 @@ const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
 
+const NOOP_TEXT =
+  "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
+
 class MagicNixCacheAction {
   idslib: IdsToolbox;
   private client: Got;
@@ -98,9 +101,7 @@ class MagicNixCacheAction {
     }
 
     if (this.noopMode) {
-      actionsCore.warning(
-        "Magic Nix Cache is already running, this workflow job is in noop mode.",
-      );
+      actionsCore.warning(NOOP_TEXT);
       return;
     }
 
@@ -258,9 +259,7 @@ class MagicNixCacheAction {
 
   async notifyAutoCache(): Promise<void> {
     if (this.noopMode) {
-      actionsCore.warning(
-        "Magic Nix Cache is already running, this workflow job is in noop mode.",
-      );
+      actionsCore.debug(NOOP_TEXT);
       return;
     }
 
@@ -285,9 +284,7 @@ class MagicNixCacheAction {
 
   async tearDownAutoCache(): Promise<void> {
     if (this.noopMode) {
-      actionsCore.warning(
-        "Magic Nix Cache is already running, this workflow job is in noop mode.",
-      );
+      actionsCore.warning(NOOP_TEXT);
       return;
     }
 
