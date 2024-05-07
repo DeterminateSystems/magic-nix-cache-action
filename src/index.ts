@@ -10,6 +10,11 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { inspect, promisify } from "node:util";
 
+// The ENV_DAEMON_DIR is intended to determine if we "own" the daemon or not,
+// in the case that a user has put the magic nix cache into their workflow
+// twice.
+const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+
 const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
@@ -18,6 +23,7 @@ class MagicNixCacheAction {
   idslib: IdsToolbox;
   private client: Got;
 
+  private noopMode: boolean;
   private daemonDir: string;
   private daemonStarted: boolean;
 
@@ -55,6 +61,14 @@ class MagicNixCacheAction {
       actionsCore.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
 
+    if (process.env[ENV_DAEMON_DIR] === undefined) {
+      this.noopMode = false;
+      actionsCore.exportVariable(ENV_DAEMON_DIR, this.daemonDir);
+    } else {
+      this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
+    }
+    this.idslib.addFact("noop_mode", this.noopMode);
+
     this.idslib.stapleFile(
       "daemon.log",
       path.join(this.daemonDir, "daemon.log"),
@@ -78,7 +92,20 @@ class MagicNixCacheAction {
       }
     }
 
+    this.idslib.addFact("authenticated_env", !anyMissing);
     if (anyMissing) {
+      return;
+    }
+
+    if (this.noopMode) {
+      actionsCore.warning(
+        "Magic Nix Cache is already running, this workflow job is in noop mode.",
+      );
+      return;
+    }
+
+    if (this.daemonStarted) {
+      actionsCore.debug("Already started.");
       return;
     }
 
@@ -230,6 +257,13 @@ class MagicNixCacheAction {
   }
 
   async notifyAutoCache(): Promise<void> {
+    if (this.noopMode) {
+      actionsCore.warning(
+        "Magic Nix Cache is already running, this workflow job is in noop mode.",
+      );
+      return;
+    }
+
     if (!this.daemonStarted) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;
@@ -250,6 +284,13 @@ class MagicNixCacheAction {
   }
 
   async tearDownAutoCache(): Promise<void> {
+    if (this.noopMode) {
+      actionsCore.warning(
+        "Magic Nix Cache is already running, this workflow job is in noop mode.",
+      );
+      return;
+    }
+
     if (!this.daemonStarted) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;

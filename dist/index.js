@@ -94745,8 +94745,9 @@ async function flakeHubLogin(netrc) {
 
 
 
-var ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
-var ENV_CACHE_STARTED = "MAGIC_NIX_CACHE_STARTED";
+var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
 var MagicNixCacheAction = class {
   constructor() {
@@ -94771,14 +94772,21 @@ var MagicNixCacheAction = class {
         ]
       }
     });
-    this.daemonStarted = process.env[ENV_CACHE_STARTED] === STARTED_HINT;
-    if (process.env[ENV_CACHE_DAEMONDIR]) {
-      this.daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+    this.daemonStarted = core.getState(STATE_STARTED) === STARTED_HINT;
+    if (core.getState(STATE_DAEMONDIR) !== "") {
+      this.daemonDir = core.getState(STATE_DAEMONDIR);
     } else {
       this.daemonDir = this.idslib.getTemporaryName();
       (0,external_node_fs_namespaceObject.mkdirSync)(this.daemonDir);
-      core.exportVariable(ENV_CACHE_DAEMONDIR, this.daemonDir);
+      core.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
+    if (process.env[ENV_DAEMON_DIR] === void 0) {
+      this.noopMode = false;
+      core.exportVariable(ENV_DAEMON_DIR, this.daemonDir);
+    } else {
+      this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
+    }
+    this.idslib.addFact("noop_mode", this.noopMode);
     this.idslib.stapleFile(
       "daemon.log",
       external_node_path_namespaceObject.join(this.daemonDir, "daemon.log")
@@ -94799,14 +94807,25 @@ var MagicNixCacheAction = class {
         );
       }
     }
+    this.idslib.addFact("authenticated_env", !anyMissing);
     if (anyMissing) {
+      return;
+    }
+    if (this.noopMode) {
+      core.warning(
+        "Magic Nix Cache is already running, this workflow job is in noop mode."
+      );
+      return;
+    }
+    if (this.daemonStarted) {
+      core.debug("Already started.");
       return;
     }
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
     this.daemonStarted = true;
-    core.exportVariable(ENV_CACHE_STARTED, STARTED_HINT);
+    core.saveState(STATE_STARTED, STARTED_HINT);
     const sourceBinary = inputs_exports.getStringOrNull("source-binary");
     const daemonBin = sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
     let runEnv;
@@ -94917,6 +94936,12 @@ var MagicNixCacheAction = class {
     return `${lastPath}/bin/magic-nix-cache`;
   }
   async notifyAutoCache() {
+    if (this.noopMode) {
+      core.warning(
+        "Magic Nix Cache is already running, this workflow job is in noop mode."
+      );
+      return;
+    }
     if (!this.daemonStarted) {
       core.debug("magic-nix-cache not started - Skipping");
       return;
@@ -94933,6 +94958,12 @@ var MagicNixCacheAction = class {
     }
   }
   async tearDownAutoCache() {
+    if (this.noopMode) {
+      core.warning(
+        "Magic Nix Cache is already running, this workflow job is in noop mode."
+      );
+      return;
+    }
     if (!this.daemonStarted) {
       core.debug("magic-nix-cache not started - Skipping");
       return;
