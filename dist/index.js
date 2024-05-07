@@ -94812,10 +94812,6 @@ var MagicNixCacheAction = class {
     if (anyMissing) {
       return;
     }
-    if (this.noopMode) {
-      core.warning(NOOP_TEXT);
-      return;
-    }
     if (this.daemonStarted) {
       core.debug("Already started.");
       return;
@@ -94935,10 +94931,6 @@ var MagicNixCacheAction = class {
     return `${lastPath}/bin/magic-nix-cache`;
   }
   async notifyAutoCache() {
-    if (this.noopMode) {
-      core.debug(NOOP_TEXT);
-      return;
-    }
     if (!this.daemonStarted) {
       core.debug("magic-nix-cache not started - Skipping");
       return;
@@ -94955,10 +94947,6 @@ var MagicNixCacheAction = class {
     }
   }
   async tearDownAutoCache() {
-    if (this.noopMode) {
-      core.warning(NOOP_TEXT);
-      return;
-    }
     if (!this.daemonStarted) {
       core.debug("magic-nix-cache not started - Skipping");
       return;
@@ -94998,10 +94986,18 @@ var MagicNixCacheAction = class {
 function main() {
   const cacheAction = new MagicNixCacheAction();
   cacheAction.idslib.onMain(async () => {
+    if (cacheAction.noopMode) {
+      core.warning(NOOP_TEXT);
+      return;
+    }
     await cacheAction.setUpAutoCache();
     await cacheAction.notifyAutoCache();
   });
   cacheAction.idslib.onPost(async () => {
+    if (cacheAction.noopMode) {
+      core.debug(NOOP_TEXT);
+      return;
+    }
     await cacheAction.tearDownAutoCache();
   });
   cacheAction.idslib.execute();

@@ -26,7 +26,7 @@ class MagicNixCacheAction {
   idslib: IdsToolbox;
   private client: Got;
 
-  private noopMode: boolean;
+  noopMode: boolean;
   private daemonDir: string;
   private daemonStarted: boolean;
 
@@ -97,11 +97,6 @@ class MagicNixCacheAction {
 
     this.idslib.addFact("authenticated_env", !anyMissing);
     if (anyMissing) {
-      return;
-    }
-
-    if (this.noopMode) {
-      actionsCore.warning(NOOP_TEXT);
       return;
     }
 
@@ -258,11 +253,6 @@ class MagicNixCacheAction {
   }
 
   async notifyAutoCache(): Promise<void> {
-    if (this.noopMode) {
-      actionsCore.debug(NOOP_TEXT);
-      return;
-    }
-
     if (!this.daemonStarted) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;
@@ -283,11 +273,6 @@ class MagicNixCacheAction {
   }
 
   async tearDownAutoCache(): Promise<void> {
-    if (this.noopMode) {
-      actionsCore.warning(NOOP_TEXT);
-      return;
-    }
-
     if (!this.daemonStarted) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;
@@ -335,10 +320,20 @@ function main(): void {
   const cacheAction = new MagicNixCacheAction();
 
   cacheAction.idslib.onMain(async () => {
+    if (cacheAction.noopMode) {
+      actionsCore.warning(NOOP_TEXT);
+      return;
+    }
+
     await cacheAction.setUpAutoCache();
     await cacheAction.notifyAutoCache();
   });
   cacheAction.idslib.onPost(async () => {
+    if (cacheAction.noopMode) {
+      actionsCore.debug(NOOP_TEXT);
+      return;
+    }
+
     await cacheAction.tearDownAutoCache();
   });
 
