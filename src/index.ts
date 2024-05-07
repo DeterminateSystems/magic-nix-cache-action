@@ -10,15 +10,23 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { inspect, promisify } from "node:util";
 
-const ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
-const ENV_CACHE_STARTED = "MAGIC_NIX_CACHE_STARTED";
+// The ENV_DAEMON_DIR is intended to determine if we "own" the daemon or not,
+// in the case that a user has put the magic nix cache into their workflow
+// twice.
+const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
+const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
+
+const NOOP_TEXT =
+  "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
 
 class MagicNixCacheAction {
   idslib: IdsToolbox;
   private client: Got;
 
+  noopMode: boolean;
   private daemonDir: string;
   private daemonStarted: boolean;
 
@@ -46,15 +54,23 @@ class MagicNixCacheAction {
       },
     });
 
-    this.daemonStarted = process.env[ENV_CACHE_STARTED] === STARTED_HINT;
+    this.daemonStarted = actionsCore.getState(STATE_STARTED) === STARTED_HINT;
 
-    if (process.env[ENV_CACHE_DAEMONDIR]) {
-      this.daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+    if (actionsCore.getState(STATE_DAEMONDIR) !== "") {
+      this.daemonDir = actionsCore.getState(STATE_DAEMONDIR);
     } else {
       this.daemonDir = this.idslib.getTemporaryName();
       mkdirSync(this.daemonDir);
-      actionsCore.exportVariable(ENV_CACHE_DAEMONDIR, this.daemonDir);
+      actionsCore.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
+
+    if (process.env[ENV_DAEMON_DIR] === undefined) {
+      this.noopMode = false;
+      actionsCore.exportVariable(ENV_DAEMON_DIR, this.daemonDir);
+    } else {
+      this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
+    }
+    this.idslib.addFact("noop_mode", this.noopMode);
 
     this.idslib.stapleFile(
       "daemon.log",
@@ -79,7 +95,13 @@ class MagicNixCacheAction {
       }
     }
 
+    this.idslib.addFact("authenticated_env", !anyMissing);
     if (anyMissing) {
+      return;
+    }
+
+    if (this.daemonStarted) {
+      actionsCore.debug("Already started.");
       return;
     }
 
@@ -88,7 +110,7 @@ class MagicNixCacheAction {
     );
 
     this.daemonStarted = true;
-    actionsCore.exportVariable(ENV_CACHE_STARTED, STARTED_HINT);
+    actionsCore.saveState(STATE_STARTED, STARTED_HINT);
     const sourceBinary = inputs.getStringOrNull("source-binary");
     const daemonBin =
       sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
@@ -298,10 +320,20 @@ function main(): void {
   const cacheAction = new MagicNixCacheAction();
 
   cacheAction.idslib.onMain(async () => {
+    if (cacheAction.noopMode) {
+      actionsCore.warning(NOOP_TEXT);
+      return;
+    }
+
     await cacheAction.setUpAutoCache();
     await cacheAction.notifyAutoCache();
   });
   cacheAction.idslib.onPost(async () => {
+    if (cacheAction.noopMode) {
+      actionsCore.debug(NOOP_TEXT);
+      return;
+    }
+
     await cacheAction.tearDownAutoCache();
   });
 

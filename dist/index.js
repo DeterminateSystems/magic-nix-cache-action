@@ -57770,7 +57770,7 @@ module.exports = function () {
 
 /***/ }),
 
-/***/ 4791:
+/***/ 4736:
 /***/ ((module) => {
 
 
@@ -57985,7 +57985,7 @@ module.exports = {
 
 
 
-const { maxNameValuePairSize, maxAttributeValueSize } = __nccwpck_require__(4791)
+const { maxNameValuePairSize, maxAttributeValueSize } = __nccwpck_require__(4736)
 const { isCTLExcludingHtab } = __nccwpck_require__(3319)
 const { collectASequenceOfCodePointsFast } = __nccwpck_require__(6932)
 const assert = __nccwpck_require__(9491)
@@ -93752,7 +93752,7 @@ const got = source_create(defaults);
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@b2ff406239cb9d311fa9dad332ccfee2669ce6dc_o2lwkok3rvt3rnal2ayts63upe/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@38e5bec8265276e0ffc60a474eeb0fe563690ad1_ohjjfxyz5zc5v7acp635bu77r4/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94117,7 +94117,11 @@ var getArrayOfStrings = (name, separator) => {
 };
 var handleString = (input, separator) => {
   const sepChar = separator === "comma" ? "," : /\s+/;
-  return input.trim().split(sepChar).map((s) => s.trim());
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return [];
+  }
+  return trimmed.split(sepChar).map((s) => s.trim());
 };
 var getMultilineStringOrNull = (name) => {
   const value = core.getMultilineInput(name);
@@ -94741,9 +94745,11 @@ async function flakeHubLogin(netrc) {
 
 
 
-var ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
-var ENV_CACHE_STARTED = "MAGIC_NIX_CACHE_STARTED";
+var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
+var NOOP_TEXT = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
 var MagicNixCacheAction = class {
   constructor() {
     this.idslib = new IdsToolbox({
@@ -94767,14 +94773,21 @@ var MagicNixCacheAction = class {
         ]
       }
     });
-    this.daemonStarted = process.env[ENV_CACHE_STARTED] === STARTED_HINT;
-    if (process.env[ENV_CACHE_DAEMONDIR]) {
-      this.daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+    this.daemonStarted = core.getState(STATE_STARTED) === STARTED_HINT;
+    if (core.getState(STATE_DAEMONDIR) !== "") {
+      this.daemonDir = core.getState(STATE_DAEMONDIR);
     } else {
       this.daemonDir = this.idslib.getTemporaryName();
       (0,external_node_fs_namespaceObject.mkdirSync)(this.daemonDir);
-      core.exportVariable(ENV_CACHE_DAEMONDIR, this.daemonDir);
+      core.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
+    if (process.env[ENV_DAEMON_DIR] === void 0) {
+      this.noopMode = false;
+      core.exportVariable(ENV_DAEMON_DIR, this.daemonDir);
+    } else {
+      this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
+    }
+    this.idslib.addFact("noop_mode", this.noopMode);
     this.idslib.stapleFile(
       "daemon.log",
       external_node_path_namespaceObject.join(this.daemonDir, "daemon.log")
@@ -94795,14 +94808,19 @@ var MagicNixCacheAction = class {
         );
       }
     }
+    this.idslib.addFact("authenticated_env", !anyMissing);
     if (anyMissing) {
+      return;
+    }
+    if (this.daemonStarted) {
+      core.debug("Already started.");
       return;
     }
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
     this.daemonStarted = true;
-    core.exportVariable(ENV_CACHE_STARTED, STARTED_HINT);
+    core.saveState(STATE_STARTED, STARTED_HINT);
     const sourceBinary = inputs_exports.getStringOrNull("source-binary");
     const daemonBin = sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
     let runEnv;
@@ -94968,10 +94986,18 @@ var MagicNixCacheAction = class {
 function main() {
   const cacheAction = new MagicNixCacheAction();
   cacheAction.idslib.onMain(async () => {
+    if (cacheAction.noopMode) {
+      core.warning(NOOP_TEXT);
+      return;
+    }
     await cacheAction.setUpAutoCache();
     await cacheAction.notifyAutoCache();
   });
   cacheAction.idslib.onPost(async () => {
+    if (cacheAction.noopMode) {
+      core.debug(NOOP_TEXT);
+      return;
+    }
     await cacheAction.tearDownAutoCache();
   });
   cacheAction.idslib.execute();
