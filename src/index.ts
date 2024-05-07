@@ -10,7 +10,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { inspect, promisify } from "node:util";
 
-const ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
 
@@ -47,12 +47,12 @@ class MagicNixCacheAction {
 
     this.daemonStarted = actionsCore.getState(STATE_STARTED) === STARTED_HINT;
 
-    if (process.env[ENV_CACHE_DAEMONDIR]) {
-      this.daemonDir = process.env[ENV_CACHE_DAEMONDIR];
+    if (actionsCore.getState(STATE_DAEMONDIR) !== "") {
+      this.daemonDir = actionsCore.getState(STATE_DAEMONDIR);
     } else {
       this.daemonDir = this.idslib.getTemporaryName();
       mkdirSync(this.daemonDir);
-      actionsCore.exportVariable(ENV_CACHE_DAEMONDIR, this.daemonDir);
+      actionsCore.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
 
     this.idslib.stapleFile(
