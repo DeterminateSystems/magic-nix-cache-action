@@ -11,8 +11,7 @@ import * as path from "node:path";
 import { inspect, promisify } from "node:util";
 
 const ENV_CACHE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
-const ENV_CACHE_STARTED = "MAGIC_NIX_CACHE_STARTED";
-
+const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
 
 class MagicNixCacheAction {
@@ -46,7 +45,7 @@ class MagicNixCacheAction {
       },
     });
 
-    this.daemonStarted = process.env[ENV_CACHE_STARTED] === STARTED_HINT;
+    this.daemonStarted = actionsCore.getState(STATE_STARTED) === STARTED_HINT;
 
     if (process.env[ENV_CACHE_DAEMONDIR]) {
       this.daemonDir = process.env[ENV_CACHE_DAEMONDIR];
@@ -88,7 +87,7 @@ class MagicNixCacheAction {
     );
 
     this.daemonStarted = true;
-    actionsCore.exportVariable(ENV_CACHE_STARTED, STARTED_HINT);
+    actionsCore.saveState(STATE_STARTED, STARTED_HINT);
     const sourceBinary = inputs.getStringOrNull("source-binary");
     const daemonBin =
       sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
