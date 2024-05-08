@@ -109,8 +109,6 @@ class MagicNixCacheAction {
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`,
     );
 
-    this.daemonStarted = true;
-    actionsCore.saveState(STATE_STARTED, STARTED_HINT);
     const sourceBinary = inputs.getStringOrNull("source-binary");
     const daemonBin =
       sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
@@ -202,6 +200,9 @@ class MagicNixCacheAction {
     // Display the final command for debugging purposes
     actionsCore.debug("Full daemon start command:");
     actionsCore.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
+
+    this.daemonStarted = true;
+    actionsCore.saveState(STATE_STARTED, STARTED_HINT);
 
     // Start the server. Once it is ready, it will notify us via the notification server.
     const daemon = spawn(daemonBin, daemonCliFlags, opts);

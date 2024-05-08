@@ -94819,8 +94819,6 @@ var MagicNixCacheAction = class {
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
-    this.daemonStarted = true;
-    core.saveState(STATE_STARTED, STARTED_HINT);
     const sourceBinary = inputs_exports.getStringOrNull("source-binary");
     const daemonBin = sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
     let runEnv;
@@ -94896,6 +94894,8 @@ var MagicNixCacheAction = class {
     };
     core.debug("Full daemon start command:");
     core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
+    this.daemonStarted = true;
+    core.saveState(STATE_STARTED, STARTED_HINT);
     const daemon = (0,external_node_child_process_namespaceObject.spawn)(daemonBin, daemonCliFlags, opts);
     const pidFile = external_node_path_namespaceObject.join(this.daemonDir, "daemon.pid");
     await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
