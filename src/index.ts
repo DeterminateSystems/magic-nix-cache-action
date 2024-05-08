@@ -201,11 +201,11 @@ class MagicNixCacheAction {
     actionsCore.debug("Full daemon start command:");
     actionsCore.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
 
-    this.daemonStarted = true;
-    actionsCore.saveState(STATE_STARTED, STARTED_HINT);
-
     // Start the server. Once it is ready, it will notify us via the notification server.
     const daemon = spawn(daemonBin, daemonCliFlags, opts);
+
+    this.daemonStarted = true;
+    actionsCore.saveState(STATE_STARTED, STARTED_HINT);
 
     const pidFile = path.join(this.daemonDir, "daemon.pid");
     await fs.writeFile(pidFile, `${daemon.pid}`);

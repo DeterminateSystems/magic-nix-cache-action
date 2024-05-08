@@ -94894,9 +94894,9 @@ var MagicNixCacheAction = class {
     };
     core.debug("Full daemon start command:");
     core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
+    const daemon = (0,external_node_child_process_namespaceObject.spawn)(daemonBin, daemonCliFlags, opts);
     this.daemonStarted = true;
     core.saveState(STATE_STARTED, STARTED_HINT);
-    const daemon = (0,external_node_child_process_namespaceObject.spawn)(daemonBin, daemonCliFlags, opts);
     const pidFile = external_node_path_namespaceObject.join(this.daemonDir, "daemon.pid");
     await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
     core.info("Waiting for magic-nix-cache to start...");
