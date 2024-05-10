@@ -93752,7 +93752,7 @@ const got = source_create(defaults);
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@2391ba1ef3d22027cd4d9ecce147007a88f63643_is35d24tynybsms6zejuqsabhi/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@93a5166cd57eefcd448ea79923c11eb4b56d4563_rgjnyo4jd3kdijkrub73izga24/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94204,6 +94204,7 @@ function constructSourceParameters(legacyPrefix) {
 
 
 
+
 var DEFAULT_IDS_HOST = "https://install.determinate.systems";
 var IDS_HOST = process.env["IDS_HOST"] ?? DEFAULT_IDS_HOST;
 var EVENT_EXCEPTION = "exception";
@@ -94214,12 +94215,17 @@ var FACT_ENDED_WITH_EXCEPTION = "ended_with_exception";
 var FACT_FINAL_EXCEPTION = "final_exception";
 var FACT_SOURCE_URL = "source_url";
 var FACT_SOURCE_URL_ETAG = "source_url_etag";
+var FACT_NIX_STORE_TRUST = "nix_store_trusted";
+var FACT_NIX_STORE_VERSION = "nix_store_version";
+var FACT_NIX_STORE_CHECK_METHOD = "nix_store_check_method";
+var FACT_NIX_STORE_CHECK_ERROR = "nix_store_check_error";
 var IdsToolbox = class {
   constructor(actionOptions) {
     this.actionOptions = makeOptionsConfident(actionOptions);
     this.hookMain = void 0;
     this.hookPost = void 0;
     this.exceptionAttachments = /* @__PURE__ */ new Map();
+    this.nixStoreTrust = "unknown";
     this.events = [];
     this.client = got_dist_source.extend({
       retry: {
@@ -94332,6 +94338,9 @@ var IdsToolbox = class {
       if (!await this.preflightRequireNix()) {
         this.recordEvent("preflight-require-nix-denied");
         return;
+      } else {
+        await this.preflightNixStoreInfo();
+        this.addFact(FACT_NIX_STORE_TRUST, this.nixStoreTrust);
       }
       if (this.executionPhase === "main" && this.hookMain) {
         await this.hookMain();
@@ -94537,6 +94546,7 @@ var IdsToolbox = class {
         await promises_namespaceObject.access(candidateNix, promises_namespaceObject.constants.X_OK);
         core.debug(`Found Nix at ${candidateNix}`);
         nixLocation = candidateNix;
+        break;
       } catch {
         core.debug(`Nix not at ${candidateNix}`);
       }
@@ -94568,6 +94578,46 @@ var IdsToolbox = class {
         break;
     }
     return false;
+  }
+  async preflightNixStoreInfo() {
+    let output = "";
+    const options = {};
+    options.silent = true;
+    options.listeners = {
+      stdout: (data) => {
+        output += data.toString();
+      }
+    };
+    try {
+      output = "";
+      await exec.exec("nix", ["store", "info", "--json"], options);
+      this.addFact(FACT_NIX_STORE_CHECK_METHOD, "info");
+    } catch {
+      try {
+        output = "";
+        await exec.exec("nix", ["store", "ping", "--json"], options);
+        this.addFact(FACT_NIX_STORE_CHECK_METHOD, "ping");
+      } catch {
+        this.addFact(FACT_NIX_STORE_CHECK_METHOD, "none");
+        return;
+      }
+    }
+    try {
+      const parsed = JSON.parse(output);
+      if (parsed.trusted === 1) {
+        this.nixStoreTrust = "trusted";
+      } else if (parsed.trusted === 0) {
+        this.nixStoreTrust = "untrusted";
+      } else if (parsed.trusted !== void 0) {
+        this.addFact(
+          FACT_NIX_STORE_CHECK_ERROR,
+          `Mysterious trusted value: ${JSON.stringify(parsed.trusted)}`
+        );
+      }
+      this.addFact(FACT_NIX_STORE_VERSION, JSON.stringify(parsed.version));
+    } catch (e) {
+      this.addFact(FACT_NIX_STORE_CHECK_ERROR, this.stringifyError(e));
+    }
   }
   async submitEvents() {
     if (!this.actionOptions.diagnosticsUrl) {
@@ -94749,7 +94799,9 @@ var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
-var NOOP_TEXT = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
+var TEXT_NOOP = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
+var TEXT_TRUST_UNTRUSTED = "The Nix daemon does not consider the user running this workflow to be trusted. Magic Nix Cache is disabled.";
+var TEXT_TRUST_UNKNOWN = "The Nix daemon may not consider the user running this workflow to be trusted. Magic Nix Cache may not start correctly.";
 var MagicNixCacheAction = class {
   constructor() {
     this.idslib = new IdsToolbox({
@@ -94987,16 +95039,28 @@ function main() {
   const cacheAction = new MagicNixCacheAction();
   cacheAction.idslib.onMain(async () => {
     if (cacheAction.noopMode) {
-      core.warning(NOOP_TEXT);
+      core.warning(TEXT_NOOP);
       return;
+    }
+    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
+      core.warning(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
+      core.info(TEXT_TRUST_UNKNOWN);
     }
     await cacheAction.setUpAutoCache();
     await cacheAction.notifyAutoCache();
   });
   cacheAction.idslib.onPost(async () => {
     if (cacheAction.noopMode) {
-      core.debug(NOOP_TEXT);
+      core.debug(TEXT_NOOP);
       return;
+    }
+    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
+      core.debug(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
+      core.debug(TEXT_TRUST_UNKNOWN);
     }
     await cacheAction.tearDownAutoCache();
   });
