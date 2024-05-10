@@ -45,7 +45,7 @@ jobs:
         uses: ./
 
   run-x86_64-linux-untrusted:
-    name: Run x86_64 Linux
+    name: Run x86_64 Linux, Untrusted
     runs-on: ubuntu-22.04
     permissions:
       id-token: "write"
@@ -57,7 +57,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
-          trust-runner-user: false
+          trust-runner-user: null
           flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
