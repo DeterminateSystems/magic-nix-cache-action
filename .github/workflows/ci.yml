@@ -63,9 +63,9 @@ jobs:
             trusted-users = root
       - name: Cache the store
         uses: ./
-      - name: Check the cache for liveness
+      - name: Check the cache isn't enabled
         run: |
-          .github/workflows/cache-test.sh
+          [ $(nix config show substituters) == "https://cache.nixos.org/" ]
 
   run-x86_64-linux:
     name: Run x86_64 Linux
