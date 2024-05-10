@@ -57,10 +57,10 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
-          trust-runner-user: null
           flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
+            trusted-users = root
       - name: Cache the store
         uses: ./
       - name: Check the cache for liveness
