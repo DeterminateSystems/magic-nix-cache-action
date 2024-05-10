@@ -93752,7 +93752,7 @@ const got = source_create(defaults);
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@c1c2371f083f911beb01d75e4d194df0e8cd4416_laqtfm6jblzcvupdk4zopxnh6q/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@420b83a32e8bffc3ae51bdf17908994b0a323e92_qfkbfnjjxud556txwjeu7rl4qu/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94583,6 +94583,7 @@ var IdsToolbox = class {
     this.nixStoreTrust = "unknown";
     let output = "";
     const options = {};
+    options.silent = true;
     options.listeners = {
       stdout: (data) => {
         output += data.toString();
