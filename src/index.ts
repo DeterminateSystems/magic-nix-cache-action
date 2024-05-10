@@ -19,8 +19,12 @@ const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
 
-const NOOP_TEXT =
+const TEXT_NOOP =
   "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
+const TEXT_TRUST_UNTRUSTED =
+  "The Nix daemon does not consider the user running this workflow to be trusted. Magic Nix Cache is disabled.";
+const TEXT_TRUST_UNKNOWN =
+  "The Nix daemon may not consider the user running this workflow to be trusted. Magic Nix Cache may not start correctly.";
 
 class MagicNixCacheAction {
   idslib: IdsToolbox;
@@ -322,8 +326,15 @@ function main(): void {
 
   cacheAction.idslib.onMain(async () => {
     if (cacheAction.noopMode) {
-      actionsCore.warning(NOOP_TEXT);
+      actionsCore.warning(TEXT_NOOP);
       return;
+    }
+
+    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
+      actionsCore.warning(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
+      actionsCore.info(TEXT_TRUST_UNKNOWN);
     }
 
     await cacheAction.setUpAutoCache();
@@ -331,8 +342,15 @@ function main(): void {
   });
   cacheAction.idslib.onPost(async () => {
     if (cacheAction.noopMode) {
-      actionsCore.debug(NOOP_TEXT);
+      actionsCore.debug(TEXT_NOOP);
       return;
+    }
+
+    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
+      actionsCore.debug(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
+      actionsCore.debug(TEXT_TRUST_UNKNOWN);
     }
 
     await cacheAction.tearDownAutoCache();
