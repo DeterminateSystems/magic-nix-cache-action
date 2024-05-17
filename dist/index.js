@@ -94810,6 +94810,7 @@ var MagicNixCacheAction = class {
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn"
     });
+    this.failMode = inputs_exports.getBool("fail-mode");
     this.client = got_dist_source.extend({
       retry: {
         limit: 1,
@@ -94956,16 +94957,21 @@ var MagicNixCacheAction = class {
       notifyPromise.then((_value) => {
         resolve();
       }).catch((err) => {
-        reject(new Error(`error in notifyPromise: ${err}`));
+        const msg = `error in notifyPromise: ${err}`;
+        reject(new Error(msg));
+        this.failInFailMode(msg);
       });
       daemon.on("exit", async (code, signal) => {
+        let msg;
         if (signal) {
-          reject(new Error(`Daemon was killed by signal ${signal}`));
+          msg = `Daemon was killed by signal ${signal}`;
         } else if (code) {
-          reject(new Error(`Daemon exited with code ${code}`));
+          msg = `Daemon exited with code ${code}`;
         } else {
-          reject(new Error(`Daemon unexpectedly exited`));
+          msg = "Daemon unexpectedly exited";
         }
+        reject(new Error(msg));
+        this.failInFailMode(msg);
       });
     });
     daemon.unref();
@@ -94996,6 +95002,7 @@ var MagicNixCacheAction = class {
       core.info(`Error marking the workflow as started:`);
       core.info((0,external_node_util_.inspect)(e));
       core.info(`Magic Nix Cache may not be running for this workflow.`);
+      this.failInFailMode(`Magic Nix Cache failed to start: ${(0,external_node_util_.inspect)(e)}`);
     }
   }
   async tearDownAutoCache() {
@@ -95007,7 +95014,9 @@ var MagicNixCacheAction = class {
     const pid = parseInt(await promises_namespaceObject.readFile(pidFile, { encoding: "ascii" }));
     core.debug(`found daemon pid: ${pid}`);
     if (!pid) {
-      throw new Error("magic-nix-cache did not start successfully");
+      const msg = "magic-nix-cache did not start successfully";
+      this.failInFailMode(msg);
+      throw new Error(msg);
     }
     const log = tailLog(this.daemonDir);
     try {
@@ -95024,6 +95033,7 @@ var MagicNixCacheAction = class {
       process.kill(pid, "SIGTERM");
     } catch (e) {
       if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
+        this.failInFailMode(e.toString());
         throw e;
       }
     } finally {
@@ -95032,6 +95042,11 @@ var MagicNixCacheAction = class {
         const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
         core.info(entireLog.toString());
       }
+    }
+  }
+  failInFailMode(msg) {
+    if (this.failMode) {
+      core.setFailed(`fail-mode error: ${msg}`);
     }
   }
 };

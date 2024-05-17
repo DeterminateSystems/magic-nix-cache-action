@@ -28,6 +28,7 @@ const TEXT_TRUST_UNKNOWN =
 
 class MagicNixCacheAction {
   idslib: IdsToolbox;
+  private strictMode: boolean;
   private client: Got;
 
   noopMode: boolean;
@@ -41,6 +42,8 @@ class MagicNixCacheAction {
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn",
     });
+
+    this.strictMode = inputs.getBool("strict-mode");
 
     this.client = got.extend({
       retry: {
@@ -224,16 +227,21 @@ class MagicNixCacheAction {
         })
         // eslint-disable-next-line github/no-then
         .catch((err) => {
-          reject(new Error(`error in notifyPromise: ${err}`));
+          const msg = `error in notifyPromise: ${err}`;
+          reject(new Error(msg));
+          this.failInStrictMode(msg);
         });
       daemon.on("exit", async (code, signal) => {
+        let msg: string;
         if (signal) {
-          reject(new Error(`Daemon was killed by signal ${signal}`));
+          msg = `Daemon was killed by signal ${signal}`;
         } else if (code) {
-          reject(new Error(`Daemon exited with code ${code}`));
+          msg = `Daemon exited with code ${code}`;
         } else {
-          reject(new Error(`Daemon unexpectedly exited`));
+          msg = "Daemon unexpectedly exited";
         }
+        reject(new Error(msg));
+        this.failInStrictMode(msg);
       });
     });
 
@@ -274,6 +282,8 @@ class MagicNixCacheAction {
       actionsCore.info(`Error marking the workflow as started:`);
       actionsCore.info(inspect(e));
       actionsCore.info(`Magic Nix Cache may not be running for this workflow.`);
+
+      this.failInStrictMode(`Magic Nix Cache failed to start: ${inspect(e)}`);
     }
   }
 
@@ -287,7 +297,9 @@ class MagicNixCacheAction {
     const pid = parseInt(await fs.readFile(pidFile, { encoding: "ascii" }));
     actionsCore.debug(`found daemon pid: ${pid}`);
     if (!pid) {
-      throw new Error("magic-nix-cache did not start successfully");
+      const msg = "magic-nix-cache did not start successfully";
+      this.failInStrictMode(msg);
+      throw new Error(msg);
     }
 
     const log = tailLog(this.daemonDir);
@@ -309,6 +321,7 @@ class MagicNixCacheAction {
       process.kill(pid, "SIGTERM");
     } catch (e) {
       if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
+        this.failInStrictMode(e.toString());
         throw e;
       }
     } finally {
@@ -317,6 +330,12 @@ class MagicNixCacheAction {
         const entireLog = readFileSync(path.join(this.daemonDir, "daemon.log"));
         actionsCore.info(entireLog.toString());
       }
+    }
+  }
+
+  private failInStrictMode(msg: string): void {
+    if (this.strictMode) {
+      actionsCore.setFailed(`strict mode error: ${msg}`);
     }
   }
 }
