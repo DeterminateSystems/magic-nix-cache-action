@@ -43,6 +43,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Cache the store
         uses: ./
+        with:
+          strict-mode: true
 
   run-x86_64-linux-untrusted:
     name: Run x86_64 Linux, Untrusted
@@ -63,6 +65,8 @@ jobs:
             trusted-users = root
       - name: Cache the store
         uses: ./
+        with:
+          strict-mode: true
       - name: Check the cache isn't enabled
         run: |
           [ $(nix config show substituters) == "https://cache.nixos.org/" ]
@@ -85,6 +89,8 @@ jobs:
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
         uses: ./
+        with:
+          strict-mode: true
       - name: Check the cache for liveness
         run: |
           .github/workflows/cache-test.sh
@@ -107,6 +113,8 @@ jobs:
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
         uses: ./
+        with:
+          strict-mode: true
       - name: Check the cache for liveness
         run: |
           .github/workflows/cache-test.sh
@@ -130,6 +138,8 @@ jobs:
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
         uses: ./
+        with:
+          strict-mode: true
       - name: Check the cache for liveness
         run: |
           .github/workflows/cache-test.sh
