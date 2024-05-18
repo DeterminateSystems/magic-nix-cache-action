@@ -71,66 +71,26 @@ jobs:
         run: |
           [ $(nix config show substituters) == "https://cache.nixos.org/" ]
 
-  run-x86_64-linux:
-    name: Run x86_64 Linux
-    runs-on: ubuntu-22.04
+  run-systems:
+    name: "Run ${{ matrix.systems.nix-system }}"
+    runs-on: "${{ matrix.systems.runner }}"
     permissions:
       id-token: "write"
       contents: "read"
     env:
       ACTIONS_STEP_DEBUG: true
+    strategy:
+      matrix:
+        systems:
+          - nix-system: "aarch64-darwin"
+            runner: "macos-latest-xlarge"
+          - nix-system: "x86_64-darwin"
+            runner: "macos-12"
+          - nix-system: "x86_64-linux"
+            runner: "ubuntu-22.04"
     steps:
       - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          flakehub: true
-          extra-conf: |
-            narinfo-cache-negative-ttl = 0
-      - name: Cache the store
-        uses: ./
-        with:
-          strict-mode: true
-      - name: Check the cache for liveness
-        run: |
-          .github/workflows/cache-test.sh
-
-  run-x86_64-darwin:
-    name: Run x86_64 Darwin
-    runs-on: macos-12
-    permissions:
-      id-token: "write"
-      contents: "read"
-    env:
-      ACTIONS_STEP_DEBUG: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          flakehub: true
-          extra-conf: |
-            narinfo-cache-negative-ttl = 0
-      - name: Cache the store
-        uses: ./
-        with:
-          strict-mode: true
-      - name: Check the cache for liveness
-        run: |
-          .github/workflows/cache-test.sh
-
-  run-aarch64-darwin:
-    name: Run aarch64 Darwin
-    concurrency: build-ARM64-macOS
-    runs-on: macos-latest-xlarge
-    permissions:
-      id-token: "write"
-      contents: "read"
-    env:
-      ACTIONS_STEP_DEBUG: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Nix
+      - name: Install Nix on ${{ matrix.systems.nix-system }} system
         uses: DeterminateSystems/nix-installer-action@main
         with:
           flakehub: true
