@@ -95025,7 +95025,7 @@ var MagicNixCacheAction = class {
       const res = await this.client.post(`http://${hostAndPort}/api/workflow-finish`).json();
       if (res.status !== 200) {
         this.failInStrictMode(
-          `Failed to trigger workflow finish hook; expected HTTP status 200 from POST to /api/workflow-finish but got ${res.status} instead`
+          `Failed to trigger workflow finish hook. Response: ${JSON.stringify(res)}`
         );
       }
       core.debug(`back from post: ${res}`);
