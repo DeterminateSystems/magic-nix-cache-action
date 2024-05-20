@@ -50,7 +50,6 @@ class MagicNixCacheAction {
         limit: 1,
         methods: ["POST", "GET", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE"],
       },
-      resolveBodyOnly: false,
       hooks: {
         beforeRetry: [
           (error, retryCount) => {
@@ -275,9 +274,9 @@ class MagicNixCacheAction {
     try {
       actionsCore.debug(`Indicating workflow start`);
       const hostAndPort = inputs.getString("listen");
-      const res: Response<string> = await this.client
-        .post(`http://${hostAndPort}/api/workflow-start`)
-        .json();
+      const res: Response<string> = await this.client.post(
+        `http://${hostAndPort}/api/workflow-start`,
+      );
 
       if (res.statusCode !== 200) {
         this.failInStrictMode(
@@ -315,9 +314,9 @@ class MagicNixCacheAction {
     try {
       actionsCore.debug(`about to post to localhost`);
       const hostAndPort = inputs.getString("listen");
-      const res: Response<string> = await this.client
-        .post(`http://${hostAndPort}/api/workflow-finish`)
-        .json();
+      const res: Response<string> = await this.client.post(
+        `http://${hostAndPort}/api/workflow-finish`,
+      );
 
       if (res.statusCode !== 200) {
         this.failInStrictMode(
