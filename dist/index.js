@@ -94998,12 +94998,9 @@ var MagicNixCacheAction = class {
       const res = await this.client.post(
         `http://${this.hostAndPort}/api/workflow-start`
       );
-      core.debug(
-        `post to /api/workflow-start (status: ${res.statusCode}, body: ${res.body})`
-      );
       if (res.statusCode !== 200) {
         this.failInStrictMode(
-          `Failed to trigger workflow start hook; expected status 200 but got ${res.statusCode}`
+          `Failed to trigger workflow start hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`
         );
       }
       core.debug(`back from post: ${res.body}`);
@@ -95033,12 +95030,9 @@ var MagicNixCacheAction = class {
       const res = await this.client.post(
         `http://${this.hostAndPort}/api/workflow-finish`
       );
-      core.debug(
-        `post to /api/workflow-finish (status: ${res.statusCode}, body: ${res.body})`
-      );
       if (res.statusCode !== 200) {
         this.failInStrictMode(
-          `Failed to trigger workflow finish hook; expected status 200 but got ${res.statusCode}`
+          `Failed to trigger workflow finish hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`
         );
       }
     } finally {
