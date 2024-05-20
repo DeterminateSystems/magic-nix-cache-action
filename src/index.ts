@@ -274,9 +274,9 @@ class MagicNixCacheAction {
     try {
       actionsCore.debug(`Indicating workflow start`);
       const hostAndPort = inputs.getString("listen");
-      const res: Response<string> = await this.client.post(
-        `http://${hostAndPort}/api/workflow-start`,
-      );
+      const res: Response<string> = await this.client
+        .post(`http://${hostAndPort}/api/workflow-start`)
+        .json();
 
       if (res.statusCode !== 200) {
         this.failInStrictMode(
@@ -284,7 +284,7 @@ class MagicNixCacheAction {
         );
       }
 
-      actionsCore.debug(`back from post: ${JSON.stringify(res)}`);
+      actionsCore.debug(`back from post: ${JSON.stringify(res.body)}`);
     } catch (e) {
       actionsCore.info(`Error marking the workflow as started:`);
       actionsCore.info(inspect(e));

@@ -94996,15 +94996,13 @@ var MagicNixCacheAction = class {
     try {
       core.debug(`Indicating workflow start`);
       const hostAndPort = inputs_exports.getString("listen");
-      const res = await this.client.post(
-        `http://${hostAndPort}/api/workflow-start`
-      );
+      const res = await this.client.post(`http://${hostAndPort}/api/workflow-start`).json();
       if (res.statusCode !== 200) {
         this.failInStrictMode(
           `Failed to trigger workflow start hook. Expected status 200 but got ${res.statusCode}`
         );
       }
-      core.debug(`back from post: ${JSON.stringify(res)}`);
+      core.debug(`back from post: ${JSON.stringify(res.body)}`);
     } catch (e) {
       core.info(`Error marking the workflow as started:`);
       core.info((0,external_node_util_.inspect)(e));
