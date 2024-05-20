@@ -29,6 +29,7 @@ const TEXT_TRUST_UNKNOWN =
 class MagicNixCacheAction {
   idslib: IdsToolbox;
   private strictMode: boolean;
+  private hostAndPort: string;
   private client: Got;
 
   noopMode: boolean;
@@ -44,6 +45,7 @@ class MagicNixCacheAction {
     });
 
     this.strictMode = inputs.getBool("strict-mode");
+    this.hostAndPort = inputs.getString("listen");
 
     this.client = got.extend({
       retry: {
@@ -159,8 +161,6 @@ class MagicNixCacheAction {
     const log = tailLog(this.daemonDir);
     const netrc = await netrcPath();
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
-
-    const hostAndPort = inputs.getString("listen");
     const upstreamCache = inputs.getString("upstream-cache");
     const diagnosticEndpoint = inputs.getString("diagnostic-endpoint");
     const useFlakeHub = inputs.getBool("use-flakehub");
@@ -173,7 +173,7 @@ class MagicNixCacheAction {
       "--startup-notification-url",
       `http://127.0.0.1:${notifyPort}`,
       "--listen",
-      hostAndPort,
+      this.hostAndPort,
       "--upstream",
       upstreamCache,
       "--diagnostic-endpoint",
@@ -273,9 +273,12 @@ class MagicNixCacheAction {
 
     try {
       actionsCore.debug(`Indicating workflow start`);
-      const hostAndPort = inputs.getString("listen");
       const res: Response<string> = await this.client.post(
-        `http://${hostAndPort}/api/workflow-start`,
+        `http://${this.hostAndPort}/api/workflow-start`,
+      );
+
+      actionsCore.debug(
+        `post to /api/workflow-start (status: ${res.statusCode}, body: ${res.body})`,
       );
 
       if (res.statusCode !== 200) {
@@ -313,9 +316,12 @@ class MagicNixCacheAction {
 
     try {
       actionsCore.debug(`about to post to localhost`);
-      const hostAndPort = inputs.getString("listen");
       const res: Response<string> = await this.client.post(
-        `http://${hostAndPort}/api/workflow-finish`,
+        `http://${this.hostAndPort}/api/workflow-finish`,
+      );
+
+      actionsCore.debug(
+        `post to /api/workflow-finish (status: ${res.statusCode}, body: ${res.body})`,
       );
 
       if (res.statusCode !== 200) {
@@ -323,8 +329,6 @@ class MagicNixCacheAction {
           `Failed to trigger workflow finish hook; expected status 200 but got ${res.statusCode}`,
         );
       }
-
-      actionsCore.debug(`back from post: ${res.body}`);
     } finally {
       actionsCore.debug(`unwatching the daemon log`);
       log.unwatch();

@@ -94811,6 +94811,7 @@ var MagicNixCacheAction = class {
       requireNix: "warn"
     });
     this.strictMode = inputs_exports.getBool("strict-mode");
+    this.hostAndPort = inputs_exports.getString("listen");
     this.client = got_dist_source.extend({
       retry: {
         limit: 1,
@@ -94908,7 +94909,6 @@ var MagicNixCacheAction = class {
     const log = tailLog(this.daemonDir);
     const netrc = await netrcPath();
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
-    const hostAndPort = inputs_exports.getString("listen");
     const upstreamCache = inputs_exports.getString("upstream-cache");
     const diagnosticEndpoint = inputs_exports.getString("diagnostic-endpoint");
     const useFlakeHub = inputs_exports.getBool("use-flakehub");
@@ -94920,7 +94920,7 @@ var MagicNixCacheAction = class {
       "--startup-notification-url",
       `http://127.0.0.1:${notifyPort}`,
       "--listen",
-      hostAndPort,
+      this.hostAndPort,
       "--upstream",
       upstreamCache,
       "--diagnostic-endpoint",
@@ -94995,9 +94995,11 @@ var MagicNixCacheAction = class {
     }
     try {
       core.debug(`Indicating workflow start`);
-      const hostAndPort = inputs_exports.getString("listen");
       const res = await this.client.post(
-        `http://${hostAndPort}/api/workflow-start`
+        `http://${this.hostAndPort}/api/workflow-start`
+      );
+      core.debug(
+        `post to /api/workflow-start (status: ${res.statusCode}, body: ${res.body})`
       );
       if (res.statusCode !== 200) {
         this.failInStrictMode(
@@ -95028,16 +95030,17 @@ var MagicNixCacheAction = class {
     const log = tailLog(this.daemonDir);
     try {
       core.debug(`about to post to localhost`);
-      const hostAndPort = inputs_exports.getString("listen");
       const res = await this.client.post(
-        `http://${hostAndPort}/api/workflow-finish`
+        `http://${this.hostAndPort}/api/workflow-finish`
+      );
+      core.debug(
+        `post to /api/workflow-finish (status: ${res.statusCode}, body: ${res.body})`
       );
       if (res.statusCode !== 200) {
         this.failInStrictMode(
           `Failed to trigger workflow finish hook; expected status 200 but got ${res.statusCode}`
         );
       }
-      core.debug(`back from post: ${res.body}`);
     } finally {
       core.debug(`unwatching the daemon log`);
       log.unwatch();
