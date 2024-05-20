@@ -277,13 +277,9 @@ class MagicNixCacheAction {
         `http://${this.hostAndPort}/api/workflow-start`,
       );
 
-      actionsCore.debug(
-        `post to /api/workflow-start (status: ${res.statusCode}, body: ${res.body})`,
-      );
-
       if (res.statusCode !== 200) {
         this.failInStrictMode(
-          `Failed to trigger workflow start hook; expected status 200 but got ${res.statusCode}`,
+          `Failed to trigger workflow start hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`,
         );
       }
 
@@ -320,13 +316,9 @@ class MagicNixCacheAction {
         `http://${this.hostAndPort}/api/workflow-finish`,
       );
 
-      actionsCore.debug(
-        `post to /api/workflow-finish (status: ${res.statusCode}, body: ${res.body})`,
-      );
-
       if (res.statusCode !== 200) {
         this.failInStrictMode(
-          `Failed to trigger workflow finish hook; expected status 200 but got ${res.statusCode}`,
+          `Failed to trigger workflow finish hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`,
         );
       }
     } finally {
