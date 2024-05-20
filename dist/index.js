@@ -95023,6 +95023,11 @@ var MagicNixCacheAction = class {
       core.debug(`about to post to localhost`);
       const hostAndPort = inputs_exports.getString("listen");
       const res = await this.client.post(`http://${hostAndPort}/api/workflow-finish`).json();
+      if (res.status !== 200) {
+        this.failInStrictMode(
+          `Failed to trigger workflow finish hook; expected HTTP status 200 from POST to /api/workflow-finish but got ${res.status} instead`
+        );
+      }
       core.debug(`back from post: ${res}`);
     } finally {
       core.debug(`unwatching the daemon log`);
