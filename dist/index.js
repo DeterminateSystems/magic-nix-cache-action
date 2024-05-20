@@ -94996,8 +94996,15 @@ var MagicNixCacheAction = class {
     try {
       core.debug(`Indicating workflow start`);
       const hostAndPort = inputs_exports.getString("listen");
-      const res = await this.client.post(`http://${hostAndPort}/api/workflow-start`).json();
-      core.debug(`back from post: ${res}`);
+      const res = await this.client.post(
+        `http://${hostAndPort}/api/workflow-start`
+      );
+      if (res.statusCode !== 200) {
+        this.failInStrictMode(
+          `Failed to trigger workflow start hook. Expected status 200 but got ${res.statusCode}`
+        );
+      }
+      core.debug(`back from post: ${JSON.stringify(res)}`);
     } catch (e) {
       core.info(`Error marking the workflow as started:`);
       core.info((0,external_node_util_.inspect)(e));
@@ -95022,13 +95029,15 @@ var MagicNixCacheAction = class {
     try {
       core.debug(`about to post to localhost`);
       const hostAndPort = inputs_exports.getString("listen");
-      const res = await this.client.post(`http://${hostAndPort}/api/workflow-finish`).json();
-      if (res.status !== 200) {
+      const res = await this.client.post(
+        `http://${hostAndPort}/api/workflow-finish`
+      );
+      if (res.statusCode !== 200) {
         this.failInStrictMode(
-          `Failed to trigger workflow finish hook. Response: ${JSON.stringify(res)}`
+          `Failed to trigger workflow finish hook. Expected status 200 but got ${res.statusCode}`
         );
       }
-      core.debug(`back from post: ${res}`);
+      core.debug(`back from post: ${JSON.stringify(res.body)}`);
     } finally {
       core.debug(`unwatching the daemon log`);
       log.unwatch();

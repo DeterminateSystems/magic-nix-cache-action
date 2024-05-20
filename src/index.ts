@@ -1,7 +1,7 @@
 import { netrcPath, tailLog } from "./helpers.js";
 import * as actionsCore from "@actions/core";
 import { IdsToolbox, inputs } from "detsys-ts";
-import got, { Got } from "got";
+import got, { Got, Response } from "got";
 import * as http from "http";
 import { SpawnOptions, exec, spawn } from "node:child_process";
 import { mkdirSync, openSync, readFileSync } from "node:fs";
@@ -274,10 +274,17 @@ class MagicNixCacheAction {
     try {
       actionsCore.debug(`Indicating workflow start`);
       const hostAndPort = inputs.getString("listen");
-      const res: Response = await this.client
-        .post(`http://${hostAndPort}/api/workflow-start`)
-        .json();
-      actionsCore.debug(`back from post: ${res}`);
+      const res: Response<string> = await this.client.post(
+        `http://${hostAndPort}/api/workflow-start`,
+      );
+
+      if (res.statusCode !== 200) {
+        this.failInStrictMode(
+          `Failed to trigger workflow start hook. Expected status 200 but got ${res.statusCode}`,
+        );
+      }
+
+      actionsCore.debug(`back from post: ${JSON.stringify(res)}`);
     } catch (e) {
       actionsCore.info(`Error marking the workflow as started:`);
       actionsCore.info(inspect(e));
@@ -307,17 +314,17 @@ class MagicNixCacheAction {
     try {
       actionsCore.debug(`about to post to localhost`);
       const hostAndPort = inputs.getString("listen");
-      const res: Response = await this.client
-        .post(`http://${hostAndPort}/api/workflow-finish`)
-        .json();
+      const res: Response<string> = await this.client.post(
+        `http://${hostAndPort}/api/workflow-finish`,
+      );
 
-      if (res.status !== 200) {
+      if (res.statusCode !== 200) {
         this.failInStrictMode(
-          `Failed to trigger workflow finish hook. Response: ${JSON.stringify(res)}`,
+          `Failed to trigger workflow finish hook. Expected status 200 but got ${res.statusCode}`,
         );
       }
 
-      actionsCore.debug(`back from post: ${res}`);
+      actionsCore.debug(`back from post: ${JSON.stringify(res.body)}`);
     } finally {
       actionsCore.debug(`unwatching the daemon log`);
       log.unwatch();

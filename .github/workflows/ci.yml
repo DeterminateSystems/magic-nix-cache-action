@@ -32,6 +32,7 @@ jobs:
       - run: git diff --exit-code
 
   test-no-nix:
+    needs: build
     name: "Test: Nix not installed"
     runs-on: ubuntu-22.04
     permissions:
@@ -47,6 +48,7 @@ jobs:
           strict-mode: true
 
   run-x86_64-linux-untrusted:
+    needs: build
     name: Run x86_64 Linux, Untrusted
     runs-on: ubuntu-22.04
     permissions:
