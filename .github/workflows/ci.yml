@@ -49,7 +49,7 @@ jobs:
 
   run-x86_64-linux-untrusted:
     needs: build
-    name: Run x86_64 Linux, Untrusted
+    name: Run x86_64-linux, Untrusted
     runs-on: ubuntu-22.04
     permissions:
       id-token: "write"
@@ -89,6 +89,8 @@ jobs:
             runner: "macos-latest-xlarge"
           - nix-system: "x86_64-darwin"
             runner: "macos-12"
+          - nix-system: "aarch64-linux"
+            runner: "namespace-profile-default-arm64"
           - nix-system: "x86_64-linux"
             runner: "ubuntu-22.04"
     steps:
