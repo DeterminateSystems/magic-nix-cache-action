@@ -3,12 +3,11 @@ import * as actionsCore from "@actions/core";
 import { DetSysAction, inputs } from "detsys-ts";
 import got, { Got, Response } from "got";
 import * as http from "http";
-import { SpawnOptions, exec, spawn } from "node:child_process";
+import { SpawnOptions, spawn } from "node:child_process";
 import { mkdirSync, openSync, readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
-import * as os from "node:os";
 import * as path from "node:path";
-import { inspect, promisify } from "node:util";
+import { inspect } from "node:util";
 
 // The ENV_DAEMON_DIR is intended to determine if we "own" the daemon or not,
 // in the case that a user has put the magic nix cache into their workflow
@@ -147,7 +146,9 @@ class MagicNixCacheAction extends DetSysAction {
 
     const sourceBinary = inputs.getStringOrNull("source-binary");
     const daemonBin =
-      sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
+      sourceBinary !== null
+        ? sourceBinary
+        : await this.unpackClosure("magic-nix-cache");
 
     let runEnv;
     if (actionsCore.isDebug()) {
@@ -275,19 +276,6 @@ class MagicNixCacheAction extends DetSysAction {
     actionsCore.info("Launched Magic Nix Cache");
 
     log.unwatch();
-  }
-
-  private async fetchAutoCacher(): Promise<string> {
-    const closurePath = await this.fetchExecutable();
-    this.recordEvent("load_closure");
-    const { stdout } = await promisify(exec)(
-      `cat "${closurePath}" | xz -d | nix-store --import`,
-    );
-
-    const paths = stdout.split(os.EOL);
-    // Since the export is in reverse topologically sorted order, magic-nix-cache is always the penultimate entry in the list (the empty string left by split being the last).
-    const lastPath = paths.at(-2);
-    return `${lastPath}/bin/magic-nix-cache`;
   }
 
   async notifyAutoCache(): Promise<void> {

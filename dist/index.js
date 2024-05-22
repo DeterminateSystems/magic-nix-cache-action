@@ -95169,7 +95169,6 @@ async function flakeHubLogin(netrc) {
 
 
 
-
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
@@ -95272,7 +95271,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
     const sourceBinary = inputs_exports.getStringOrNull("source-binary");
-    const daemonBin = sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
+    const daemonBin = sourceBinary !== null ? sourceBinary : await this.unpackClosure("magic-nix-cache");
     let runEnv;
     if (core.isDebug()) {
       runEnv = {
@@ -95373,16 +95372,6 @@ var MagicNixCacheAction = class extends DetSysAction {
     daemon.unref();
     core.info("Launched Magic Nix Cache");
     log.unwatch();
-  }
-  async fetchAutoCacher() {
-    const closurePath = await this.fetchExecutable();
-    this.recordEvent("load_closure");
-    const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(
-      `cat "${closurePath}" | xz -d | nix-store --import`
-    );
-    const paths = stdout.split(external_node_os_.EOL);
-    const lastPath = paths.at(-2);
-    return `${lastPath}/bin/magic-nix-cache`;
   }
   async notifyAutoCache() {
     if (!this.daemonStarted) {
