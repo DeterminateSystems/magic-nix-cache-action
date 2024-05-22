@@ -144,11 +144,7 @@ class MagicNixCacheAction extends DetSysAction {
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`,
     );
 
-    const sourceBinary = inputs.getStringOrNull("source-binary");
-    const daemonBin =
-      sourceBinary !== null
-        ? sourceBinary
-        : await this.unpackClosure("magic-nix-cache");
+    const daemonBin = await this.unpackClosure("magic-nix-cache");
 
     let runEnv;
     if (actionsCore.isDebug()) {
@@ -278,7 +274,7 @@ class MagicNixCacheAction extends DetSysAction {
     log.unwatch();
   }
 
-  async notifyAutoCache(): Promise<void> {
+  private async notifyAutoCache(): Promise<void> {
     if (!this.daemonStarted) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;

@@ -39513,7 +39513,7 @@ module.exports =
 {
   parallel      : __nccwpck_require__(644),
   serial        : __nccwpck_require__(4501),
-  serialOrdered : __nccwpck_require__(3958)
+  serialOrdered : __nccwpck_require__(2362)
 };
 
 
@@ -39844,7 +39844,7 @@ function parallel(list, iterator, callback)
 /***/ 4501:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-var serialOrdered = __nccwpck_require__(3958);
+var serialOrdered = __nccwpck_require__(2362);
 
 // Public API
 module.exports = serial;
@@ -39865,7 +39865,7 @@ function serial(list, iterator, callback)
 
 /***/ }),
 
-/***/ 3958:
+/***/ 2362:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 var iterate    = __nccwpck_require__(5748)
@@ -94066,7 +94066,7 @@ const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createReq
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@ed02129aed8e4d6402d920152652877189bece70_3whmnlhrx56zhgtsjnkrhnutfu/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@f1554c0d3a5f1114cff78879e50bc118451a03c0_t7eoi6mjzqgr2plrflke2xdf7i/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94640,16 +94640,6 @@ var DetSysAction = class {
   stapleFile(name, location) {
     this.exceptionAttachments.set(name, location);
   }
-  setExecutionPhase() {
-    const phase = core.getState(STATE_KEY_EXECUTION_PHASE);
-    if (phase === "") {
-      core.saveState(STATE_KEY_EXECUTION_PHASE, "post");
-      this.executionPhase = "main";
-    } else {
-      this.executionPhase = "post";
-    }
-    this.facts.execution_phase = this.executionPhase;
-  }
   /**
    * Execute the Action as defined.
    */
@@ -94659,7 +94649,56 @@ var DetSysAction = class {
       process.exitCode = 1;
     });
   }
-  // Whether the
+  getTemporaryName() {
+    const tmpDir = process.env["RUNNER_TEMP"] || (0,external_node_os_.tmpdir)();
+    return external_node_path_namespaceObject.join(tmpDir, `${this.actionOptions.name}-${(0,external_node_crypto_namespaceObject.randomUUID)()}`);
+  }
+  addFact(key, value) {
+    this.facts[key] = value;
+  }
+  getDiagnosticsUrl() {
+    return this.actionOptions.diagnosticsUrl;
+  }
+  getUniqueId() {
+    return this.identity.run_differentiator || process.env.RUNNER_TRACKING_ID || (0,external_node_crypto_namespaceObject.randomUUID)();
+  }
+  getCorrelationHashes() {
+    return this.identity;
+  }
+  recordEvent(eventName, context = {}) {
+    this.events.push({
+      event_name: `${this.actionOptions.eventPrefix}${eventName}`,
+      context,
+      correlation: this.identity,
+      facts: this.facts,
+      timestamp: /* @__PURE__ */ new Date(),
+      uuid: (0,external_node_crypto_namespaceObject.randomUUID)()
+    });
+  }
+  /**
+   * Fetches a file in `.xz` format from the URL determined by the `source-*`
+   * parameters (or `source-binary` if set). It then imports that file's
+   * contents into the Nix store and returns the path of the executable at
+   * `/nix/store/STORE_PATH/bin/${bin}`.
+   */
+  async unpackClosure(bin) {
+    const artifact = await this.fetchArtifact();
+    const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(
+      `cat "${artifact}" | xz -d | nix-store --import`
+    );
+    const paths = stdout.split(external_node_os_.EOL);
+    const lastPath = paths.at(-2);
+    return `${lastPath}/bin/${bin}`;
+  }
+  /**
+   * Fetches the executable at the URL determined by the `source-*` inputs and
+   * other facts, `chmod`s it, and returns the path to the executable on disk.
+   */
+  async fetchExecutable() {
+    const binaryPath = await this.fetchArtifact();
+    await (0,promises_namespaceObject.chmod)(binaryPath, promises_namespaceObject.constants.S_IXUSR | promises_namespaceObject.constants.S_IXGRP);
+    return binaryPath;
+  }
   get isMain() {
     return this.executionPhase === "main";
   }
@@ -94715,52 +94754,23 @@ var DetSysAction = class {
       await this.complete();
     }
   }
-  addFact(key, value) {
-    this.facts[key] = value;
-  }
-  getDiagnosticsUrl() {
-    return this.actionOptions.diagnosticsUrl;
-  }
-  getUniqueId() {
-    return this.identity.run_differentiator || process.env.RUNNER_TRACKING_ID || (0,external_node_crypto_namespaceObject.randomUUID)();
-  }
-  getCorrelationHashes() {
-    return this.identity;
-  }
-  recordEvent(eventName, context = {}) {
-    this.events.push({
-      event_name: `${this.actionOptions.eventPrefix}${eventName}`,
-      context,
-      correlation: this.identity,
-      facts: this.facts,
-      timestamp: /* @__PURE__ */ new Date(),
-      uuid: (0,external_node_crypto_namespaceObject.randomUUID)()
-    });
-  }
-  /**
-   * Fetches a file in `.xz` format, imports its contents into the Nix store,
-   * and returns the path of the executable at `/nix/store/STORE_PATH/bin/${bin}`.
-   */
-  async unpackClosure(bin) {
-    const artifact = this.fetchArtifact();
-    const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(
-      `cat "${artifact}" | xz -d | nix-store --import`
-    );
-    const paths = stdout.split(external_node_os_.EOL);
-    const lastPath = paths.at(-2);
-    return `${lastPath}/bin/${bin}`;
-  }
   /**
    * Fetch an artifact, such as a tarball, from the URL determined by the `source-*`
-   * inputs and other factors.
+   * inputs or use a provided binary specified by the `source-binary`
+   * input.
    */
   async fetchArtifact() {
+    const sourceBinary = getStringOrNull("source-binary");
+    if (sourceBinary !== null) {
+      core.debug(`Using the provided source binary at ${sourceBinary}`);
+      return sourceBinary;
+    }
     core.startGroup(
       `Downloading ${this.actionOptions.name} for ${this.architectureFetchSuffix}`
     );
     try {
-      core.info(`Fetching from ${this.getUrl()}`);
-      const correlatedUrl = this.getUrl();
+      core.info(`Fetching from ${this.getSourceUrl()}`);
+      const correlatedUrl = this.getSourceUrl();
       correlatedUrl.searchParams.set("ci", "github");
       correlatedUrl.searchParams.set(
         "correlation",
@@ -94771,7 +94781,7 @@ var DetSysAction = class {
         const v = versionCheckup.headers.etag;
         this.addFact(FACT_SOURCE_URL_ETAG, v);
         core.debug(
-          `Checking the tool cache for ${this.getUrl()} at ${v}`
+          `Checking the tool cache for ${this.getSourceUrl()} at ${v}`
         );
         const cached = await this.getCachedVersion(v);
         if (cached) {
@@ -94807,15 +94817,6 @@ var DetSysAction = class {
     }
   }
   /**
-   * Fetches the executable at the URL determined by the `source-*` inputs and
-   * other facts, `chmod`s it, and returns the path to the executable on disk.
-   */
-  async fetchExecutable() {
-    const binaryPath = await this.fetchArtifact();
-    await (0,promises_namespaceObject.chmod)(binaryPath, promises_namespaceObject.constants.S_IXUSR | promises_namespaceObject.constants.S_IXGRP);
-    return binaryPath;
-  }
-  /**
    * A helper function for failing on error only if strict mode is enabled.
    * This is intended only for CI environments testing Actions themselves.
    */
@@ -94828,7 +94829,7 @@ var DetSysAction = class {
     this.recordEvent(`complete_${this.executionPhase}`);
     await this.submitEvents();
   }
-  getUrl() {
+  getSourceUrl() {
     const p = this.sourceParameters;
     if (p.url) {
       this.addFact(FACT_SOURCE_URL, p.url);
@@ -95012,10 +95013,6 @@ var DetSysAction = class {
       );
     }
     this.events = [];
-  }
-  getTemporaryName() {
-    const _tmpdir = process.env["RUNNER_TEMP"] || (0,external_node_os_.tmpdir)();
-    return external_node_path_namespaceObject.join(_tmpdir, `${this.actionOptions.name}-${(0,external_node_crypto_namespaceObject.randomUUID)()}`);
   }
 };
 function stringifyError(error2) {
@@ -95270,8 +95267,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
-    const sourceBinary = inputs_exports.getStringOrNull("source-binary");
-    const daemonBin = sourceBinary !== null ? sourceBinary : await this.unpackClosure("magic-nix-cache");
+    const daemonBin = await this.unpackClosure("magic-nix-cache");
     let runEnv;
     if (core.isDebug()) {
       runEnv = {
