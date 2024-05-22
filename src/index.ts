@@ -44,7 +44,7 @@ class MagicNixCacheAction {
       requireNix: "warn",
     });
 
-    this.strictMode = inputs.getBool("strict-mode");
+    this.strictMode = inputs.getBool("_internal-strict-mode");
     this.hostAndPort = inputs.getString("listen");
 
     this.client = got.extend({

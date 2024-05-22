@@ -45,7 +45,7 @@ jobs:
       - name: Cache the store
         uses: ./
         with:
-          strict-mode: true
+          _internal-strict-mode: true
 
   run-x86_64-linux-untrusted:
     needs: build
@@ -68,7 +68,7 @@ jobs:
       - name: Cache the store
         uses: ./
         with:
-          strict-mode: true
+          _internal-strict-mode: true
       - name: Check the cache isn't enabled
         run: |
           [ $(nix config show substituters) == "https://cache.nixos.org/" ]
@@ -102,7 +102,7 @@ jobs:
       - name: Cache the store
         uses: ./
         with:
-          strict-mode: true
+          _internal-strict-mode: true
       - name: Check the cache for liveness
         run: |
           .github/workflows/cache-test.sh

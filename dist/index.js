@@ -94810,7 +94810,7 @@ var MagicNixCacheAction = class {
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn"
     });
-    this.strictMode = inputs_exports.getBool("strict-mode");
+    this.strictMode = inputs_exports.getBool("_internal-strict-mode");
     this.hostAndPort = inputs_exports.getString("listen");
     this.client = got_dist_source.extend({
       retry: {
