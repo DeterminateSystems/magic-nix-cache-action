@@ -1,14 +1,13 @@
 import { netrcPath, tailLog } from "./helpers.js";
 import * as actionsCore from "@actions/core";
-import { IdsToolbox, inputs } from "detsys-ts";
-import got, { Got } from "got";
+import { DetSysAction, inputs } from "detsys-ts";
+import got, { Got, Response } from "got";
 import * as http from "http";
-import { SpawnOptions, exec, spawn } from "node:child_process";
+import { SpawnOptions, spawn } from "node:child_process";
 import { mkdirSync, openSync, readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
-import * as os from "node:os";
 import * as path from "node:path";
-import { inspect, promisify } from "node:util";
+import { inspect } from "node:util";
 
 // The ENV_DAEMON_DIR is intended to determine if we "own" the daemon or not,
 // in the case that a user has put the magic nix cache into their workflow
@@ -26,23 +25,25 @@ const TEXT_TRUST_UNTRUSTED =
 const TEXT_TRUST_UNKNOWN =
   "The Nix daemon may not consider the user running this workflow to be trusted. Magic Nix Cache may not start correctly.";
 
-class MagicNixCacheAction {
-  idslib: IdsToolbox;
-  private client: Got;
+class MagicNixCacheAction extends DetSysAction {
+  private hostAndPort: string;
+  private httpClient: Got;
 
   noopMode: boolean;
   private daemonDir: string;
   private daemonStarted: boolean;
 
   constructor() {
-    this.idslib = new IdsToolbox({
+    super({
       name: "magic-nix-cache",
       fetchStyle: "gh-env-style",
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn",
     });
 
-    this.client = got.extend({
+    this.hostAndPort = inputs.getString("listen");
+
+    this.httpClient = got.extend({
       retry: {
         limit: 1,
         methods: ["POST", "GET", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE"],
@@ -63,7 +64,7 @@ class MagicNixCacheAction {
     if (actionsCore.getState(STATE_DAEMONDIR) !== "") {
       this.daemonDir = actionsCore.getState(STATE_DAEMONDIR);
     } else {
-      this.daemonDir = this.idslib.getTemporaryName();
+      this.daemonDir = this.getTemporaryName();
       mkdirSync(this.daemonDir);
       actionsCore.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
@@ -74,12 +75,42 @@ class MagicNixCacheAction {
     } else {
       this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.idslib.addFact("noop_mode", this.noopMode);
+    this.addFact("noop_mode", this.noopMode);
 
-    this.idslib.stapleFile(
-      "daemon.log",
-      path.join(this.daemonDir, "daemon.log"),
-    );
+    this.stapleFile("daemon.log", path.join(this.daemonDir, "daemon.log"));
+  }
+
+  async main(): Promise<void> {
+    if (this.noopMode) {
+      actionsCore.warning(TEXT_NOOP);
+      return;
+    }
+
+    if (this.nixStoreTrust === "untrusted") {
+      actionsCore.warning(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (this.nixStoreTrust === "unknown") {
+      actionsCore.info(TEXT_TRUST_UNKNOWN);
+    }
+
+    await this.setUpAutoCache();
+    await this.notifyAutoCache();
+  }
+
+  async post(): Promise<void> {
+    if (this.noopMode) {
+      actionsCore.debug(TEXT_NOOP);
+      return;
+    }
+
+    if (this.nixStoreTrust === "untrusted") {
+      actionsCore.debug(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (this.nixStoreTrust === "unknown") {
+      actionsCore.debug(TEXT_TRUST_UNKNOWN);
+    }
+
+    await this.tearDownAutoCache();
   }
 
   async setUpAutoCache(): Promise<void> {
@@ -99,7 +130,7 @@ class MagicNixCacheAction {
       }
     }
 
-    this.idslib.addFact("authenticated_env", !anyMissing);
+    this.addFact("authenticated_env", !anyMissing);
     if (anyMissing) {
       return;
     }
@@ -113,9 +144,7 @@ class MagicNixCacheAction {
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`,
     );
 
-    const sourceBinary = inputs.getStringOrNull("source-binary");
-    const daemonBin =
-      sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
+    const daemonBin = await this.unpackClosure("magic-nix-cache");
 
     let runEnv;
     if (actionsCore.isDebug()) {
@@ -156,8 +185,6 @@ class MagicNixCacheAction {
     const log = tailLog(this.daemonDir);
     const netrc = await netrcPath();
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
-
-    const hostAndPort = inputs.getString("listen");
     const upstreamCache = inputs.getString("upstream-cache");
     const diagnosticEndpoint = inputs.getString("diagnostic-endpoint");
     const useFlakeHub = inputs.getBool("use-flakehub");
@@ -171,7 +198,7 @@ class MagicNixCacheAction {
       "--startup-notification-url",
       `http://127.0.0.1:${notifyPort}`,
       "--listen",
-      hostAndPort,
+      this.hostAndPort,
       "--upstream",
       upstreamCache,
       "--diagnostic-endpoint",
@@ -226,16 +253,19 @@ class MagicNixCacheAction {
         })
         // eslint-disable-next-line github/no-then
         .catch((err) => {
-          reject(new Error(`error in notifyPromise: ${err}`));
+          const msg = `error in notifyPromise: ${err}`;
+          reject(new Error(msg));
         });
       daemon.on("exit", async (code, signal) => {
+        let msg: string;
         if (signal) {
-          reject(new Error(`Daemon was killed by signal ${signal}`));
+          msg = `Daemon was killed by signal ${signal}`;
         } else if (code) {
-          reject(new Error(`Daemon exited with code ${code}`));
+          msg = `Daemon exited with code ${code}`;
         } else {
-          reject(new Error(`Daemon unexpectedly exited`));
+          msg = "Daemon unexpectedly exited";
         }
+        reject(new Error(msg));
       });
     });
 
@@ -246,20 +276,7 @@ class MagicNixCacheAction {
     log.unwatch();
   }
 
-  private async fetchAutoCacher(): Promise<string> {
-    const closurePath = await this.idslib.fetch();
-    this.idslib.recordEvent("load_closure");
-    const { stdout } = await promisify(exec)(
-      `cat "${closurePath}" | xz -d | nix-store --import`,
-    );
-
-    const paths = stdout.split(os.EOL);
-    // Since the export is in reverse topologically sorted order, magic-nix-cache is always the penultimate entry in the list (the empty string left by split being the last).
-    const lastPath = paths.at(-2);
-    return `${lastPath}/bin/magic-nix-cache`;
-  }
-
-  async notifyAutoCache(): Promise<void> {
+  private async notifyAutoCache(): Promise<void> {
     if (!this.daemonStarted) {
       actionsCore.debug("magic-nix-cache not started - Skipping");
       return;
@@ -267,15 +284,26 @@ class MagicNixCacheAction {
 
     try {
       actionsCore.debug(`Indicating workflow start`);
-      const hostAndPort = inputs.getString("listen");
-      const res: Response = await this.client
-        .post(`http://${hostAndPort}/api/workflow-start`)
-        .json();
-      actionsCore.debug(`back from post: ${res}`);
+      const res: Response<string> = await this.httpClient.post(
+        `http://${this.hostAndPort}/api/workflow-start`,
+      );
+
+      actionsCore.debug(
+        `Response from POST to /api/workflow-start: (status: ${res.statusCode}, body: ${res.body})`,
+      );
+
+      if (res.statusCode !== 200) {
+        throw new Error(
+          `Failed to trigger workflow start hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`,
+        );
+      }
+
+      actionsCore.debug(`back from post: ${res.body}`);
     } catch (e) {
       actionsCore.info(`Error marking the workflow as started:`);
       actionsCore.info(inspect(e));
       actionsCore.info(`Magic Nix Cache may not be running for this workflow.`);
+      this.failOnError(`Magic Nix Cache failed to start: ${inspect(e)}`);
     }
   }
 
@@ -296,11 +324,19 @@ class MagicNixCacheAction {
 
     try {
       actionsCore.debug(`about to post to localhost`);
-      const hostAndPort = inputs.getString("listen");
-      const res: Response = await this.client
-        .post(`http://${hostAndPort}/api/workflow-finish`)
-        .json();
-      actionsCore.debug(`back from post: ${res}`);
+      const res: Response<string> = await this.httpClient.post(
+        `http://${this.hostAndPort}/api/workflow-finish`,
+      );
+
+      actionsCore.debug(
+        `Response from POST to /api/workflow-finish: (status: ${res.statusCode}, body: ${res.body})`,
+      );
+
+      if (res.statusCode !== 200) {
+        throw new Error(
+          `Failed to trigger workflow finish hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`,
+        );
+      }
     } finally {
       actionsCore.debug(`unwatching the daemon log`);
       log.unwatch();
@@ -324,41 +360,7 @@ class MagicNixCacheAction {
 }
 
 function main(): void {
-  const cacheAction = new MagicNixCacheAction();
-
-  cacheAction.idslib.onMain(async () => {
-    if (cacheAction.noopMode) {
-      actionsCore.warning(TEXT_NOOP);
-      return;
-    }
-
-    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
-      actionsCore.warning(TEXT_TRUST_UNTRUSTED);
-      return;
-    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
-      actionsCore.info(TEXT_TRUST_UNKNOWN);
-    }
-
-    await cacheAction.setUpAutoCache();
-    await cacheAction.notifyAutoCache();
-  });
-  cacheAction.idslib.onPost(async () => {
-    if (cacheAction.noopMode) {
-      actionsCore.debug(TEXT_NOOP);
-      return;
-    }
-
-    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
-      actionsCore.debug(TEXT_TRUST_UNTRUSTED);
-      return;
-    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
-      actionsCore.debug(TEXT_TRUST_UNKNOWN);
-    }
-
-    await cacheAction.tearDownAutoCache();
-  });
-
-  cacheAction.idslib.execute();
+  new MagicNixCacheAction().execute();
 }
 
 main();

@@ -32,6 +32,7 @@ jobs:
       - run: git diff --exit-code
 
   test-no-nix:
+    needs: build
     name: "Test: Nix not installed"
     runs-on: ubuntu-22.04
     permissions:
@@ -43,9 +44,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Cache the store
         uses: ./
+        with:
+          _internal-strict-mode: true
 
   run-x86_64-linux-untrusted:
-    name: Run x86_64 Linux, Untrusted
+    needs: build
+    name: Run x86_64-linux, Untrusted
     runs-on: ubuntu-22.04
     permissions:
       id-token: "write"
@@ -63,21 +67,35 @@ jobs:
             trusted-users = root
       - name: Cache the store
         uses: ./
+        with:
+          _internal-strict-mode: true
       - name: Check the cache isn't enabled
         run: |
           [ $(nix config show substituters) == "https://cache.nixos.org/" ]
 
-  run-x86_64-linux:
-    name: Run x86_64 Linux
-    runs-on: ubuntu-22.04
+  run-systems:
+    needs: build
+    name: "Run ${{ matrix.systems.nix-system }}"
+    runs-on: "${{ matrix.systems.runner }}"
     permissions:
       id-token: "write"
       contents: "read"
     env:
       ACTIONS_STEP_DEBUG: true
+    strategy:
+      matrix:
+        systems:
+          - nix-system: "aarch64-darwin"
+            runner: "macos-latest-xlarge"
+          - nix-system: "x86_64-darwin"
+            runner: "macos-12"
+          - nix-system: "aarch64-linux"
+            runner: "namespace-profile-default-arm64"
+          - nix-system: "x86_64-linux"
+            runner: "ubuntu-22.04"
     steps:
       - uses: actions/checkout@v4
-      - name: Install Nix
+      - name: Install Nix on ${{ matrix.systems.nix-system }} system
         uses: DeterminateSystems/nix-installer-action@main
         with:
           flakehub: true
@@ -85,51 +103,8 @@ jobs:
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
         uses: ./
-      - name: Check the cache for liveness
-        run: |
-          .github/workflows/cache-test.sh
-
-  run-x86_64-darwin:
-    name: Run x86_64 Darwin
-    runs-on: macos-12
-    permissions:
-      id-token: "write"
-      contents: "read"
-    env:
-      ACTIONS_STEP_DEBUG: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
         with:
-          flakehub: true
-          extra-conf: |
-            narinfo-cache-negative-ttl = 0
-      - name: Cache the store
-        uses: ./
-      - name: Check the cache for liveness
-        run: |
-          .github/workflows/cache-test.sh
-
-  run-aarch64-darwin:
-    name: Run aarch64 Darwin
-    concurrency: build-ARM64-macOS
-    runs-on: macos-latest-xlarge
-    permissions:
-      id-token: "write"
-      contents: "read"
-    env:
-      ACTIONS_STEP_DEBUG: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          flakehub: true
-          extra-conf: |
-            narinfo-cache-negative-ttl = 0
-      - name: Cache the store
-        uses: ./
+          _internal-strict-mode: true
       - name: Check the cache for liveness
         run: |
           .github/workflows/cache-test.sh

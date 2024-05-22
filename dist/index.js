@@ -796,7 +796,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.downloadCacheStorageSDK = exports.downloadCacheHttpClientConcurrent = exports.downloadCacheHttpClient = exports.DownloadProgress = void 0;
 const core = __importStar(__nccwpck_require__(9093));
 const http_client_1 = __nccwpck_require__(6372);
-const storage_blob_1 = __nccwpck_require__(5542);
+const storage_blob_1 = __nccwpck_require__(4883);
 const buffer = __importStar(__nccwpck_require__(4300));
 const fs = __importStar(__nccwpck_require__(7147));
 const stream = __importStar(__nccwpck_require__(2781));
@@ -11711,7 +11711,7 @@ exports.setSpanContext = setSpanContext;
 
 /***/ }),
 
-/***/ 5542:
+/***/ 4883:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -20223,7 +20223,7 @@ const timeoutInSeconds = {
 const version = {
     parameterPath: "version",
     mapper: {
-        defaultValue: "2023-11-03",
+        defaultValue: "2024-05-04",
         isConstant: true,
         serializedName: "x-ms-version",
         type: {
@@ -25054,8 +25054,8 @@ const logger = logger$1.createClientLogger("storage-blob");
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-const SDK_VERSION = "12.17.0";
-const SERVICE_VERSION = "2023-11-03";
+const SDK_VERSION = "12.18.0";
+const SERVICE_VERSION = "2024-05-04";
 const BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES = 256 * 1024 * 1024; // 256MB
 const BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES = 4000 * 1024 * 1024; // 4000MB
 const BLOCK_BLOB_MAX_BLOCKS = 50000;
@@ -26915,7 +26915,7 @@ class StorageSharedKeyCredential extends Credential {
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 const packageName = "azure-storage-blob";
-const packageVersion = "12.17.0";
+const packageVersion = "12.18.0";
 class StorageClientContext extends coreHttp__namespace.ServiceClient {
     /**
      * Initializes a new instance of the StorageClientContext class.
@@ -26941,7 +26941,7 @@ class StorageClientContext extends coreHttp__namespace.ServiceClient {
         // Parameter assignments
         this.url = url;
         // Assigning values to Constant parameters
-        this.version = options.version || "2023-11-03";
+        this.version = options.version || "2024-05-04";
     }
 }
 
@@ -41213,133 +41213,6 @@ module.exports = function(dst, src) {
 
   return dst;
 };
-
-
-/***/ }),
-
-/***/ 1210:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-
-const {PassThrough: PassThroughStream} = __nccwpck_require__(2781);
-
-module.exports = options => {
-	options = {...options};
-
-	const {array} = options;
-	let {encoding} = options;
-	const isBuffer = encoding === 'buffer';
-	let objectMode = false;
-
-	if (array) {
-		objectMode = !(encoding || isBuffer);
-	} else {
-		encoding = encoding || 'utf8';
-	}
-
-	if (isBuffer) {
-		encoding = null;
-	}
-
-	const stream = new PassThroughStream({objectMode});
-
-	if (encoding) {
-		stream.setEncoding(encoding);
-	}
-
-	let length = 0;
-	const chunks = [];
-
-	stream.on('data', chunk => {
-		chunks.push(chunk);
-
-		if (objectMode) {
-			length = chunks.length;
-		} else {
-			length += chunk.length;
-		}
-	});
-
-	stream.getBufferedValue = () => {
-		if (array) {
-			return chunks;
-		}
-
-		return isBuffer ? Buffer.concat(chunks, length) : chunks.join('');
-	};
-
-	stream.getBufferedLength = () => length;
-
-	return stream;
-};
-
-
-/***/ }),
-
-/***/ 1798:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-
-const {constants: BufferConstants} = __nccwpck_require__(4300);
-const stream = __nccwpck_require__(2781);
-const {promisify} = __nccwpck_require__(3837);
-const bufferStream = __nccwpck_require__(1210);
-
-const streamPipelinePromisified = promisify(stream.pipeline);
-
-class MaxBufferError extends Error {
-	constructor() {
-		super('maxBuffer exceeded');
-		this.name = 'MaxBufferError';
-	}
-}
-
-async function getStream(inputStream, options) {
-	if (!inputStream) {
-		throw new Error('Expected a stream');
-	}
-
-	options = {
-		maxBuffer: Infinity,
-		...options
-	};
-
-	const {maxBuffer} = options;
-	const stream = bufferStream(options);
-
-	await new Promise((resolve, reject) => {
-		const rejectPromise = error => {
-			// Don't retrieve an oversized buffer.
-			if (error && stream.getBufferedLength() <= BufferConstants.MAX_LENGTH) {
-				error.bufferedData = stream.getBufferedValue();
-			}
-
-			reject(error);
-		};
-
-		(async () => {
-			try {
-				await streamPipelinePromisified(inputStream, stream);
-				resolve();
-			} catch (error) {
-				rejectPromise(error);
-			}
-		})();
-
-		stream.on('data', () => {
-			if (stream.getBufferedLength() > maxBuffer) {
-				rejectPromise(new MaxBufferError());
-			}
-		});
-	});
-
-	return stream.getBufferedValue();
-}
-
-module.exports = getStream;
-module.exports.buffer = (stream, options) => getStream(stream, {...options, encoding: 'buffer'});
-module.exports.array = (stream, options) => getStream(stream, {...options, array: true});
-module.exports.MaxBufferError = MaxBufferError;
 
 
 /***/ }),
@@ -86799,7 +86672,7 @@ var external_os_ = __nccwpck_require__(2037);
 const external_node_crypto_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:crypto");
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@3.2.4/node_modules/@actions/cache/lib/cache.js
 var cache = __nccwpck_require__(6878);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@sindresorhus+is@6.3.0/node_modules/@sindresorhus/is/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@sindresorhus+is@6.3.1/node_modules/@sindresorhus/is/dist/index.js
 const typedArrayTypeNames = [
     'Int8Array',
     'Uint8Array',
@@ -88230,7 +88103,7 @@ class PCancelable {
 
 Object.setPrototypeOf(PCancelable.prototype, Promise.prototype);
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/errors.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/errors.js
 
 // A hacky check to prevent circular references.
 function isRequest(x) {
@@ -88782,8 +88655,449 @@ function normalizeUrl(urlString, options) {
 	return urlString;
 }
 
-// EXTERNAL MODULE: ./node_modules/.pnpm/get-stream@6.0.1/node_modules/get-stream/index.js
-var get_stream = __nccwpck_require__(1798);
+;// CONCATENATED MODULE: ./node_modules/.pnpm/is-stream@4.0.1/node_modules/is-stream/index.js
+function isStream(stream, {checkOpen = true} = {}) {
+	return stream !== null
+		&& typeof stream === 'object'
+		&& (stream.writable || stream.readable || !checkOpen || (stream.writable === undefined && stream.readable === undefined))
+		&& typeof stream.pipe === 'function';
+}
+
+function isWritableStream(stream, {checkOpen = true} = {}) {
+	return isStream(stream, {checkOpen})
+		&& (stream.writable || !checkOpen)
+		&& typeof stream.write === 'function'
+		&& typeof stream.end === 'function'
+		&& typeof stream.writable === 'boolean'
+		&& typeof stream.writableObjectMode === 'boolean'
+		&& typeof stream.destroy === 'function'
+		&& typeof stream.destroyed === 'boolean';
+}
+
+function isReadableStream(stream, {checkOpen = true} = {}) {
+	return isStream(stream, {checkOpen})
+		&& (stream.readable || !checkOpen)
+		&& typeof stream.read === 'function'
+		&& typeof stream.readable === 'boolean'
+		&& typeof stream.readableObjectMode === 'boolean'
+		&& typeof stream.destroy === 'function'
+		&& typeof stream.destroyed === 'boolean';
+}
+
+function isDuplexStream(stream, options) {
+	return isWritableStream(stream, options)
+		&& isReadableStream(stream, options);
+}
+
+function isTransformStream(stream, options) {
+	return isDuplexStream(stream, options)
+		&& typeof stream._transform === 'function';
+}
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@sec-ant+readable-stream@0.4.1/node_modules/@sec-ant/readable-stream/dist/ponyfill/asyncIterator.js
+const a = Object.getPrototypeOf(
+  Object.getPrototypeOf(
+    /* istanbul ignore next */
+    async function* () {
+    }
+  ).prototype
+);
+class c {
+  #t;
+  #n;
+  #r = !1;
+  #e = void 0;
+  constructor(e, t) {
+    this.#t = e, this.#n = t;
+  }
+  next() {
+    const e = () => this.#s();
+    return this.#e = this.#e ? this.#e.then(e, e) : e(), this.#e;
+  }
+  return(e) {
+    const t = () => this.#i(e);
+    return this.#e ? this.#e.then(t, t) : t();
+  }
+  async #s() {
+    if (this.#r)
+      return {
+        done: !0,
+        value: void 0
+      };
+    let e;
+    try {
+      e = await this.#t.read();
+    } catch (t) {
+      throw this.#e = void 0, this.#r = !0, this.#t.releaseLock(), t;
+    }
+    return e.done && (this.#e = void 0, this.#r = !0, this.#t.releaseLock()), e;
+  }
+  async #i(e) {
+    if (this.#r)
+      return {
+        done: !0,
+        value: e
+      };
+    if (this.#r = !0, !this.#n) {
+      const t = this.#t.cancel(e);
+      return this.#t.releaseLock(), await t, {
+        done: !0,
+        value: e
+      };
+    }
+    return this.#t.releaseLock(), {
+      done: !0,
+      value: e
+    };
+  }
+}
+const n = Symbol();
+function i() {
+  return this[n].next();
+}
+Object.defineProperty(i, "name", { value: "next" });
+function o(r) {
+  return this[n].return(r);
+}
+Object.defineProperty(o, "name", { value: "return" });
+const u = Object.create(a, {
+  next: {
+    enumerable: !0,
+    configurable: !0,
+    writable: !0,
+    value: i
+  },
+  return: {
+    enumerable: !0,
+    configurable: !0,
+    writable: !0,
+    value: o
+  }
+});
+function h({ preventCancel: r = !1 } = {}) {
+  const e = this.getReader(), t = new c(
+    e,
+    r
+  ), s = Object.create(u);
+  return s[n] = t, s;
+}
+
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@sec-ant+readable-stream@0.4.1/node_modules/@sec-ant/readable-stream/dist/ponyfill/index.js
+
+
+
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@9.0.1/node_modules/get-stream/source/stream.js
+
+
+
+const getAsyncIterable = stream => {
+	if (isReadableStream(stream, {checkOpen: false}) && nodeImports.on !== undefined) {
+		return getStreamIterable(stream);
+	}
+
+	if (typeof stream?.[Symbol.asyncIterator] === 'function') {
+		return stream;
+	}
+
+	// `ReadableStream[Symbol.asyncIterator]` support is missing in multiple browsers, so we ponyfill it
+	if (stream_toString.call(stream) === '[object ReadableStream]') {
+		return h.call(stream);
+	}
+
+	throw new TypeError('The first argument must be a Readable, a ReadableStream, or an async iterable.');
+};
+
+const {toString: stream_toString} = Object.prototype;
+
+// The default iterable for Node.js streams does not allow for multiple readers at once, so we re-implement it
+const getStreamIterable = async function * (stream) {
+	const controller = new AbortController();
+	const state = {};
+	handleStreamEnd(stream, controller, state);
+
+	try {
+		for await (const [chunk] of nodeImports.on(stream, 'data', {signal: controller.signal})) {
+			yield chunk;
+		}
+	} catch (error) {
+		// Stream failure, for example due to `stream.destroy(error)`
+		if (state.error !== undefined) {
+			throw state.error;
+		// `error` event directly emitted on stream
+		} else if (!controller.signal.aborted) {
+			throw error;
+		// Otherwise, stream completed successfully
+		}
+		// The `finally` block also runs when the caller throws, for example due to the `maxBuffer` option
+	} finally {
+		stream.destroy();
+	}
+};
+
+const handleStreamEnd = async (stream, controller, state) => {
+	try {
+		await nodeImports.finished(stream, {
+			cleanup: true,
+			readable: true,
+			writable: false,
+			error: false,
+		});
+	} catch (error) {
+		state.error = error;
+	} finally {
+		controller.abort();
+	}
+};
+
+// Loaded by the Node entrypoint, but not by the browser one.
+// This prevents using dynamic imports.
+const nodeImports = {};
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@9.0.1/node_modules/get-stream/source/contents.js
+
+
+const contents_getStreamContents = async (stream, {init, convertChunk, getSize, truncateChunk, addChunk, getFinalChunk, finalize}, {maxBuffer = Number.POSITIVE_INFINITY} = {}) => {
+	const asyncIterable = getAsyncIterable(stream);
+
+	const state = init();
+	state.length = 0;
+
+	try {
+		for await (const chunk of asyncIterable) {
+			const chunkType = getChunkType(chunk);
+			const convertedChunk = convertChunk[chunkType](chunk, state);
+			appendChunk({
+				convertedChunk,
+				state,
+				getSize,
+				truncateChunk,
+				addChunk,
+				maxBuffer,
+			});
+		}
+
+		appendFinalChunk({
+			state,
+			convertChunk,
+			getSize,
+			truncateChunk,
+			addChunk,
+			getFinalChunk,
+			maxBuffer,
+		});
+		return finalize(state);
+	} catch (error) {
+		const normalizedError = typeof error === 'object' && error !== null ? error : new Error(error);
+		normalizedError.bufferedData = finalize(state);
+		throw normalizedError;
+	}
+};
+
+const appendFinalChunk = ({state, getSize, truncateChunk, addChunk, getFinalChunk, maxBuffer}) => {
+	const convertedChunk = getFinalChunk(state);
+	if (convertedChunk !== undefined) {
+		appendChunk({
+			convertedChunk,
+			state,
+			getSize,
+			truncateChunk,
+			addChunk,
+			maxBuffer,
+		});
+	}
+};
+
+const appendChunk = ({convertedChunk, state, getSize, truncateChunk, addChunk, maxBuffer}) => {
+	const chunkSize = getSize(convertedChunk);
+	const newLength = state.length + chunkSize;
+
+	if (newLength <= maxBuffer) {
+		addNewChunk(convertedChunk, state, addChunk, newLength);
+		return;
+	}
+
+	const truncatedChunk = truncateChunk(convertedChunk, maxBuffer - state.length);
+
+	if (truncatedChunk !== undefined) {
+		addNewChunk(truncatedChunk, state, addChunk, maxBuffer);
+	}
+
+	throw new MaxBufferError();
+};
+
+const addNewChunk = (convertedChunk, state, addChunk, newLength) => {
+	state.contents = addChunk(convertedChunk, state, newLength);
+	state.length = newLength;
+};
+
+const getChunkType = chunk => {
+	const typeOfChunk = typeof chunk;
+
+	if (typeOfChunk === 'string') {
+		return 'string';
+	}
+
+	if (typeOfChunk !== 'object' || chunk === null) {
+		return 'others';
+	}
+
+	if (globalThis.Buffer?.isBuffer(chunk)) {
+		return 'buffer';
+	}
+
+	const prototypeName = objectToString.call(chunk);
+
+	if (prototypeName === '[object ArrayBuffer]') {
+		return 'arrayBuffer';
+	}
+
+	if (prototypeName === '[object DataView]') {
+		return 'dataView';
+	}
+
+	if (
+		Number.isInteger(chunk.byteLength)
+		&& Number.isInteger(chunk.byteOffset)
+		&& objectToString.call(chunk.buffer) === '[object ArrayBuffer]'
+	) {
+		return 'typedArray';
+	}
+
+	return 'others';
+};
+
+const {toString: objectToString} = Object.prototype;
+
+class MaxBufferError extends Error {
+	name = 'MaxBufferError';
+
+	constructor() {
+		super('maxBuffer exceeded');
+	}
+}
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@9.0.1/node_modules/get-stream/source/utils.js
+const identity = value => value;
+
+const noop = () => undefined;
+
+const getContentsProperty = ({contents}) => contents;
+
+const throwObjectStream = chunk => {
+	throw new Error(`Streams in object mode are not supported: ${String(chunk)}`);
+};
+
+const getLengthProperty = convertedChunk => convertedChunk.length;
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@9.0.1/node_modules/get-stream/source/array-buffer.js
+
+
+
+async function getStreamAsArrayBuffer(stream, options) {
+	return contents_getStreamContents(stream, arrayBufferMethods, options);
+}
+
+const initArrayBuffer = () => ({contents: new ArrayBuffer(0)});
+
+const useTextEncoder = chunk => textEncoder.encode(chunk);
+const textEncoder = new TextEncoder();
+
+const useUint8Array = chunk => new Uint8Array(chunk);
+
+const useUint8ArrayWithOffset = chunk => new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+
+const truncateArrayBufferChunk = (convertedChunk, chunkSize) => convertedChunk.slice(0, chunkSize);
+
+// `contents` is an increasingly growing `Uint8Array`.
+const addArrayBufferChunk = (convertedChunk, {contents, length: previousLength}, length) => {
+	const newContents = hasArrayBufferResize() ? resizeArrayBuffer(contents, length) : resizeArrayBufferSlow(contents, length);
+	new Uint8Array(newContents).set(convertedChunk, previousLength);
+	return newContents;
+};
+
+// Without `ArrayBuffer.resize()`, `contents` size is always a power of 2.
+// This means its last bytes are zeroes (not stream data), which need to be
+// trimmed at the end with `ArrayBuffer.slice()`.
+const resizeArrayBufferSlow = (contents, length) => {
+	if (length <= contents.byteLength) {
+		return contents;
+	}
+
+	const arrayBuffer = new ArrayBuffer(getNewContentsLength(length));
+	new Uint8Array(arrayBuffer).set(new Uint8Array(contents), 0);
+	return arrayBuffer;
+};
+
+// With `ArrayBuffer.resize()`, `contents` size matches exactly the size of
+// the stream data. It does not include extraneous zeroes to trim at the end.
+// The underlying `ArrayBuffer` does allocate a number of bytes that is a power
+// of 2, but those bytes are only visible after calling `ArrayBuffer.resize()`.
+const resizeArrayBuffer = (contents, length) => {
+	if (length <= contents.maxByteLength) {
+		contents.resize(length);
+		return contents;
+	}
+
+	const arrayBuffer = new ArrayBuffer(length, {maxByteLength: getNewContentsLength(length)});
+	new Uint8Array(arrayBuffer).set(new Uint8Array(contents), 0);
+	return arrayBuffer;
+};
+
+// Retrieve the closest `length` that is both >= and a power of 2
+const getNewContentsLength = length => SCALE_FACTOR ** Math.ceil(Math.log(length) / Math.log(SCALE_FACTOR));
+
+const SCALE_FACTOR = 2;
+
+const finalizeArrayBuffer = ({contents, length}) => hasArrayBufferResize() ? contents : contents.slice(0, length);
+
+// `ArrayBuffer.slice()` is slow. When `ArrayBuffer.resize()` is available
+// (Node >=20.0.0, Safari >=16.4 and Chrome), we can use it instead.
+// eslint-disable-next-line no-warning-comments
+// TODO: remove after dropping support for Node 20.
+// eslint-disable-next-line no-warning-comments
+// TODO: use `ArrayBuffer.transferToFixedLength()` instead once it is available
+const hasArrayBufferResize = () => 'resize' in ArrayBuffer.prototype;
+
+const arrayBufferMethods = {
+	init: initArrayBuffer,
+	convertChunk: {
+		string: useTextEncoder,
+		buffer: useUint8Array,
+		arrayBuffer: useUint8Array,
+		dataView: useUint8ArrayWithOffset,
+		typedArray: useUint8ArrayWithOffset,
+		others: throwObjectStream,
+	},
+	getSize: getLengthProperty,
+	truncateChunk: truncateArrayBufferChunk,
+	addChunk: addArrayBufferChunk,
+	getFinalChunk: noop,
+	finalize: finalizeArrayBuffer,
+};
+
+;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@9.0.1/node_modules/get-stream/source/buffer.js
+
+
+async function getStreamAsBuffer(stream, options) {
+	if (!('Buffer' in globalThis)) {
+		throw new Error('getStreamAsBuffer() is only supported in Node.js');
+	}
+
+	try {
+		return arrayBufferToNodeBuffer(await getStreamAsArrayBuffer(stream, options));
+	} catch (error) {
+		if (error.bufferedData !== undefined) {
+			error.bufferedData = arrayBufferToNodeBuffer(error.bufferedData);
+		}
+
+		throw error;
+	}
+}
+
+const arrayBufferToNodeBuffer = arrayBuffer => globalThis.Buffer.from(arrayBuffer);
+
 // EXTERNAL MODULE: ./node_modules/.pnpm/http-cache-semantics@4.1.1/node_modules/http-cache-semantics/index.js
 var http_cache_semantics = __nccwpck_require__(7893);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/lowercase-keys@3.0.0/node_modules/lowercase-keys/index.js
@@ -88911,7 +89225,7 @@ function mimicResponse(fromStream, toStream) {
 	return toStream;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/cacheable-request@10.2.14/node_modules/cacheable-request/dist/types.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/cacheable-request@12.0.1/node_modules/cacheable-request/dist/types.js
 // Type definitions for cacheable-request 6.0
 // Project: https://github.com/lukechilds/cacheable-request#readme
 // Definitions by: BendingBender <https://github.com/BendingBender>
@@ -88931,7 +89245,7 @@ class types_CacheError extends Error {
     }
 }
 //# sourceMappingURL=types.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/cacheable-request@10.2.14/node_modules/cacheable-request/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/cacheable-request@12.0.1/node_modules/cacheable-request/dist/index.js
 
 
 
@@ -88946,7 +89260,7 @@ class types_CacheError extends Error {
 class CacheableRequest {
     constructor(cacheRequest, cacheAdapter) {
         this.hooks = new Map();
-        this.request = () => (options, cb) => {
+        this.request = () => (options, callback) => {
             let url;
             if (typeof options === 'string') {
                 url = normalizeUrlObject(external_node_url_namespaceObject.parse(options));
@@ -88975,7 +89289,7 @@ class CacheableRequest {
             options.headers = Object.fromEntries(entries(options.headers).map(([key, value]) => [key.toLowerCase(), value]));
             const ee = new external_node_events_();
             const normalizedUrlString = normalizeUrl(external_node_url_namespaceObject.format(url), {
-                stripWWW: false,
+                stripWWW: false, // eslint-disable-line @typescript-eslint/naming-convention
                 removeTrailingSlash: false,
                 stripAuthentication: false,
             });
@@ -89020,7 +89334,9 @@ class CacheableRequest {
                                     .once('end', resolve);
                             });
                             const headers = convertHeaders(revalidatedPolicy.policy.responseHeaders());
-                            response = new Response({ statusCode: revalidate.statusCode, headers, body: revalidate.body, url: revalidate.url });
+                            response = new Response({
+                                statusCode: revalidate.statusCode, headers, body: revalidate.body, url: revalidate.url,
+                            });
                             response.cachePolicy = revalidatedPolicy.policy;
                             response.fromCache = true;
                         }
@@ -89034,10 +89350,10 @@ class CacheableRequest {
                         clonedResponse = cloneResponse(response);
                         (async () => {
                             try {
-                                const bodyPromise = get_stream.buffer(response);
+                                const bodyPromise = getStreamAsBuffer(response);
                                 await Promise.race([
                                     requestErrorPromise,
-                                    new Promise(resolve => response.once('end', resolve)),
+                                    new Promise(resolve => response.once('end', resolve)), // eslint-disable-line no-promise-executor-return
                                     new Promise(resolve => response.once('close', resolve)), // eslint-disable-line no-promise-executor-return
                                 ]);
                                 const body = await bodyPromise;
@@ -89076,8 +89392,8 @@ class CacheableRequest {
                         })();
                     }
                     ee.emit('response', clonedResponse ?? response);
-                    if (typeof cb === 'function') {
-                        cb(clonedResponse ?? response);
+                    if (typeof callback === 'function') {
+                        callback(clonedResponse ?? response);
                     }
                 };
                 try {
@@ -89102,12 +89418,14 @@ class CacheableRequest {
                     const policy = http_cache_semantics.fromObject(cacheEntry.cachePolicy);
                     if (policy.satisfiesWithoutRevalidation(options_) && !options_.forceRefresh) {
                         const headers = convertHeaders(policy.responseHeaders());
-                        const response = new Response({ statusCode: cacheEntry.statusCode, headers, body: cacheEntry.body, url: cacheEntry.url });
+                        const response = new Response({
+                            statusCode: cacheEntry.statusCode, headers, body: cacheEntry.body, url: cacheEntry.url,
+                        });
                         response.cachePolicy = policy;
                         response.fromCache = true;
                         ee.emit('response', response);
-                        if (typeof cb === 'function') {
-                            cb(response);
+                        if (typeof callback === 'function') {
+                            callback(response);
                         }
                     }
                     else if (policy.satisfiesWithoutRevalidation(options_) && Date.now() >= policy.timeToLive() && options_.forceRefresh) {
@@ -89140,14 +89458,14 @@ class CacheableRequest {
             })();
             return ee;
         };
-        this.addHook = (name, fn) => {
+        this.addHook = (name, function_) => {
             if (!this.hooks.has(name)) {
-                this.hooks.set(name, fn);
+                this.hooks.set(name, function_);
             }
         };
         this.removeHook = (name) => this.hooks.delete(name);
         this.getHook = (name) => this.hooks.get(name);
-        this.runHook = async (name, ...args) => this.hooks.get(name)?.(...args);
+        this.runHook = async (name, ...arguments_) => this.hooks.get(name)?.(...arguments_);
         if (cacheAdapter instanceof src) {
             this.cache = cacheAdapter;
         }
@@ -89210,7 +89528,7 @@ const onResponse = 'onResponse';
 // EXTERNAL MODULE: ./node_modules/.pnpm/decompress-response@6.0.0/node_modules/decompress-response/index.js
 var decompress_response = __nccwpck_require__(7748);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@8.0.1/node_modules/get-stream/source/contents.js
-const contents_getStreamContents = async (stream, {init, convertChunk, getSize, truncateChunk, addChunk, getFinalChunk, finalize}, {maxBuffer = Number.POSITIVE_INFINITY} = {}) => {
+const source_contents_getStreamContents = async (stream, {init, convertChunk, getSize, truncateChunk, addChunk, getFinalChunk, finalize}, {maxBuffer = Number.POSITIVE_INFINITY} = {}) => {
 	if (!contents_isAsyncIterable(stream)) {
 		throw new Error('The first argument must be a Readable, a ReadableStream, or an async iterable.');
 	}
@@ -89220,12 +89538,12 @@ const contents_getStreamContents = async (stream, {init, convertChunk, getSize, 
 
 	try {
 		for await (const chunk of stream) {
-			const chunkType = getChunkType(chunk);
+			const chunkType = contents_getChunkType(chunk);
 			const convertedChunk = convertChunk[chunkType](chunk, state);
-			appendChunk({convertedChunk, state, getSize, truncateChunk, addChunk, maxBuffer});
+			contents_appendChunk({convertedChunk, state, getSize, truncateChunk, addChunk, maxBuffer});
 		}
 
-		appendFinalChunk({state, convertChunk, getSize, truncateChunk, addChunk, getFinalChunk, maxBuffer});
+		contents_appendFinalChunk({state, convertChunk, getSize, truncateChunk, addChunk, getFinalChunk, maxBuffer});
 		return finalize(state);
 	} catch (error) {
 		error.bufferedData = finalize(state);
@@ -89233,39 +89551,39 @@ const contents_getStreamContents = async (stream, {init, convertChunk, getSize, 
 	}
 };
 
-const appendFinalChunk = ({state, getSize, truncateChunk, addChunk, getFinalChunk, maxBuffer}) => {
+const contents_appendFinalChunk = ({state, getSize, truncateChunk, addChunk, getFinalChunk, maxBuffer}) => {
 	const convertedChunk = getFinalChunk(state);
 	if (convertedChunk !== undefined) {
-		appendChunk({convertedChunk, state, getSize, truncateChunk, addChunk, maxBuffer});
+		contents_appendChunk({convertedChunk, state, getSize, truncateChunk, addChunk, maxBuffer});
 	}
 };
 
-const appendChunk = ({convertedChunk, state, getSize, truncateChunk, addChunk, maxBuffer}) => {
+const contents_appendChunk = ({convertedChunk, state, getSize, truncateChunk, addChunk, maxBuffer}) => {
 	const chunkSize = getSize(convertedChunk);
 	const newLength = state.length + chunkSize;
 
 	if (newLength <= maxBuffer) {
-		addNewChunk(convertedChunk, state, addChunk, newLength);
+		contents_addNewChunk(convertedChunk, state, addChunk, newLength);
 		return;
 	}
 
 	const truncatedChunk = truncateChunk(convertedChunk, maxBuffer - state.length);
 
 	if (truncatedChunk !== undefined) {
-		addNewChunk(truncatedChunk, state, addChunk, maxBuffer);
+		contents_addNewChunk(truncatedChunk, state, addChunk, maxBuffer);
 	}
 
-	throw new MaxBufferError();
+	throw new contents_MaxBufferError();
 };
 
-const addNewChunk = (convertedChunk, state, addChunk, newLength) => {
+const contents_addNewChunk = (convertedChunk, state, addChunk, newLength) => {
 	state.contents = addChunk(convertedChunk, state, newLength);
 	state.length = newLength;
 };
 
 const contents_isAsyncIterable = stream => typeof stream === 'object' && stream !== null && typeof stream[Symbol.asyncIterator] === 'function';
 
-const getChunkType = chunk => {
+const contents_getChunkType = chunk => {
 	const typeOfChunk = typeof chunk;
 
 	if (typeOfChunk === 'string') {
@@ -89281,7 +89599,7 @@ const getChunkType = chunk => {
 		return 'buffer';
 	}
 
-	const prototypeName = objectToString.call(chunk);
+	const prototypeName = contents_objectToString.call(chunk);
 
 	if (prototypeName === '[object ArrayBuffer]') {
 		return 'arrayBuffer';
@@ -89294,7 +89612,7 @@ const getChunkType = chunk => {
 	if (
 		Number.isInteger(chunk.byteLength)
 		&& Number.isInteger(chunk.byteOffset)
-		&& objectToString.call(chunk.buffer) === '[object ArrayBuffer]'
+		&& contents_objectToString.call(chunk.buffer) === '[object ArrayBuffer]'
 	) {
 		return 'typedArray';
 	}
@@ -89302,9 +89620,9 @@ const getChunkType = chunk => {
 	return 'others';
 };
 
-const {toString: objectToString} = Object.prototype;
+const {toString: contents_objectToString} = Object.prototype;
 
-class MaxBufferError extends Error {
+class contents_MaxBufferError extends Error {
 	name = 'MaxBufferError';
 
 	constructor() {
@@ -89313,13 +89631,13 @@ class MaxBufferError extends Error {
 }
 
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@8.0.1/node_modules/get-stream/source/utils.js
-const identity = value => value;
+const utils_identity = value => value;
 
-const noop = () => undefined;
+const utils_noop = () => undefined;
 
 const getContentsProp = ({contents}) => contents;
 
-const throwObjectStream = chunk => {
+const utils_throwObjectStream = chunk => {
 	throw new Error(`Streams in object mode are not supported: ${String(chunk)}`);
 };
 
@@ -89345,17 +89663,17 @@ const addArrayChunk = (convertedChunk, {contents}) => {
 const arrayMethods = {
 	init: initArray,
 	convertChunk: {
-		string: identity,
-		buffer: identity,
-		arrayBuffer: identity,
-		dataView: identity,
-		typedArray: identity,
-		others: identity,
+		string: utils_identity,
+		buffer: utils_identity,
+		arrayBuffer: utils_identity,
+		dataView: utils_identity,
+		typedArray: utils_identity,
+		others: utils_identity,
 	},
 	getSize: increment,
-	truncateChunk: noop,
+	truncateChunk: utils_noop,
 	addChunk: addArrayChunk,
-	getFinalChunk: noop,
+	getFinalChunk: utils_noop,
 	finalize: getContentsProp,
 };
 
@@ -89363,24 +89681,24 @@ const arrayMethods = {
 
 
 
-async function getStreamAsArrayBuffer(stream, options) {
-	return contents_getStreamContents(stream, arrayBufferMethods, options);
+async function array_buffer_getStreamAsArrayBuffer(stream, options) {
+	return source_contents_getStreamContents(stream, array_buffer_arrayBufferMethods, options);
 }
 
-const initArrayBuffer = () => ({contents: new ArrayBuffer(0)});
+const array_buffer_initArrayBuffer = () => ({contents: new ArrayBuffer(0)});
 
-const useTextEncoder = chunk => textEncoder.encode(chunk);
-const textEncoder = new TextEncoder();
+const array_buffer_useTextEncoder = chunk => array_buffer_textEncoder.encode(chunk);
+const array_buffer_textEncoder = new TextEncoder();
 
-const useUint8Array = chunk => new Uint8Array(chunk);
+const array_buffer_useUint8Array = chunk => new Uint8Array(chunk);
 
-const useUint8ArrayWithOffset = chunk => new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+const array_buffer_useUint8ArrayWithOffset = chunk => new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
 
-const truncateArrayBufferChunk = (convertedChunk, chunkSize) => convertedChunk.slice(0, chunkSize);
+const array_buffer_truncateArrayBufferChunk = (convertedChunk, chunkSize) => convertedChunk.slice(0, chunkSize);
 
 // `contents` is an increasingly growing `Uint8Array`.
-const addArrayBufferChunk = (convertedChunk, {contents, length: previousLength}, length) => {
-	const newContents = hasArrayBufferResize() ? resizeArrayBuffer(contents, length) : resizeArrayBufferSlow(contents, length);
+const array_buffer_addArrayBufferChunk = (convertedChunk, {contents, length: previousLength}, length) => {
+	const newContents = array_buffer_hasArrayBufferResize() ? array_buffer_resizeArrayBuffer(contents, length) : array_buffer_resizeArrayBufferSlow(contents, length);
 	new Uint8Array(newContents).set(convertedChunk, previousLength);
 	return newContents;
 };
@@ -89388,12 +89706,12 @@ const addArrayBufferChunk = (convertedChunk, {contents, length: previousLength},
 // Without `ArrayBuffer.resize()`, `contents` size is always a power of 2.
 // This means its last bytes are zeroes (not stream data), which need to be
 // trimmed at the end with `ArrayBuffer.slice()`.
-const resizeArrayBufferSlow = (contents, length) => {
+const array_buffer_resizeArrayBufferSlow = (contents, length) => {
 	if (length <= contents.byteLength) {
 		return contents;
 	}
 
-	const arrayBuffer = new ArrayBuffer(getNewContentsLength(length));
+	const arrayBuffer = new ArrayBuffer(array_buffer_getNewContentsLength(length));
 	new Uint8Array(arrayBuffer).set(new Uint8Array(contents), 0);
 	return arrayBuffer;
 };
@@ -89402,23 +89720,23 @@ const resizeArrayBufferSlow = (contents, length) => {
 // the stream data. It does not include extraneous zeroes to trim at the end.
 // The underlying `ArrayBuffer` does allocate a number of bytes that is a power
 // of 2, but those bytes are only visible after calling `ArrayBuffer.resize()`.
-const resizeArrayBuffer = (contents, length) => {
+const array_buffer_resizeArrayBuffer = (contents, length) => {
 	if (length <= contents.maxByteLength) {
 		contents.resize(length);
 		return contents;
 	}
 
-	const arrayBuffer = new ArrayBuffer(length, {maxByteLength: getNewContentsLength(length)});
+	const arrayBuffer = new ArrayBuffer(length, {maxByteLength: array_buffer_getNewContentsLength(length)});
 	new Uint8Array(arrayBuffer).set(new Uint8Array(contents), 0);
 	return arrayBuffer;
 };
 
 // Retrieve the closest `length` that is both >= and a power of 2
-const getNewContentsLength = length => SCALE_FACTOR ** Math.ceil(Math.log(length) / Math.log(SCALE_FACTOR));
+const array_buffer_getNewContentsLength = length => array_buffer_SCALE_FACTOR ** Math.ceil(Math.log(length) / Math.log(array_buffer_SCALE_FACTOR));
 
-const SCALE_FACTOR = 2;
+const array_buffer_SCALE_FACTOR = 2;
 
-const finalizeArrayBuffer = ({contents, length}) => hasArrayBufferResize() ? contents : contents.slice(0, length);
+const array_buffer_finalizeArrayBuffer = ({contents, length}) => array_buffer_hasArrayBufferResize() ? contents : contents.slice(0, length);
 
 // `ArrayBuffer.slice()` is slow. When `ArrayBuffer.resize()` is available
 // (Node >=20.0.0, Safari >=16.4 and Chrome), we can use it instead.
@@ -89426,38 +89744,38 @@ const finalizeArrayBuffer = ({contents, length}) => hasArrayBufferResize() ? con
 // TODO: remove after dropping support for Node 20.
 // eslint-disable-next-line no-warning-comments
 // TODO: use `ArrayBuffer.transferToFixedLength()` instead once it is available
-const hasArrayBufferResize = () => 'resize' in ArrayBuffer.prototype;
+const array_buffer_hasArrayBufferResize = () => 'resize' in ArrayBuffer.prototype;
 
-const arrayBufferMethods = {
-	init: initArrayBuffer,
+const array_buffer_arrayBufferMethods = {
+	init: array_buffer_initArrayBuffer,
 	convertChunk: {
-		string: useTextEncoder,
-		buffer: useUint8Array,
-		arrayBuffer: useUint8Array,
-		dataView: useUint8ArrayWithOffset,
-		typedArray: useUint8ArrayWithOffset,
-		others: throwObjectStream,
+		string: array_buffer_useTextEncoder,
+		buffer: array_buffer_useUint8Array,
+		arrayBuffer: array_buffer_useUint8Array,
+		dataView: array_buffer_useUint8ArrayWithOffset,
+		typedArray: array_buffer_useUint8ArrayWithOffset,
+		others: utils_throwObjectStream,
 	},
 	getSize: getLengthProp,
-	truncateChunk: truncateArrayBufferChunk,
-	addChunk: addArrayBufferChunk,
-	getFinalChunk: noop,
-	finalize: finalizeArrayBuffer,
+	truncateChunk: array_buffer_truncateArrayBufferChunk,
+	addChunk: array_buffer_addArrayBufferChunk,
+	getFinalChunk: utils_noop,
+	finalize: array_buffer_finalizeArrayBuffer,
 };
 
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@8.0.1/node_modules/get-stream/source/buffer.js
 
 
-async function getStreamAsBuffer(stream, options) {
+async function buffer_getStreamAsBuffer(stream, options) {
 	if (!('Buffer' in globalThis)) {
 		throw new Error('getStreamAsBuffer() is only supported in Node.js');
 	}
 
 	try {
-		return arrayBufferToNodeBuffer(await getStreamAsArrayBuffer(stream, options));
+		return buffer_arrayBufferToNodeBuffer(await array_buffer_getStreamAsArrayBuffer(stream, options));
 	} catch (error) {
 		if (error.bufferedData !== undefined) {
-			error.bufferedData = arrayBufferToNodeBuffer(error.bufferedData);
+			error.bufferedData = buffer_arrayBufferToNodeBuffer(error.bufferedData);
 		}
 
 		throw error;
@@ -89465,7 +89783,7 @@ async function getStreamAsBuffer(stream, options) {
 }
 
 // eslint-disable-next-line n/prefer-global/buffer
-const arrayBufferToNodeBuffer = arrayBuffer => globalThis.Buffer.from(arrayBuffer);
+const buffer_arrayBufferToNodeBuffer = arrayBuffer => globalThis.Buffer.from(arrayBuffer);
 
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/get-stream@8.0.1/node_modules/get-stream/source/string.js
 
@@ -89491,12 +89809,12 @@ const getFinalStringChunk = ({textDecoder}) => {
 const stringMethods = {
 	init: initString,
 	convertChunk: {
-		string: identity,
+		string: utils_identity,
 		buffer: useTextDecoder,
 		arrayBuffer: useTextDecoder,
 		dataView: useTextDecoder,
 		typedArray: useTextDecoder,
-		others: throwObjectStream,
+		others: utils_throwObjectStream,
 	},
 	getSize: getLengthProp,
 	truncateChunk: truncateStringChunk,
@@ -89875,13 +90193,13 @@ getContentLength_fn = function() {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/utils/is-form-data.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/utils/is-form-data.js
 
 function is_form_data_isFormData(body) {
     return dist.nodeStream(body) && dist.function_(body.getBoundary);
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/utils/get-body-size.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/utils/get-body-size.js
 
 
 
@@ -89905,12 +90223,12 @@ async function getBodySize(body, headers) {
     return undefined;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/utils/proxy-events.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/utils/proxy-events.js
 function proxyEvents(from, to, events) {
     const eventFunctions = {};
     for (const event of events) {
-        const eventFunction = (...args) => {
-            to.emit(event, ...args);
+        const eventFunction = (...arguments_) => {
+            to.emit(event, ...arguments_);
         };
         eventFunctions[event] = eventFunction;
         from.on(event, eventFunction);
@@ -89924,7 +90242,7 @@ function proxyEvents(from, to, events) {
 
 ;// CONCATENATED MODULE: external "node:net"
 const external_node_net_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:net");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/utils/unhandle.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/utils/unhandle.js
 // When attaching listeners, it's very easy to forget about them.
 // Especially if you do error handling and set timeouts.
 // So instead of checking if it's proper to throw an error on every timeout ever,
@@ -89932,9 +90250,9 @@ const external_node_net_namespaceObject = __WEBPACK_EXTERNAL_createRequire(impor
 function unhandle() {
     const handlers = [];
     return {
-        once(origin, event, fn) {
-            origin.once(event, fn);
-            handlers.push({ origin, event, fn });
+        once(origin, event, function_) {
+            origin.once(event, function_);
+            handlers.push({ origin, event, fn: function_ });
         },
         unhandleAll() {
             for (const handler of handlers) {
@@ -89946,7 +90264,7 @@ function unhandle() {
     };
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/timed-out.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/timed-out.js
 
 
 const reentry = Symbol('reentry');
@@ -90077,7 +90395,7 @@ function timedOut(request, delays, options) {
     return cancelTimeouts;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/utils/url-to-options.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/utils/url-to-options.js
 
 function urlToOptions(url) {
     // Cast to URL
@@ -90101,7 +90419,7 @@ function urlToOptions(url) {
     return options;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/utils/weakable-map.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/utils/weakable-map.js
 class WeakableMap {
     weakMap;
     map;
@@ -90131,7 +90449,7 @@ class WeakableMap {
     }
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/calculate-retry-delay.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/calculate-retry-delay.js
 const calculateRetryDelay = ({ attemptCount, retryOptions, error, retryAfter, computedValue, }) => {
     if (error.name === 'RetryError') {
         return 1;
@@ -90618,7 +90936,7 @@ class CacheableLookup {
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/http2-wrapper@2.2.1/node_modules/http2-wrapper/source/index.js
 var http2_wrapper_source = __nccwpck_require__(9695);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/parse-link-header.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/parse-link-header.js
 function parseLinkHeader(link) {
     const parsed = [];
     const items = link.split(',');
@@ -90653,7 +90971,7 @@ function parseLinkHeader(link) {
     return parsed;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/options.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/options.js
 
 
 
@@ -90830,7 +91148,7 @@ const defaultInternals = {
         shouldContinue: () => true,
         countLimit: Number.POSITIVE_INFINITY,
         backoff: 0,
-        requestLimit: 10000,
+        requestLimit: 10_000,
         stackAllItems: false,
     },
     setHost: true,
@@ -92290,7 +92608,7 @@ class Options {
     }
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/response.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/response.js
 
 const isResponseOk = (response) => {
     const { statusCode } = response;
@@ -92333,19 +92651,19 @@ const parseBody = (response, responseType, parseJson, encoding) => {
     }, response);
 };
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/utils/is-client-request.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/utils/is-client-request.js
 function isClientRequest(clientRequest) {
     return clientRequest.writable && !clientRequest.writableEnded;
 }
 /* harmony default export */ const is_client_request = (isClientRequest);
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/utils/is-unix-socket-url.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/utils/is-unix-socket-url.js
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function isUnixSocketURL(url) {
     return url.protocol === 'unix:' || url.hostname === 'unix';
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/core/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/core/index.js
 
 
 
@@ -92975,7 +93293,7 @@ class Request extends external_node_stream_.Duplex {
         }
         try {
             // Errors are emitted via the `error` event
-            const rawBody = await getStreamAsBuffer(from);
+            const rawBody = await buffer_getStreamAsBuffer(from);
             // TODO: Switch to this:
             // let rawBody = await from.toArray();
             // rawBody = Buffer.concat(rawBody);
@@ -93172,9 +93490,7 @@ class Request extends external_node_stream_.Duplex {
                 break;
             }
         }
-        if (!request) {
-            request = options.getRequestFunction();
-        }
+        request ||= options.getRequestFunction();
         const url = options.url;
         this._requestOptions = options.createNativeRequestOptions();
         if (options.cache) {
@@ -93184,11 +93500,11 @@ class Request extends external_node_stream_.Duplex {
             this._prepareCache(options.cache);
         }
         // Cache support
-        const fn = options.cache ? this._createCacheableRequest : request;
+        const function_ = options.cache ? this._createCacheableRequest : request;
         try {
             // We can't do `await fn(...)`,
             // because stream `error` event can be emitted before `Promise.resolve()`.
-            let requestOrResponse = fn(url, this._requestOptions);
+            let requestOrResponse = function_(url, this._requestOptions);
             if (dist.promise(requestOrResponse)) {
                 requestOrResponse = await requestOrResponse;
             }
@@ -93351,7 +93667,7 @@ class Request extends external_node_stream_.Duplex {
     }
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/as-promise/types.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/as-promise/types.js
 
 /**
 An error to be thrown when the request is aborted with `.cancel()`.
@@ -93370,7 +93686,7 @@ class types_CancelError extends RequestError {
     }
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/as-promise/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/as-promise/index.js
 
 
 
@@ -93503,12 +93819,12 @@ function asPromise(firstRequest) {
         };
         makeRequest(0);
     });
-    promise.on = (event, fn) => {
-        emitter.on(event, fn);
+    promise.on = (event, function_) => {
+        emitter.on(event, function_);
         return promise;
     };
-    promise.off = (event, fn) => {
-        emitter.off(event, fn);
+    promise.off = (event, function_) => {
+        emitter.off(event, function_);
         return promise;
     };
     const shortcut = (responseType) => {
@@ -93536,7 +93852,7 @@ function asPromise(firstRequest) {
     return promise;
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/create.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/create.js
 
 
 
@@ -93577,9 +93893,7 @@ const create = (defaults) => {
             if (normalized.isStream) {
                 return request;
             }
-            if (!promise) {
-                promise = asPromise(request);
-            }
+            promise ||= asPromise(request);
             return promise;
         };
         let iteration = 0;
@@ -93587,9 +93901,7 @@ const create = (defaults) => {
             const handler = defaults.handlers[iteration++] ?? lastHandler;
             const result = handler(newOptions, iterateHandlers);
             if (dist.promise(result) && !request.options.isStream) {
-                if (!promise) {
-                    promise = asPromise(request);
-                }
+                promise ||= asPromise(request);
                 if (result !== promise) {
                     const descriptors = Object.getOwnPropertyDescriptors(promise);
                     for (const key in descriptors) {
@@ -93725,7 +94037,7 @@ const create = (defaults) => {
 };
 /* harmony default export */ const source_create = (create);
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.2.1/node_modules/got/dist/source/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/got@14.3.0/node_modules/got/dist/source/index.js
 
 
 const defaults = {
@@ -93748,11 +94060,13 @@ const got = source_create(defaults);
 
 
 
+;// CONCATENATED MODULE: external "node:child_process"
+const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
 ;// CONCATENATED MODULE: external "node:stream/promises"
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@93a5166cd57eefcd448ea79923c11eb4b56d4563_rgjnyo4jd3kdijkrub73izga24/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@a089656286a58dc6767247181b5280826f20473a_q6benjgi5pgerrbnqocqupyoxq/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94056,45 +94370,6 @@ function hashEnvironmentVariables(prefix, variables) {
   return `${prefix}-${hash.digest("hex")}`;
 }
 
-// src/platform.ts
-var platform_exports = {};
-__export(platform_exports, {
-  getArchOs: () => getArchOs,
-  getNixPlatform: () => getNixPlatform
-});
-
-function getArchOs() {
-  const envArch = process.env.RUNNER_ARCH;
-  const envOs = process.env.RUNNER_OS;
-  if (envArch && envOs) {
-    return `${envArch}-${envOs}`;
-  } else {
-    core.error(
-      `Can't identify the platform: RUNNER_ARCH or RUNNER_OS undefined (${envArch}-${envOs})`
-    );
-    throw new Error("RUNNER_ARCH and/or RUNNER_OS is not defined");
-  }
-}
-function getNixPlatform(archOs) {
-  const archOsMap = /* @__PURE__ */ new Map([
-    ["X64-macOS", "x86_64-darwin"],
-    ["ARM64-macOS", "aarch64-darwin"],
-    ["X64-Linux", "x86_64-linux"],
-    ["ARM64-Linux", "aarch64-linux"]
-  ]);
-  const mappedTo = archOsMap.get(archOs);
-  if (mappedTo) {
-    return mappedTo;
-  } else {
-    core.error(
-      `ArchOs (${archOs}) doesn't map to a supported Nix platform.`
-    );
-    throw new Error(
-      `Cannot convert ArchOs (${archOs}) to a supported Nix platform.`
-    );
-  }
-}
-
 // src/inputs.ts
 var inputs_exports = {};
 __export(inputs_exports, {
@@ -94159,40 +94434,81 @@ var getStringOrUndefined = (name) => {
   }
 };
 
+// src/platform.ts
+var platform_exports = {};
+__export(platform_exports, {
+  getArchOs: () => getArchOs,
+  getNixPlatform: () => getNixPlatform
+});
+
+function getArchOs() {
+  const envArch = process.env.RUNNER_ARCH;
+  const envOs = process.env.RUNNER_OS;
+  if (envArch && envOs) {
+    return `${envArch}-${envOs}`;
+  } else {
+    core.error(
+      `Can't identify the platform: RUNNER_ARCH or RUNNER_OS undefined (${envArch}-${envOs})`
+    );
+    throw new Error("RUNNER_ARCH and/or RUNNER_OS is not defined");
+  }
+}
+function getNixPlatform(archOs) {
+  const archOsMap = /* @__PURE__ */ new Map([
+    ["X64-macOS", "x86_64-darwin"],
+    ["ARM64-macOS", "aarch64-darwin"],
+    ["X64-Linux", "x86_64-linux"],
+    ["ARM64-Linux", "aarch64-linux"]
+  ]);
+  const mappedTo = archOsMap.get(archOs);
+  if (mappedTo) {
+    return mappedTo;
+  } else {
+    core.error(
+      `ArchOs (${archOs}) doesn't map to a supported Nix platform.`
+    );
+    throw new Error(
+      `Cannot convert ArchOs (${archOs}) to a supported Nix platform.`
+    );
+  }
+}
+
 // src/sourcedef.ts
 
 function constructSourceParameters(legacyPrefix) {
-  const noisilyGetInput = (suffix) => {
-    const preferredInput = getStringOrUndefined(`source-${suffix}`);
-    if (!legacyPrefix) {
-      return preferredInput;
-    }
-    const legacyInput = getStringOrUndefined(`${legacyPrefix}-${suffix}`);
-    if (preferredInput && legacyInput) {
-      core.warning(
-        `The supported option source-${suffix} and the legacy option ${legacyPrefix}-${suffix} are both set. Preferring source-${suffix}. Please stop setting ${legacyPrefix}-${suffix}.`
-      );
-      return preferredInput;
-    } else if (legacyInput) {
-      core.warning(
-        `The legacy option ${legacyPrefix}-${suffix} is set. Please migrate to source-${suffix}.`
-      );
-      return legacyInput;
-    } else {
-      return preferredInput;
-    }
-  };
   return {
-    path: noisilyGetInput("path"),
-    url: noisilyGetInput("url"),
-    tag: noisilyGetInput("tag"),
-    pr: noisilyGetInput("pr"),
-    branch: noisilyGetInput("branch"),
-    revision: noisilyGetInput("revision")
+    path: noisilyGetInput("path", legacyPrefix),
+    url: noisilyGetInput("url", legacyPrefix),
+    tag: noisilyGetInput("tag", legacyPrefix),
+    pr: noisilyGetInput("pr", legacyPrefix),
+    branch: noisilyGetInput("branch", legacyPrefix),
+    revision: noisilyGetInput("revision", legacyPrefix)
   };
+}
+function noisilyGetInput(suffix, legacyPrefix) {
+  const preferredInput = getStringOrUndefined(`source-${suffix}`);
+  if (!legacyPrefix) {
+    return preferredInput;
+  }
+  const legacyInput = getStringOrUndefined(`${legacyPrefix}-${suffix}`);
+  if (preferredInput && legacyInput) {
+    core.warning(
+      `The supported option source-${suffix} and the legacy option ${legacyPrefix}-${suffix} are both set. Preferring source-${suffix}. Please stop setting ${legacyPrefix}-${suffix}.`
+    );
+    return preferredInput;
+  } else if (legacyInput) {
+    core.warning(
+      `The legacy option ${legacyPrefix}-${suffix} is set. Please migrate to source-${suffix}.`
+    );
+    return legacyInput;
+  } else {
+    return preferredInput;
+  }
 }
 
 // src/index.ts
+
+
 
 
 
@@ -94211,21 +94527,36 @@ var EVENT_EXCEPTION = "exception";
 var EVENT_ARTIFACT_CACHE_HIT = "artifact_cache_hit";
 var EVENT_ARTIFACT_CACHE_MISS = "artifact_cache_miss";
 var EVENT_ARTIFACT_CACHE_PERSIST = "artifact_cache_persist";
+var EVENT_PREFLIGHT_REQUIRE_NIX_DENIED = "preflight-require-nix-denied";
 var FACT_ENDED_WITH_EXCEPTION = "ended_with_exception";
 var FACT_FINAL_EXCEPTION = "final_exception";
+var FACT_OS = "$os";
+var FACT_OS_VERSION = "$os_version";
 var FACT_SOURCE_URL = "source_url";
 var FACT_SOURCE_URL_ETAG = "source_url_etag";
+var FACT_NIX_LOCATION = "nix_location";
 var FACT_NIX_STORE_TRUST = "nix_store_trusted";
 var FACT_NIX_STORE_VERSION = "nix_store_version";
 var FACT_NIX_STORE_CHECK_METHOD = "nix_store_check_method";
 var FACT_NIX_STORE_CHECK_ERROR = "nix_store_check_error";
-var IdsToolbox = class {
+var STATE_KEY_EXECUTION_PHASE = "detsys_action_execution_phase";
+var STATE_KEY_NIX_NOT_FOUND = "detsys_action_nix_not_found";
+var STATE_NOT_FOUND = "not-found";
+var DetSysAction = class {
+  determineExecutionPhase() {
+    const currentPhase = core.getState(STATE_KEY_EXECUTION_PHASE);
+    if (currentPhase === "") {
+      core.saveState(STATE_KEY_EXECUTION_PHASE, "post");
+      return "main";
+    } else {
+      return "post";
+    }
+  }
   constructor(actionOptions) {
     this.actionOptions = makeOptionsConfident(actionOptions);
-    this.hookMain = void 0;
-    this.hookPost = void 0;
     this.exceptionAttachments = /* @__PURE__ */ new Map();
     this.nixStoreTrust = "unknown";
+    this.strictMode = getBool("_internal-strict-mode");
     this.events = [];
     this.client = got_dist_source.extend({
       retry: {
@@ -94269,25 +94600,19 @@ var IdsToolbox = class {
     {
       getDetails().then((details) => {
         if (details.name !== "unknown") {
-          this.addFact("$os", details.name);
+          this.addFact(FACT_OS, details.name);
         }
         if (details.version !== "unknown") {
-          this.addFact("$os_version", details.version);
+          this.addFact(FACT_OS_VERSION, details.version);
         }
       }).catch((e) => {
-        core.debug(`Failure getting platform details: ${e}`);
+        core.debug(
+          `Failure getting platform details: ${stringifyError(e)}`
+        );
       });
     }
-    {
-      const phase = core.getState("idstoolbox_execution_phase");
-      if (phase === "") {
-        core.saveState("idstoolbox_execution_phase", "post");
-        this.executionPhase = "main";
-      } else {
-        this.executionPhase = "post";
-      }
-      this.facts.execution_phase = this.executionPhase;
-    }
+    this.executionPhase = this.determineExecutionPhase();
+    this.facts.execution_phase = this.executionPhase;
     if (this.actionOptions.fetchStyle === "gh-env-style") {
       this.architectureFetchSuffix = this.archOs;
     } else if (this.actionOptions.fetchStyle === "nix-style") {
@@ -94315,69 +94640,18 @@ var IdsToolbox = class {
   stapleFile(name, location) {
     this.exceptionAttachments.set(name, location);
   }
-  onMain(callback) {
-    this.hookMain = callback;
-  }
-  onPost(callback) {
-    this.hookPost = callback;
-  }
+  /**
+   * Execute the Action as defined.
+   */
   execute() {
     this.executeAsync().catch((error2) => {
       console.log(error2);
       process.exitCode = 1;
     });
   }
-  stringifyError(error2) {
-    return error2 instanceof Error || typeof error2 == "string" ? error2.toString() : JSON.stringify(error2);
-  }
-  async executeAsync() {
-    try {
-      process.env.DETSYS_CORRELATION = JSON.stringify(
-        this.getCorrelationHashes()
-      );
-      if (!await this.preflightRequireNix()) {
-        this.recordEvent("preflight-require-nix-denied");
-        return;
-      } else {
-        await this.preflightNixStoreInfo();
-        this.addFact(FACT_NIX_STORE_TRUST, this.nixStoreTrust);
-      }
-      if (this.executionPhase === "main" && this.hookMain) {
-        await this.hookMain();
-      } else if (this.executionPhase === "post" && this.hookPost) {
-        await this.hookPost();
-      }
-      this.addFact(FACT_ENDED_WITH_EXCEPTION, false);
-    } catch (error2) {
-      this.addFact(FACT_ENDED_WITH_EXCEPTION, true);
-      const reportable = this.stringifyError(error2);
-      this.addFact(FACT_FINAL_EXCEPTION, reportable);
-      if (this.executionPhase === "post") {
-        core.warning(reportable);
-      } else {
-        core.setFailed(reportable);
-      }
-      const do_gzip = (0,external_node_util_.promisify)(external_node_zlib_namespaceObject.gzip);
-      const exceptionContext = /* @__PURE__ */ new Map();
-      for (const [attachmentLabel, filePath] of this.exceptionAttachments) {
-        try {
-          const logText = (0,external_node_fs_namespaceObject.readFileSync)(filePath);
-          const buf = await do_gzip(logText);
-          exceptionContext.set(
-            `staple_value_${attachmentLabel}`,
-            buf.toString("base64")
-          );
-        } catch (e) {
-          exceptionContext.set(
-            `staple_failure_${attachmentLabel}`,
-            this.stringifyError(e)
-          );
-        }
-      }
-      this.recordEvent(EVENT_EXCEPTION, Object.fromEntries(exceptionContext));
-    } finally {
-      await this.complete();
-    }
+  getTemporaryName() {
+    const tmpDir = process.env["RUNNER_TEMP"] || (0,external_node_os_.tmpdir)();
+    return external_node_path_namespaceObject.join(tmpDir, `${this.actionOptions.name}-${(0,external_node_crypto_namespaceObject.randomUUID)()}`);
   }
   addFact(key, value) {
     this.facts[key] = value;
@@ -94401,13 +94675,100 @@ var IdsToolbox = class {
       uuid: (0,external_node_crypto_namespaceObject.randomUUID)()
     });
   }
-  async fetch() {
+  /**
+   * Unpacks the closure returned by `fetchArtifact()`, imports the
+   * contents into the Nix store, and returns the path of the executable at
+   * `/nix/store/STORE_PATH/bin/${bin}`.
+   */
+  async unpackClosure(bin) {
+    const artifact = await this.fetchArtifact();
+    const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(
+      `cat "${artifact}" | xz -d | nix-store --import`
+    );
+    const paths = stdout.split(external_node_os_.EOL);
+    const lastPath = paths.at(-2);
+    return `${lastPath}/bin/${bin}`;
+  }
+  /**
+   * Fetches the executable at the URL determined by the `source-*` inputs and
+   * other facts, `chmod`s it, and returns the path to the executable on disk.
+   */
+  async fetchExecutable() {
+    const binaryPath = await this.fetchArtifact();
+    await (0,promises_namespaceObject.chmod)(binaryPath, promises_namespaceObject.constants.S_IXUSR | promises_namespaceObject.constants.S_IXGRP);
+    return binaryPath;
+  }
+  get isMain() {
+    return this.executionPhase === "main";
+  }
+  get isPost() {
+    return this.executionPhase === "post";
+  }
+  async executeAsync() {
+    try {
+      process.env.DETSYS_CORRELATION = JSON.stringify(
+        this.getCorrelationHashes()
+      );
+      if (!await this.preflightRequireNix()) {
+        this.recordEvent(EVENT_PREFLIGHT_REQUIRE_NIX_DENIED);
+        return;
+      } else {
+        await this.preflightNixStoreInfo();
+        this.addFact(FACT_NIX_STORE_TRUST, this.nixStoreTrust);
+      }
+      if (this.isMain) {
+        await this.main();
+      } else if (this.isPost) {
+        await this.post();
+      }
+      this.addFact(FACT_ENDED_WITH_EXCEPTION, false);
+    } catch (e) {
+      this.addFact(FACT_ENDED_WITH_EXCEPTION, true);
+      const reportable = stringifyError(e);
+      this.addFact(FACT_FINAL_EXCEPTION, reportable);
+      if (this.isPost) {
+        core.warning(reportable);
+      } else {
+        core.setFailed(reportable);
+      }
+      const doGzip = (0,external_node_util_.promisify)(external_node_zlib_namespaceObject.gzip);
+      const exceptionContext = /* @__PURE__ */ new Map();
+      for (const [attachmentLabel, filePath] of this.exceptionAttachments) {
+        try {
+          const logText = (0,external_node_fs_namespaceObject.readFileSync)(filePath);
+          const buf = await doGzip(logText);
+          exceptionContext.set(
+            `staple_value_${attachmentLabel}`,
+            buf.toString("base64")
+          );
+        } catch (innerError) {
+          exceptionContext.set(
+            `staple_failure_${attachmentLabel}`,
+            stringifyError(innerError)
+          );
+        }
+      }
+      this.recordEvent(EVENT_EXCEPTION, Object.fromEntries(exceptionContext));
+    } finally {
+      await this.complete();
+    }
+  }
+  /**
+   * Fetch an artifact, such as a tarball, from the URL determined by the
+   * `source-*` inputs.
+   */
+  async fetchArtifact() {
+    const sourceBinary = getStringOrNull("source-binary");
+    if (sourceBinary !== null && sourceBinary !== "") {
+      core.debug(`Using the provided source binary at ${sourceBinary}`);
+      return sourceBinary;
+    }
     core.startGroup(
       `Downloading ${this.actionOptions.name} for ${this.architectureFetchSuffix}`
     );
     try {
-      core.info(`Fetching from ${this.getUrl()}`);
-      const correlatedUrl = this.getUrl();
+      core.info(`Fetching from ${this.getSourceUrl()}`);
+      const correlatedUrl = this.getSourceUrl();
       correlatedUrl.searchParams.set("ci", "github");
       correlatedUrl.searchParams.set(
         "correlation",
@@ -94418,7 +94779,7 @@ var IdsToolbox = class {
         const v = versionCheckup.headers.etag;
         this.addFact(FACT_SOURCE_URL_ETAG, v);
         core.debug(
-          `Checking the tool cache for ${this.getUrl()} at ${v}`
+          `Checking the tool cache for ${this.getSourceUrl()} at ${v}`
         );
         const cached = await this.getCachedVersion(v);
         if (cached) {
@@ -94445,7 +94806,7 @@ var IdsToolbox = class {
         try {
           await this.saveCachedVersion(v, destFile);
         } catch (e) {
-          core.debug(`Error caching the artifact: ${e}`);
+          core.debug(`Error caching the artifact: ${stringifyError(e)}`);
         }
       }
       return destFile;
@@ -94453,16 +94814,20 @@ var IdsToolbox = class {
       core.endGroup();
     }
   }
-  async fetchExecutable() {
-    const binaryPath = await this.fetch();
-    await (0,promises_namespaceObject.chmod)(binaryPath, promises_namespaceObject.constants.S_IXUSR | promises_namespaceObject.constants.S_IXGRP);
-    return binaryPath;
+  /**
+   * A helper function for failing on error only if strict mode is enabled.
+   * This is intended only for CI environments testing Actions themselves.
+   */
+  failOnError(msg) {
+    if (this.strictMode) {
+      core.setFailed(`strict mode failure: ${msg}`);
+    }
   }
   async complete() {
     this.recordEvent(`complete_${this.executionPhase}`);
     await this.submitEvents();
   }
-  getUrl() {
+  getSourceUrl() {
     const p = this.sourceParameters;
     if (p.url) {
       this.addFact(FACT_SOURCE_URL, p.url);
@@ -94551,29 +94916,33 @@ var IdsToolbox = class {
         core.debug(`Nix not at ${candidateNix}`);
       }
     }
-    this.addFact("nix_location", nixLocation || "");
+    this.addFact(FACT_NIX_LOCATION, nixLocation || "");
     if (this.actionOptions.requireNix === "ignore") {
       return true;
     }
-    const currentNotFoundState = core.getState(
-      "idstoolbox_nix_not_found"
-    );
-    if (currentNotFoundState === "not-found") {
+    const currentNotFoundState = core.getState(STATE_KEY_NIX_NOT_FOUND);
+    if (currentNotFoundState === STATE_NOT_FOUND) {
       return false;
     }
     if (nixLocation !== void 0) {
       return true;
     }
-    core.saveState("idstoolbox_nix_not_found", "not-found");
+    core.saveState(STATE_KEY_NIX_NOT_FOUND, STATE_NOT_FOUND);
     switch (this.actionOptions.requireNix) {
       case "fail":
         core.setFailed(
-          "This action can only be used when Nix is installed. Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow."
+          [
+            "This action can only be used when Nix is installed.",
+            "Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow."
+          ].join(" ")
         );
         break;
       case "warn":
         core.warning(
-          "This action is in no-op mode because Nix is not installed. Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow."
+          [
+            "This action is in no-op mode because Nix is not installed.",
+            "Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow."
+          ].join(" ")
         );
         break;
     }
@@ -94616,11 +94985,11 @@ var IdsToolbox = class {
       }
       this.addFact(FACT_NIX_STORE_VERSION, JSON.stringify(parsed.version));
     } catch (e) {
-      this.addFact(FACT_NIX_STORE_CHECK_ERROR, this.stringifyError(e));
+      this.addFact(FACT_NIX_STORE_CHECK_ERROR, stringifyError(e));
     }
   }
   async submitEvents() {
-    if (!this.actionOptions.diagnosticsUrl) {
+    if (this.actionOptions.diagnosticsUrl === void 0) {
       core.debug(
         "Diagnostics are disabled. Not sending the following events:"
       );
@@ -94636,16 +95005,17 @@ var IdsToolbox = class {
       await this.client.post(this.actionOptions.diagnosticsUrl, {
         json: batch
       });
-    } catch (error2) {
-      core.debug(`Error submitting diagnostics event: ${error2}`);
+    } catch (e) {
+      core.debug(
+        `Error submitting diagnostics event: ${stringifyError(e)}`
+      );
     }
     this.events = [];
   }
-  getTemporaryName() {
-    const _tmpdir = process.env["RUNNER_TEMP"] || (0,external_node_os_.tmpdir)();
-    return external_node_path_namespaceObject.join(_tmpdir, `${this.actionOptions.name}-${(0,external_node_crypto_namespaceObject.randomUUID)()}`);
-  }
 };
+function stringifyError(error2) {
+  return error2 instanceof Error || typeof error2 == "string" ? error2.toString() : JSON.stringify(error2);
+}
 function makeOptionsConfident(actionOptions) {
   const idsProjectName = actionOptions.idsProjectName ?? actionOptions.name;
   const finalOpts = {
@@ -94681,7 +95051,7 @@ function determineDiagnosticsUrl(idsProjectName, urlOption) {
         return mungeDiagnosticEndpoint(new URL(providedDiagnosticEndpoint));
       } catch (e) {
         core.info(
-          `User-provided diagnostic endpoint ignored: not a valid URL: ${e}`
+          `User-provided diagnostic endpoint ignored: not a valid URL: ${stringifyError(e)}`
         );
       }
     }
@@ -94693,7 +95063,7 @@ function determineDiagnosticsUrl(idsProjectName, urlOption) {
     return diagnosticUrl;
   } catch (e) {
     core.info(
-      `Generated diagnostic endpoint ignored: not a valid URL: ${e}`
+      `Generated diagnostic endpoint ignored: not a valid URL: ${stringifyError(e)}`
     );
   }
   return void 0;
@@ -94714,7 +95084,9 @@ function mungeDiagnosticEndpoint(inputUrl) {
     inputUrl.password = currentIdsHost.password;
     return inputUrl;
   } catch (e) {
-    core.info(`Default or overridden IDS host isn't a valid URL: ${e}`);
+    core.info(
+      `Default or overridden IDS host isn't a valid URL: ${stringifyError(e)}`
+    );
   }
   return inputUrl;
 }
@@ -94732,8 +95104,6 @@ function mungeDiagnosticEndpoint(inputUrl) {
 //# sourceMappingURL=index.js.map
 // EXTERNAL MODULE: external "http"
 var external_http_ = __nccwpck_require__(3685);
-;// CONCATENATED MODULE: external "node:child_process"
-const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
 ;// CONCATENATED MODULE: ./dist/index.js
 // src/helpers.ts
 
@@ -94794,7 +95164,6 @@ async function flakeHubLogin(netrc) {
 
 
 
-
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
@@ -94802,15 +95171,16 @@ var STARTED_HINT = "true";
 var TEXT_NOOP = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
 var TEXT_TRUST_UNTRUSTED = "The Nix daemon does not consider the user running this workflow to be trusted. Magic Nix Cache is disabled.";
 var TEXT_TRUST_UNKNOWN = "The Nix daemon may not consider the user running this workflow to be trusted. Magic Nix Cache may not start correctly.";
-var MagicNixCacheAction = class {
+var MagicNixCacheAction = class extends DetSysAction {
   constructor() {
-    this.idslib = new IdsToolbox({
+    super({
       name: "magic-nix-cache",
       fetchStyle: "gh-env-style",
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn"
     });
-    this.client = got_dist_source.extend({
+    this.hostAndPort = inputs_exports.getString("listen");
+    this.httpClient = got_dist_source.extend({
       retry: {
         limit: 1,
         methods: ["POST", "GET", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE"]
@@ -94829,7 +95199,7 @@ var MagicNixCacheAction = class {
     if (core.getState(STATE_DAEMONDIR) !== "") {
       this.daemonDir = core.getState(STATE_DAEMONDIR);
     } else {
-      this.daemonDir = this.idslib.getTemporaryName();
+      this.daemonDir = this.getTemporaryName();
       (0,external_node_fs_namespaceObject.mkdirSync)(this.daemonDir);
       core.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
@@ -94839,11 +95209,35 @@ var MagicNixCacheAction = class {
     } else {
       this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.idslib.addFact("noop_mode", this.noopMode);
-    this.idslib.stapleFile(
-      "daemon.log",
-      external_node_path_namespaceObject.join(this.daemonDir, "daemon.log")
-    );
+    this.addFact("noop_mode", this.noopMode);
+    this.stapleFile("daemon.log", external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
+  }
+  async main() {
+    if (this.noopMode) {
+      core.warning(TEXT_NOOP);
+      return;
+    }
+    if (this.nixStoreTrust === "untrusted") {
+      core.warning(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (this.nixStoreTrust === "unknown") {
+      core.info(TEXT_TRUST_UNKNOWN);
+    }
+    await this.setUpAutoCache();
+    await this.notifyAutoCache();
+  }
+  async post() {
+    if (this.noopMode) {
+      core.debug(TEXT_NOOP);
+      return;
+    }
+    if (this.nixStoreTrust === "untrusted") {
+      core.debug(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (this.nixStoreTrust === "unknown") {
+      core.debug(TEXT_TRUST_UNKNOWN);
+    }
+    await this.tearDownAutoCache();
   }
   async setUpAutoCache() {
     const requiredEnv = [
@@ -94860,7 +95254,7 @@ var MagicNixCacheAction = class {
         );
       }
     }
-    this.idslib.addFact("authenticated_env", !anyMissing);
+    this.addFact("authenticated_env", !anyMissing);
     if (anyMissing) {
       return;
     }
@@ -94871,8 +95265,7 @@ var MagicNixCacheAction = class {
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
-    const sourceBinary = inputs_exports.getStringOrNull("source-binary");
-    const daemonBin = sourceBinary !== null ? sourceBinary : await this.fetchAutoCacher();
+    const daemonBin = await this.unpackClosure("magic-nix-cache");
     let runEnv;
     if (core.isDebug()) {
       runEnv = {
@@ -94907,7 +95300,6 @@ var MagicNixCacheAction = class {
     const log = tailLog(this.daemonDir);
     const netrc = await netrcPath();
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
-    const hostAndPort = inputs_exports.getString("listen");
     const upstreamCache = inputs_exports.getString("upstream-cache");
     const diagnosticEndpoint = inputs_exports.getString("diagnostic-endpoint");
     const useFlakeHub = inputs_exports.getBool("use-flakehub");
@@ -94920,7 +95312,7 @@ var MagicNixCacheAction = class {
       "--startup-notification-url",
       `http://127.0.0.1:${notifyPort}`,
       "--listen",
-      hostAndPort,
+      this.hostAndPort,
       "--upstream",
       upstreamCache,
       "--diagnostic-endpoint",
@@ -94957,31 +95349,24 @@ var MagicNixCacheAction = class {
       notifyPromise.then((_value) => {
         resolve();
       }).catch((err) => {
-        reject(new Error(`error in notifyPromise: ${err}`));
+        const msg = `error in notifyPromise: ${err}`;
+        reject(new Error(msg));
       });
       daemon.on("exit", async (code, signal) => {
+        let msg;
         if (signal) {
-          reject(new Error(`Daemon was killed by signal ${signal}`));
+          msg = `Daemon was killed by signal ${signal}`;
         } else if (code) {
-          reject(new Error(`Daemon exited with code ${code}`));
+          msg = `Daemon exited with code ${code}`;
         } else {
-          reject(new Error(`Daemon unexpectedly exited`));
+          msg = "Daemon unexpectedly exited";
         }
+        reject(new Error(msg));
       });
     });
     daemon.unref();
     core.info("Launched Magic Nix Cache");
     log.unwatch();
-  }
-  async fetchAutoCacher() {
-    const closurePath = await this.idslib.fetch();
-    this.idslib.recordEvent("load_closure");
-    const { stdout } = await (0,external_node_util_.promisify)(external_node_child_process_namespaceObject.exec)(
-      `cat "${closurePath}" | xz -d | nix-store --import`
-    );
-    const paths = stdout.split(external_node_os_.EOL);
-    const lastPath = paths.at(-2);
-    return `${lastPath}/bin/magic-nix-cache`;
   }
   async notifyAutoCache() {
     if (!this.daemonStarted) {
@@ -94990,13 +95375,23 @@ var MagicNixCacheAction = class {
     }
     try {
       core.debug(`Indicating workflow start`);
-      const hostAndPort = inputs_exports.getString("listen");
-      const res = await this.client.post(`http://${hostAndPort}/api/workflow-start`).json();
-      core.debug(`back from post: ${res}`);
+      const res = await this.httpClient.post(
+        `http://${this.hostAndPort}/api/workflow-start`
+      );
+      core.debug(
+        `Response from POST to /api/workflow-start: (status: ${res.statusCode}, body: ${res.body})`
+      );
+      if (res.statusCode !== 200) {
+        throw new Error(
+          `Failed to trigger workflow start hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`
+        );
+      }
+      core.debug(`back from post: ${res.body}`);
     } catch (e) {
       core.info(`Error marking the workflow as started:`);
       core.info((0,external_node_util_.inspect)(e));
       core.info(`Magic Nix Cache may not be running for this workflow.`);
+      this.failOnError(`Magic Nix Cache failed to start: ${(0,external_node_util_.inspect)(e)}`);
     }
   }
   async tearDownAutoCache() {
@@ -95013,9 +95408,17 @@ var MagicNixCacheAction = class {
     const log = tailLog(this.daemonDir);
     try {
       core.debug(`about to post to localhost`);
-      const hostAndPort = inputs_exports.getString("listen");
-      const res = await this.client.post(`http://${hostAndPort}/api/workflow-finish`).json();
-      core.debug(`back from post: ${res}`);
+      const res = await this.httpClient.post(
+        `http://${this.hostAndPort}/api/workflow-finish`
+      );
+      core.debug(
+        `Response from POST to /api/workflow-finish: (status: ${res.statusCode}, body: ${res.body})`
+      );
+      if (res.statusCode !== 200) {
+        throw new Error(
+          `Failed to trigger workflow finish hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`
+        );
+      }
     } finally {
       core.debug(`unwatching the daemon log`);
       log.unwatch();
@@ -95037,35 +95440,7 @@ var MagicNixCacheAction = class {
   }
 };
 function main() {
-  const cacheAction = new MagicNixCacheAction();
-  cacheAction.idslib.onMain(async () => {
-    if (cacheAction.noopMode) {
-      core.warning(TEXT_NOOP);
-      return;
-    }
-    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
-      core.warning(TEXT_TRUST_UNTRUSTED);
-      return;
-    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
-      core.info(TEXT_TRUST_UNKNOWN);
-    }
-    await cacheAction.setUpAutoCache();
-    await cacheAction.notifyAutoCache();
-  });
-  cacheAction.idslib.onPost(async () => {
-    if (cacheAction.noopMode) {
-      core.debug(TEXT_NOOP);
-      return;
-    }
-    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
-      core.debug(TEXT_TRUST_UNTRUSTED);
-      return;
-    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
-      core.debug(TEXT_TRUST_UNKNOWN);
-    }
-    await cacheAction.tearDownAutoCache();
-  });
-  cacheAction.idslib.execute();
+  new MagicNixCacheAction().execute();
 }
 main();
 //# sourceMappingURL=index.js.map
