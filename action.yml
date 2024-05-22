@@ -41,6 +41,7 @@ inputs:
 
   source-binary:
     description: Run a version of the cache binary from somewhere already on disk. Conflicts with all other `source-*` options.
+    required: false
   source-branch:
     description: The branch of `magic-nix-cache` to use. Conflicts with all other `source-*` options.
     required: false
