@@ -94915,6 +94915,7 @@ var MagicNixCacheAction = class {
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
     const useGhaCache = inputs_exports.getBool("use-gha-cache");
+    const diffStore = inputs_exports.getBool("diff-store");
     const daemonCliFlags = [
       "--startup-notification-url",
       `http://127.0.0.1:${notifyPort}`,
@@ -94926,7 +94927,7 @@ var MagicNixCacheAction = class {
       diagnosticEndpoint,
       "--nix-conf",
       nixConfPath
-    ].concat(
+    ].concat(diffStore ? ["--diff-store"] : []).concat(
       useFlakeHub ? [
         "--use-flakehub",
         "--flakehub-cache-server",
