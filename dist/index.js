@@ -94066,7 +94066,7 @@ const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createReq
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@f1554c0d3a5f1114cff78879e50bc118451a03c0_t7eoi6mjzqgr2plrflke2xdf7i/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@a089656286a58dc6767247181b5280826f20473a_q6benjgi5pgerrbnqocqupyoxq/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94676,9 +94676,8 @@ var DetSysAction = class {
     });
   }
   /**
-   * Fetches a file in `.xz` format from the URL determined by the `source-*`
-   * parameters (or `source-binary` if set). It then imports that file's
-   * contents into the Nix store and returns the path of the executable at
+   * Unpacks the closure returned by `fetchArtifact()`, imports the
+   * contents into the Nix store, and returns the path of the executable at
    * `/nix/store/STORE_PATH/bin/${bin}`.
    */
   async unpackClosure(bin) {
@@ -94755,13 +94754,12 @@ var DetSysAction = class {
     }
   }
   /**
-   * Fetch an artifact, such as a tarball, from the URL determined by the `source-*`
-   * inputs or use a provided binary specified by the `source-binary`
-   * input.
+   * Fetch an artifact, such as a tarball, from the URL determined by the
+   * `source-*` inputs.
    */
   async fetchArtifact() {
     const sourceBinary = getStringOrNull("source-binary");
-    if (sourceBinary !== null) {
+    if (sourceBinary !== null && sourceBinary !== "") {
       core.debug(`Using the provided source binary at ${sourceBinary}`);
       return sourceBinary;
     }
