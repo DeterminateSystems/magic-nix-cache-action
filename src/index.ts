@@ -1,6 +1,6 @@
 import { netrcPath, tailLog } from "./helpers.js";
 import * as actionsCore from "@actions/core";
-import { IdsToolbox, inputs } from "detsys-ts";
+import { DetSysAction, inputs } from "detsys-ts";
 import got, { Got, Response } from "got";
 import * as http from "http";
 import { SpawnOptions, exec, spawn } from "node:child_process";
@@ -26,28 +26,25 @@ const TEXT_TRUST_UNTRUSTED =
 const TEXT_TRUST_UNKNOWN =
   "The Nix daemon may not consider the user running this workflow to be trusted. Magic Nix Cache may not start correctly.";
 
-class MagicNixCacheAction {
-  idslib: IdsToolbox;
-  private strictMode: boolean;
+class MagicNixCacheAction extends DetSysAction {
   private hostAndPort: string;
-  private client: Got;
+  private httpClient: Got;
 
   noopMode: boolean;
   private daemonDir: string;
   private daemonStarted: boolean;
 
   constructor() {
-    this.idslib = new IdsToolbox({
+    super({
       name: "magic-nix-cache",
       fetchStyle: "gh-env-style",
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn",
     });
 
-    this.strictMode = inputs.getBool("_internal-strict-mode");
     this.hostAndPort = inputs.getString("listen");
 
-    this.client = got.extend({
+    this.httpClient = got.extend({
       retry: {
         limit: 1,
         methods: ["POST", "GET", "PUT", "HEAD", "DELETE", "OPTIONS", "TRACE"],
@@ -68,7 +65,7 @@ class MagicNixCacheAction {
     if (actionsCore.getState(STATE_DAEMONDIR) !== "") {
       this.daemonDir = actionsCore.getState(STATE_DAEMONDIR);
     } else {
-      this.daemonDir = this.idslib.getTemporaryName();
+      this.daemonDir = this.getTemporaryName();
       mkdirSync(this.daemonDir);
       actionsCore.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
@@ -79,12 +76,42 @@ class MagicNixCacheAction {
     } else {
       this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.idslib.addFact("noop_mode", this.noopMode);
+    this.addFact("noop_mode", this.noopMode);
 
-    this.idslib.stapleFile(
-      "daemon.log",
-      path.join(this.daemonDir, "daemon.log"),
-    );
+    this.stapleFile("daemon.log", path.join(this.daemonDir, "daemon.log"));
+  }
+
+  async main(): Promise<void> {
+    if (this.noopMode) {
+      actionsCore.warning(TEXT_NOOP);
+      return;
+    }
+
+    if (this.nixStoreTrust === "untrusted") {
+      actionsCore.warning(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (this.nixStoreTrust === "unknown") {
+      actionsCore.info(TEXT_TRUST_UNKNOWN);
+    }
+
+    await this.setUpAutoCache();
+    await this.notifyAutoCache();
+  }
+
+  async post(): Promise<void> {
+    if (this.noopMode) {
+      actionsCore.debug(TEXT_NOOP);
+      return;
+    }
+
+    if (this.nixStoreTrust === "untrusted") {
+      actionsCore.debug(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (this.nixStoreTrust === "unknown") {
+      actionsCore.debug(TEXT_TRUST_UNKNOWN);
+    }
+
+    await this.tearDownAutoCache();
   }
 
   async setUpAutoCache(): Promise<void> {
@@ -104,7 +131,7 @@ class MagicNixCacheAction {
       }
     }
 
-    this.idslib.addFact("authenticated_env", !anyMissing);
+    this.addFact("authenticated_env", !anyMissing);
     if (anyMissing) {
       return;
     }
@@ -229,7 +256,6 @@ class MagicNixCacheAction {
         .catch((err) => {
           const msg = `error in notifyPromise: ${err}`;
           reject(new Error(msg));
-          this.failInStrictMode(msg);
         });
       daemon.on("exit", async (code, signal) => {
         let msg: string;
@@ -241,7 +267,6 @@ class MagicNixCacheAction {
           msg = "Daemon unexpectedly exited";
         }
         reject(new Error(msg));
-        this.failInStrictMode(msg);
       });
     });
 
@@ -253,8 +278,8 @@ class MagicNixCacheAction {
   }
 
   private async fetchAutoCacher(): Promise<string> {
-    const closurePath = await this.idslib.fetch();
-    this.idslib.recordEvent("load_closure");
+    const closurePath = await this.fetchExecutable();
+    this.recordEvent("load_closure");
     const { stdout } = await promisify(exec)(
       `cat "${closurePath}" | xz -d | nix-store --import`,
     );
@@ -273,7 +298,7 @@ class MagicNixCacheAction {
 
     try {
       actionsCore.debug(`Indicating workflow start`);
-      const res: Response<string> = await this.client.post(
+      const res: Response<string> = await this.httpClient.post(
         `http://${this.hostAndPort}/api/workflow-start`,
       );
 
@@ -282,7 +307,7 @@ class MagicNixCacheAction {
       );
 
       if (res.statusCode !== 200) {
-        this.failInStrictMode(
+        throw new Error(
           `Failed to trigger workflow start hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`,
         );
       }
@@ -292,8 +317,7 @@ class MagicNixCacheAction {
       actionsCore.info(`Error marking the workflow as started:`);
       actionsCore.info(inspect(e));
       actionsCore.info(`Magic Nix Cache may not be running for this workflow.`);
-
-      this.failInStrictMode(`Magic Nix Cache failed to start: ${inspect(e)}`);
+      this.failOnError(`Magic Nix Cache failed to start: ${inspect(e)}`);
     }
   }
 
@@ -307,16 +331,14 @@ class MagicNixCacheAction {
     const pid = parseInt(await fs.readFile(pidFile, { encoding: "ascii" }));
     actionsCore.debug(`found daemon pid: ${pid}`);
     if (!pid) {
-      const msg = "magic-nix-cache did not start successfully";
-      this.failInStrictMode(msg);
-      throw new Error(msg);
+      throw new Error("magic-nix-cache did not start successfully");
     }
 
     const log = tailLog(this.daemonDir);
 
     try {
       actionsCore.debug(`about to post to localhost`);
-      const res: Response<string> = await this.client.post(
+      const res: Response<string> = await this.httpClient.post(
         `http://${this.hostAndPort}/api/workflow-finish`,
       );
 
@@ -325,7 +347,7 @@ class MagicNixCacheAction {
       );
 
       if (res.statusCode !== 200) {
-        this.failInStrictMode(
+        throw new Error(
           `Failed to trigger workflow finish hook; expected status 200 but got (status: ${res.statusCode}, body: ${res.body})`,
         );
       }
@@ -339,7 +361,6 @@ class MagicNixCacheAction {
       process.kill(pid, "SIGTERM");
     } catch (e) {
       if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-        this.failInStrictMode(e.toString());
         throw e;
       }
     } finally {
@@ -350,50 +371,10 @@ class MagicNixCacheAction {
       }
     }
   }
-
-  private failInStrictMode(msg: string): void {
-    if (this.strictMode) {
-      actionsCore.setFailed(`strict mode error: ${msg}`);
-    }
-  }
 }
 
 function main(): void {
-  const cacheAction = new MagicNixCacheAction();
-
-  cacheAction.idslib.onMain(async () => {
-    if (cacheAction.noopMode) {
-      actionsCore.warning(TEXT_NOOP);
-      return;
-    }
-
-    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
-      actionsCore.warning(TEXT_TRUST_UNTRUSTED);
-      return;
-    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
-      actionsCore.info(TEXT_TRUST_UNKNOWN);
-    }
-
-    await cacheAction.setUpAutoCache();
-    await cacheAction.notifyAutoCache();
-  });
-  cacheAction.idslib.onPost(async () => {
-    if (cacheAction.noopMode) {
-      actionsCore.debug(TEXT_NOOP);
-      return;
-    }
-
-    if (cacheAction.idslib.nixStoreTrust === "untrusted") {
-      actionsCore.debug(TEXT_TRUST_UNTRUSTED);
-      return;
-    } else if (cacheAction.idslib.nixStoreTrust === "unknown") {
-      actionsCore.debug(TEXT_TRUST_UNKNOWN);
-    }
-
-    await cacheAction.tearDownAutoCache();
-  });
-
-  cacheAction.idslib.execute();
+  new MagicNixCacheAction().execute();
 }
 
 main();
