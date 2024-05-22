@@ -192,6 +192,7 @@ class MagicNixCacheAction extends DetSysAction {
     const flakeHubApiServer = inputs.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs.getString("flakehub-flake-name");
     const useGhaCache = inputs.getBool("use-gha-cache");
+    const diffStore = inputs.getBool("diff-store");
 
     const daemonCliFlags: string[] = [
       "--startup-notification-url",
@@ -205,6 +206,7 @@ class MagicNixCacheAction extends DetSysAction {
       "--nix-conf",
       nixConfPath,
     ]
+      .concat(diffStore ? ["--diff-store"] : [])
       .concat(
         useFlakeHub
           ? [
