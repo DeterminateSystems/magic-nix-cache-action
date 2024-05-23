@@ -59,6 +59,7 @@ inputs:
     required: false
   _internal-strict-mode:
     description: Whether to fail when any errors are thrown. Used only to test the Action; do not set this in your own workflows.
+    required: false
     default: false
 
 runs:
