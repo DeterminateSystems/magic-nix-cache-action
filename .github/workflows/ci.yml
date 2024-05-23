@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       ACTIONS_STEP_DEBUG: true
+      CACHE_BREAK: true
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
