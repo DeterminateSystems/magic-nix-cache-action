@@ -95165,7 +95165,7 @@ async function flakeHubLogin(netrc) {
 
 
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
-var FACT_AUTHENTICATED_ENV = "authenticated_env";
+var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
 var FACT_NOOP_MODE = "noop_mode";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
@@ -95259,7 +95259,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         );
       }
     }
-    this.addFact(FACT_AUTHENTICATED_ENV, !anyMissing);
+    this.addFact(FACT_ENV_VARS_PRESENT, !anyMissing);
     if (anyMissing) {
       return;
     }

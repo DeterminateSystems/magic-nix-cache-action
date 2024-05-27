@@ -14,7 +14,7 @@ import { inspect } from "node:util";
 // twice.
 const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
-const FACT_AUTHENTICATED_ENV = "authenticated_env";
+const FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 const FACT_DIFF_STORE_ENABLED = "diff_store";
 const FACT_NOOP_MODE = "noop_mode";
 
@@ -137,7 +137,7 @@ class MagicNixCacheAction extends DetSysAction {
       }
     }
 
-    this.addFact(FACT_AUTHENTICATED_ENV, !anyMissing);
+    this.addFact(FACT_ENV_VARS_PRESENT, !anyMissing);
     if (anyMissing) {
       return;
     }
