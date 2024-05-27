@@ -94066,7 +94066,7 @@ const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createReq
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@a089656286a58dc6767247181b5280826f20473a_q6benjgi5pgerrbnqocqupyoxq/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@848cedfa44c31ae5ed7995350bb2707b9422840e_heluh4h342h2muwandvhzbsvpi/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94528,6 +94528,7 @@ var EVENT_ARTIFACT_CACHE_HIT = "artifact_cache_hit";
 var EVENT_ARTIFACT_CACHE_MISS = "artifact_cache_miss";
 var EVENT_ARTIFACT_CACHE_PERSIST = "artifact_cache_persist";
 var EVENT_PREFLIGHT_REQUIRE_NIX_DENIED = "preflight-require-nix-denied";
+var FACT_ARTIFACT_FETCHED_FROM_CACHE = "artifact_fetched_from_cache";
 var FACT_ENDED_WITH_EXCEPTION = "ended_with_exception";
 var FACT_FINAL_EXCEPTION = "final_exception";
 var FACT_OS = "$os";
@@ -94754,8 +94755,11 @@ var DetSysAction = class {
     }
   }
   /**
-   * Fetch an artifact, such as a tarball, from the URL determined by the
-   * `source-*` inputs.
+   * Fetch an artifact, such as a tarball, from the location determined by the
+   * `source-*` inputs. If `source-binary` is specified, this will return a path
+   * to a binary on disk; otherwise, the artifact will be downloaded from the
+   * URL determined by the other `source-*` inputs (`source-url`, `source-pr`,
+   * etc.).
    */
   async fetchArtifact() {
     const sourceBinary = getStringOrNull("source-binary");
@@ -94783,12 +94787,12 @@ var DetSysAction = class {
         );
         const cached = await this.getCachedVersion(v);
         if (cached) {
-          this.facts["artifact_fetched_from_cache"] = true;
+          this.facts[FACT_ARTIFACT_FETCHED_FROM_CACHE] = true;
           core.debug(`Tool cache hit.`);
           return cached;
         }
       }
-      this.facts["artifact_fetched_from_cache"] = false;
+      this.facts[FACT_ARTIFACT_FETCHED_FROM_CACHE] = false;
       core.debug(
         `No match from the cache, re-fetching from the redirect: ${versionCheckup.url}`
       );
@@ -95165,6 +95169,9 @@ async function flakeHubLogin(netrc) {
 
 
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var FACT_AUTHENTICATED_ENV = "authenticated_env";
+var FACT_DIFF_STORE = "diff_store";
+var FACT_NOOP_MODE = "noop_mode";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
@@ -95180,6 +95187,8 @@ var MagicNixCacheAction = class extends DetSysAction {
       requireNix: "warn"
     });
     this.hostAndPort = inputs_exports.getString("listen");
+    this.diffStore = inputs_exports.getBool("diff-store");
+    this.addFact(FACT_DIFF_STORE, this.diffStore);
     this.httpClient = got_dist_source.extend({
       retry: {
         limit: 1,
@@ -95209,7 +95218,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     } else {
       this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.addFact("noop_mode", this.noopMode);
+    this.addFact(FACT_NOOP_MODE, this.noopMode);
     this.stapleFile("daemon.log", external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
   }
   async main() {
@@ -95254,7 +95263,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         );
       }
     }
-    this.addFact("authenticated_env", !anyMissing);
+    this.addFact(FACT_AUTHENTICATED_ENV, !anyMissing);
     if (anyMissing) {
       return;
     }
@@ -95307,7 +95316,6 @@ var MagicNixCacheAction = class extends DetSysAction {
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
     const useGhaCache = inputs_exports.getBool("use-gha-cache");
-    const diffStore = inputs_exports.getBool("diff-store");
     const daemonCliFlags = [
       "--startup-notification-url",
       `http://127.0.0.1:${notifyPort}`,
@@ -95319,7 +95327,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       diagnosticEndpoint,
       "--nix-conf",
       nixConfPath
-    ].concat(diffStore ? ["--diff-store"] : []).concat(
+    ].concat(this.diffStore ? ["--diff-store"] : []).concat(
       useFlakeHub ? [
         "--use-flakehub",
         "--flakehub-cache-server",
