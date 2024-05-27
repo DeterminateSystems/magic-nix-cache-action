@@ -15,7 +15,7 @@ import { inspect } from "node:util";
 const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
 const FACT_AUTHENTICATED_ENV = "authenticated_env";
-const FACT_DIFF_STORE = "diff_store";
+const FACT_DIFF_STORE_ENABLED = "diff_store";
 const FACT_NOOP_MODE = "noop_mode";
 
 const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
@@ -48,7 +48,7 @@ class MagicNixCacheAction extends DetSysAction {
     this.hostAndPort = inputs.getString("listen");
     this.diffStore = inputs.getBool("diff-store");
 
-    this.addFact(FACT_DIFF_STORE, this.diffStore);
+    this.addFact(FACT_DIFF_STORE_ENABLED, this.diffStore);
 
     this.httpClient = got.extend({
       retry: {

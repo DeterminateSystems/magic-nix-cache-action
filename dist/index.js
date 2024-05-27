@@ -95166,7 +95166,7 @@ async function flakeHubLogin(netrc) {
 
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var FACT_AUTHENTICATED_ENV = "authenticated_env";
-var FACT_DIFF_STORE = "diff_store";
+var FACT_DIFF_STORE_ENABLED = "diff_store";
 var FACT_NOOP_MODE = "noop_mode";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
@@ -95184,7 +95184,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     });
     this.hostAndPort = inputs_exports.getString("listen");
     this.diffStore = inputs_exports.getBool("diff-store");
-    this.addFact(FACT_DIFF_STORE, this.diffStore);
+    this.addFact(FACT_DIFF_STORE_ENABLED, this.diffStore);
     this.httpClient = got_dist_source.extend({
       retry: {
         limit: 1,
