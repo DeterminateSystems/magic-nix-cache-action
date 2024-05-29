@@ -14,6 +14,10 @@ import { inspect } from "node:util";
 // twice.
 const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
+const FACT_ENV_VARS_PRESENT = "required_env_vars_present";
+const FACT_DIFF_STORE_ENABLED = "diff_store";
+const FACT_NOOP_MODE = "noop_mode";
+
 const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
@@ -27,9 +31,9 @@ const TEXT_TRUST_UNKNOWN =
 
 class MagicNixCacheAction extends DetSysAction {
   private hostAndPort: string;
+  private diffStore: boolean;
   private httpClient: Got;
-
-  noopMode: boolean;
+  private noopMode: boolean;
   private daemonDir: string;
   private daemonStarted: boolean;
 
@@ -42,6 +46,9 @@ class MagicNixCacheAction extends DetSysAction {
     });
 
     this.hostAndPort = inputs.getString("listen");
+    this.diffStore = inputs.getBool("diff-store");
+
+    this.addFact(FACT_DIFF_STORE_ENABLED, this.diffStore);
 
     this.httpClient = got.extend({
       retry: {
@@ -75,7 +82,7 @@ class MagicNixCacheAction extends DetSysAction {
     } else {
       this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.addFact("noop_mode", this.noopMode);
+    this.addFact(FACT_NOOP_MODE, this.noopMode);
 
     this.stapleFile("daemon.log", path.join(this.daemonDir, "daemon.log"));
   }
@@ -130,7 +137,7 @@ class MagicNixCacheAction extends DetSysAction {
       }
     }
 
-    this.addFact("authenticated_env", !anyMissing);
+    this.addFact(FACT_ENV_VARS_PRESENT, !anyMissing);
     if (anyMissing) {
       return;
     }
@@ -192,7 +199,6 @@ class MagicNixCacheAction extends DetSysAction {
     const flakeHubApiServer = inputs.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs.getString("flakehub-flake-name");
     const useGhaCache = inputs.getBool("use-gha-cache");
-    const diffStore = inputs.getBool("diff-store");
 
     const daemonCliFlags: string[] = [
       "--startup-notification-url",
@@ -206,7 +212,7 @@ class MagicNixCacheAction extends DetSysAction {
       "--nix-conf",
       nixConfPath,
     ]
-      .concat(diffStore ? ["--diff-store"] : [])
+      .concat(this.diffStore ? ["--diff-store"] : [])
       .concat(
         useFlakeHub
           ? [

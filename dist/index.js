@@ -95218,6 +95218,9 @@ async function flakeHubLogin(netrc) {
 
 
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
+var FACT_DIFF_STORE_ENABLED = "diff_store";
+var FACT_NOOP_MODE = "noop_mode";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
@@ -95233,6 +95236,8 @@ var MagicNixCacheAction = class extends DetSysAction {
       requireNix: "warn"
     });
     this.hostAndPort = inputs_exports.getString("listen");
+    this.diffStore = inputs_exports.getBool("diff-store");
+    this.addFact(FACT_DIFF_STORE_ENABLED, this.diffStore);
     this.httpClient = got_dist_source.extend({
       retry: {
         limit: 1,
@@ -95262,7 +95267,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     } else {
       this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.addFact("noop_mode", this.noopMode);
+    this.addFact(FACT_NOOP_MODE, this.noopMode);
     this.stapleFile("daemon.log", external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
   }
   async main() {
@@ -95307,7 +95312,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         );
       }
     }
-    this.addFact("authenticated_env", !anyMissing);
+    this.addFact(FACT_ENV_VARS_PRESENT, !anyMissing);
     if (anyMissing) {
       return;
     }
@@ -95360,7 +95365,6 @@ var MagicNixCacheAction = class extends DetSysAction {
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
     const useGhaCache = inputs_exports.getBool("use-gha-cache");
-    const diffStore = inputs_exports.getBool("diff-store");
     const daemonCliFlags = [
       "--startup-notification-url",
       `http://127.0.0.1:${notifyPort}`,
@@ -95372,7 +95376,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       diagnosticEndpoint,
       "--nix-conf",
       nixConfPath
-    ].concat(diffStore ? ["--diff-store"] : []).concat(
+    ].concat(this.diffStore ? ["--diff-store"] : []).concat(
       useFlakeHub ? [
         "--use-flakehub",
         "--flakehub-cache-server",
