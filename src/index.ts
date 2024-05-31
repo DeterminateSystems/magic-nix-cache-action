@@ -43,6 +43,7 @@ class MagicNixCacheAction extends DetSysAction {
       fetchStyle: "gh-env-style",
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn",
+      diagnosticsSuffix: "perf",
     });
 
     this.hostAndPort = inputs.getString("listen");
