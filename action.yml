@@ -16,7 +16,7 @@ inputs:
     default: https://cache.nixos.org
   diagnostic-endpoint:
     description: "Diagnostic endpoint url where diagnostics and performance data is sent. To disable set this to an empty string."
-    default: "https://install.determinate.systems/magic-nix-cache/perf"
+    default: "-"
   use-flakehub:
     description: "Whether to upload build results to FlakeHub Cache."
     default: true
