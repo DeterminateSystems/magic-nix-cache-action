@@ -95536,19 +95536,18 @@ var MagicNixCacheAction = class extends DetSysAction {
   async post() {
     if (!this.strictMode && this.mainError) {
       this.exitWithWarning(this.mainError);
-    } else {
-      if (this.noopMode) {
-        core.debug(TEXT_NOOP);
-        return;
-      }
-      if (this.nixStoreTrust === "untrusted") {
-        core.debug(TEXT_TRUST_UNTRUSTED);
-        return;
-      } else if (this.nixStoreTrust === "unknown") {
-        core.debug(TEXT_TRUST_UNKNOWN);
-      }
-      await this.tearDownAutoCache();
     }
+    if (this.noopMode) {
+      core.debug(TEXT_NOOP);
+      return;
+    }
+    if (this.nixStoreTrust === "untrusted") {
+      core.debug(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (this.nixStoreTrust === "unknown") {
+      core.debug(TEXT_TRUST_UNKNOWN);
+    }
+    await this.tearDownAutoCache();
   }
   async setUpAutoCache() {
     const requiredEnv = [

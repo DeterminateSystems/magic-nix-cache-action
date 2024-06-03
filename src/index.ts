@@ -111,21 +111,21 @@ class MagicNixCacheAction extends DetSysAction {
     // then the post phase is skipped with a warning.
     if (!this.strictMode && this.mainError) {
       this.exitWithWarning(this.mainError);
-    } else {
-      if (this.noopMode) {
-        actionsCore.debug(TEXT_NOOP);
-        return;
-      }
-
-      if (this.nixStoreTrust === "untrusted") {
-        actionsCore.debug(TEXT_TRUST_UNTRUSTED);
-        return;
-      } else if (this.nixStoreTrust === "unknown") {
-        actionsCore.debug(TEXT_TRUST_UNKNOWN);
-      }
-
-      await this.tearDownAutoCache();
     }
+
+    if (this.noopMode) {
+      actionsCore.debug(TEXT_NOOP);
+      return;
+    }
+
+    if (this.nixStoreTrust === "untrusted") {
+      actionsCore.debug(TEXT_TRUST_UNTRUSTED);
+      return;
+    } else if (this.nixStoreTrust === "unknown") {
+      actionsCore.debug(TEXT_TRUST_UNKNOWN);
+    }
+
+    await this.tearDownAutoCache();
   }
 
   async setUpAutoCache(): Promise<void> {
