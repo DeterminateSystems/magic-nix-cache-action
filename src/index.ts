@@ -312,10 +312,15 @@ class MagicNixCacheAction extends DetSysAction {
 
       actionsCore.debug(`back from post: ${res.body}`);
     } catch (e: unknown) {
-      actionsCore.info(`Error marking the workflow as started:`);
-      actionsCore.info(inspect(e));
-      actionsCore.info(`Magic Nix Cache may not be running for this workflow.`);
-      this.failOnError(`Magic Nix Cache failed to start: ${inspect(e)}`);
+      if (this.strictMode) {
+        actionsCore.setFailed(`Magic Nix Cache failed to start: ${inspect(e)}`);
+      } else {
+        actionsCore.warning(`Error marking the workflow as started:`);
+        actionsCore.warning(inspect(e));
+        actionsCore.warning(
+          `Magic Nix Cache may not be running for this workflow.`,
+        );
+      }
     }
   }
 

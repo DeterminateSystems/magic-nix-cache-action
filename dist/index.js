@@ -95697,10 +95697,15 @@ var MagicNixCacheAction = class extends DetSysAction {
       }
       core.debug(`back from post: ${res.body}`);
     } catch (e) {
-      core.info(`Error marking the workflow as started:`);
-      core.info((0,external_node_util_.inspect)(e));
-      core.info(`Magic Nix Cache may not be running for this workflow.`);
-      this.failOnError(`Magic Nix Cache failed to start: ${(0,external_node_util_.inspect)(e)}`);
+      if (this.strictMode) {
+        core.setFailed(`Magic Nix Cache failed to start: ${(0,external_node_util_.inspect)(e)}`);
+      } else {
+        core.warning(`Error marking the workflow as started:`);
+        core.warning((0,external_node_util_.inspect)(e));
+        core.warning(
+          `Magic Nix Cache may not be running for this workflow.`
+        );
+      }
     }
   }
   async tearDownAutoCache() {
