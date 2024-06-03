@@ -95483,6 +95483,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       requireNix: "warn",
       diagnosticsSuffix: "perf"
     });
+    this.errorInMain = false;
     this.hostAndPort = inputs_exports.getString("listen");
     this.diffStore = inputs_exports.getBool("diff-store");
     this.addFact(FACT_DIFF_STORE_ENABLED, this.diffStore);
@@ -95533,17 +95534,21 @@ var MagicNixCacheAction = class extends DetSysAction {
     await this.notifyAutoCache();
   }
   async post() {
-    if (this.noopMode) {
-      core.debug(TEXT_NOOP);
-      return;
+    if (!this.strictMode && this.errorInMain) {
+      this.exitWithWarning(`skipping post phase due to error in main phase`);
+    } else {
+      if (this.noopMode) {
+        core.debug(TEXT_NOOP);
+        return;
+      }
+      if (this.nixStoreTrust === "untrusted") {
+        core.debug(TEXT_TRUST_UNTRUSTED);
+        return;
+      } else if (this.nixStoreTrust === "unknown") {
+        core.debug(TEXT_TRUST_UNKNOWN);
+      }
+      await this.tearDownAutoCache();
     }
-    if (this.nixStoreTrust === "untrusted") {
-      core.debug(TEXT_TRUST_UNTRUSTED);
-      return;
-    } else if (this.nixStoreTrust === "unknown") {
-      core.debug(TEXT_TRUST_UNKNOWN);
-    }
-    await this.tearDownAutoCache();
   }
   async setUpAutoCache() {
     const requiredEnv = [
@@ -95658,6 +95663,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         if (this.strictMode) {
           reject(new Error(`error in notifyPromise: ${msg}`));
         } else {
+          this.errorInMain = true;
           this.exitWithWarning(`failed to start daemon: ${msg}`);
         }
       });
@@ -95670,7 +95676,12 @@ var MagicNixCacheAction = class extends DetSysAction {
         } else {
           msg = "Daemon unexpectedly exited";
         }
-        reject(new Error(msg));
+        if (this.strictMode) {
+          reject(new Error(msg));
+        } else {
+          this.errorInMain = true;
+          this.exitWithWarning(`Failed to kill daemon: ${msg}`);
+        }
       });
     });
     daemon.unref();
@@ -95700,6 +95711,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       if (this.strictMode) {
         core.setFailed(`Magic Nix Cache failed to start: ${(0,external_node_util_.inspect)(e)}`);
       } else {
+        this.errorInMain = true;
         core.warning(`Error marking the workflow as started:`);
         core.warning((0,external_node_util_.inspect)(e));
         core.warning(
