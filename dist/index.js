@@ -95468,6 +95468,7 @@ var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
 var FACT_NOOP_MODE = "noop_mode";
+var STATE_ERROR_IN_MAIN = "ERROR_IN_MAIN";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
@@ -95483,7 +95484,6 @@ var MagicNixCacheAction = class extends DetSysAction {
       requireNix: "warn",
       diagnosticsSuffix: "perf"
     });
-    this.errorInMain = false;
     this.hostAndPort = inputs_exports.getString("listen");
     this.diffStore = inputs_exports.getBool("diff-store");
     this.addFact(FACT_DIFF_STORE_ENABLED, this.diffStore);
@@ -95534,7 +95534,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     await this.notifyAutoCache();
   }
   async post() {
-    if (!this.strictMode && this.errorInMain) {
+    if (!this.strictMode && this.mainErrored) {
       this.exitWithWarning(`skipping post phase due to error in main phase`);
     } else {
       if (this.noopMode) {
@@ -95663,7 +95663,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         if (this.strictMode) {
           reject(new Error(`error in notifyPromise: ${msg}`));
         } else {
-          this.errorInMain = true;
+          this.setMainErrored();
           this.exitWithWarning(`failed to start daemon: ${msg}`);
         }
       });
@@ -95679,7 +95679,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         if (this.strictMode) {
           reject(new Error(msg));
         } else {
-          this.errorInMain = true;
+          this.setMainErrored();
           this.exitWithWarning(`Failed to kill daemon: ${msg}`);
         }
       });
@@ -95711,7 +95711,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       if (this.strictMode) {
         core.setFailed(`Magic Nix Cache failed to start: ${(0,external_node_util_.inspect)(e)}`);
       } else {
-        this.errorInMain = true;
+        this.setMainErrored();
         core.warning(`Error marking the workflow as started:`);
         core.warning((0,external_node_util_.inspect)(e));
         core.warning(
@@ -95772,6 +95772,16 @@ var MagicNixCacheAction = class extends DetSysAction {
     core.warning(msg);
     core.warning(`strict mode not enabled; exiting`);
     process.exit(0);
+  }
+  // If the main phase errors, save the state for use in post.
+  // This matters only when strict mode is NOT set.
+  setMainErrored() {
+    core.saveState(STATE_ERROR_IN_MAIN, "true");
+  }
+  // In the post phase, if the main phase errored, return `true` so that the
+  // phase can be skipped (with a warning).
+  get mainErrored() {
+    return core.getState(STATE_ERROR_IN_MAIN) === "true";
   }
 };
 function main() {
