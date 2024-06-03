@@ -95534,7 +95534,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     await this.notifyAutoCache();
   }
   async post() {
-    if (!this.strictMode && this.mainError) {
+    if (!this.strictMode && this.mainError !== void 0) {
       this.exitWithWarning(this.mainError);
     }
     if (this.noopMode) {

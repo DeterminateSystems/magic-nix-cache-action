@@ -109,7 +109,7 @@ class MagicNixCacheAction extends DetSysAction {
   async post(): Promise<void> {
     // If strict mode is off and there was an error in main, such as the daemon not starting,
     // then the post phase is skipped with a warning.
-    if (!this.strictMode && this.mainError) {
+    if (!this.strictMode && this.mainError !== undefined) {
       this.exitWithWarning(this.mainError);
     }
 
