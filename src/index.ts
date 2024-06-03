@@ -1,6 +1,6 @@
 import { netrcPath, tailLog } from "./helpers.js";
 import * as actionsCore from "@actions/core";
-import { DetSysAction, inputs } from "detsys-ts";
+import { DetSysAction, inputs, stringifyError } from "detsys-ts";
 import got, { Got, Response } from "got";
 import * as http from "http";
 import { SpawnOptions, spawn } from "node:child_process";
@@ -259,9 +259,14 @@ class MagicNixCacheAction extends DetSysAction {
           resolve();
         })
         // eslint-disable-next-line github/no-then
-        .catch((err) => {
-          const msg = `error in notifyPromise: ${err}`;
-          reject(new Error(msg));
+        .catch((e: unknown) => {
+          const msg = stringifyError(e);
+
+          if (this.strictMode) {
+            reject(new Error(`error in notifyPromise: ${msg}`));
+          } else {
+            this.exitWithWarning(`failed to start daemon: ${msg}`);
+          }
         });
       daemon.on("exit", async (code, signal) => {
         let msg: string;
@@ -306,7 +311,7 @@ class MagicNixCacheAction extends DetSysAction {
       }
 
       actionsCore.debug(`back from post: ${res.body}`);
-    } catch (e) {
+    } catch (e: unknown) {
       actionsCore.info(`Error marking the workflow as started:`);
       actionsCore.info(inspect(e));
       actionsCore.info(`Magic Nix Cache may not be running for this workflow.`);
@@ -350,11 +355,16 @@ class MagicNixCacheAction extends DetSysAction {
     }
 
     actionsCore.debug(`killing`);
+
     try {
       process.kill(pid, "SIGTERM");
-    } catch (e) {
+    } catch (e: unknown) {
       if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-        throw e;
+        if (this.strictMode) {
+          throw e;
+        } else {
+          this.exitWithWarning(`couldn't kill daemon: ${stringifyError(e)}`);
+        }
       }
     } finally {
       if (actionsCore.isDebug()) {
@@ -363,6 +373,12 @@ class MagicNixCacheAction extends DetSysAction {
         actionsCore.info(entireLog.toString());
       }
     }
+  }
+
+  private exitWithWarning(msg: string): void {
+    actionsCore.warning(msg);
+    actionsCore.warning(`strict mode not enabled; exiting`);
+    process.exit(0);
   }
 }
 

@@ -94091,7 +94091,7 @@ const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createReq
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@fe64ba33b4bdeec0991bb65ae00420bf68b9954c_ler7zqcm5mrt635umsvjcuxcmy/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@138ea0123a2a3c61fad2c998729b661405132119_63ifpzamfkw2vbemnszqtdfmnu/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94794,7 +94794,7 @@ var DetSysAction = class {
     this.nixStoreTrust = "unknown";
     this.strictMode = getBool("_internal-strict-mode");
     this.features = {};
-    this.featureEventMetadata = /* @__PURE__ */ new Map();
+    this.featureEventMetadata = {};
     this.events = [];
     this.client = got_dist_source.extend({
       retry: {
@@ -95001,7 +95001,7 @@ var DetSysAction = class {
     }
     this.features = checkin.options;
     for (const [key, feature] of Object.entries(this.features)) {
-      this.featureEventMetadata.set(key, feature.variant);
+      this.featureEventMetadata[key] = feature.variant;
     }
     const impactSymbol = /* @__PURE__ */ new Map([
       ["none", "\u26AA"],
@@ -95653,9 +95653,13 @@ var MagicNixCacheAction = class extends DetSysAction {
     await new Promise((resolve, reject) => {
       notifyPromise.then((_value) => {
         resolve();
-      }).catch((err) => {
-        const msg = `error in notifyPromise: ${err}`;
-        reject(new Error(msg));
+      }).catch((e) => {
+        const msg = stringifyError(e);
+        if (this.strictMode) {
+          reject(new Error(`error in notifyPromise: ${msg}`));
+        } else {
+          this.exitWithWarning(`failed to start daemon: ${msg}`);
+        }
       });
       daemon.on("exit", async (code, signal) => {
         let msg;
@@ -95733,7 +95737,11 @@ var MagicNixCacheAction = class extends DetSysAction {
       process.kill(pid, "SIGTERM");
     } catch (e) {
       if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-        throw e;
+        if (this.strictMode) {
+          throw e;
+        } else {
+          this.exitWithWarning(`couldn't kill daemon: ${stringifyError(e)}`);
+        }
       }
     } finally {
       if (core.isDebug()) {
@@ -95742,6 +95750,11 @@ var MagicNixCacheAction = class extends DetSysAction {
         core.info(entireLog.toString());
       }
     }
+  }
+  exitWithWarning(msg) {
+    core.warning(msg);
+    core.warning(`strict mode not enabled; exiting`);
+    process.exit(0);
   }
 };
 function main() {
