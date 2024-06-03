@@ -107,8 +107,10 @@ class MagicNixCacheAction extends DetSysAction {
   }
 
   async post(): Promise<void> {
-    if (!this.strictMode && this.mainErrored) {
-      this.exitWithWarning(`skipping post phase due to error in main phase`);
+    // If strict mode is off and there was an error in main, such as the daemon not starting,
+    // then the post phase is skipped with a warning.
+    if (!this.strictMode && this.mainError) {
+      this.exitWithWarning(this.mainError);
     } else {
       if (this.noopMode) {
         actionsCore.debug(TEXT_NOOP);
@@ -270,7 +272,7 @@ class MagicNixCacheAction extends DetSysAction {
           if (this.strictMode) {
             reject(new Error(`error in notifyPromise: ${msg}`));
           } else {
-            this.setMainErrored();
+            this.setMainError(msg);
             this.exitWithWarning(`failed to start daemon: ${msg}`);
           }
         });
@@ -288,7 +290,7 @@ class MagicNixCacheAction extends DetSysAction {
         if (this.strictMode) {
           reject(new Error(msg));
         } else {
-          this.setMainErrored();
+          this.setMainError(msg);
           this.exitWithWarning(`Failed to kill daemon: ${msg}`);
         }
       });
@@ -328,11 +330,13 @@ class MagicNixCacheAction extends DetSysAction {
       if (this.strictMode) {
         actionsCore.setFailed(`Magic Nix Cache failed to start: ${inspect(e)}`);
       } else {
-        this.setMainErrored();
         actionsCore.warning(`Error marking the workflow as started:`);
         actionsCore.warning(inspect(e));
         actionsCore.warning(
           `Magic Nix Cache may not be running for this workflow.`,
+        );
+        this.setMainError(
+          `Error starting the Magic Nix Cache: ${stringifyError(e)}`,
         );
       }
     }
@@ -402,14 +406,15 @@ class MagicNixCacheAction extends DetSysAction {
 
   // If the main phase errors, save the state for use in post.
   // This matters only when strict mode is NOT set.
-  private setMainErrored(): void {
-    actionsCore.saveState(STATE_ERROR_IN_MAIN, "true");
+  private setMainError(msg: string): void {
+    actionsCore.saveState(STATE_ERROR_IN_MAIN, msg);
   }
 
   // In the post phase, if the main phase errored, return `true` so that the
   // phase can be skipped (with a warning).
-  private get mainErrored(): boolean {
-    return actionsCore.getState(STATE_ERROR_IN_MAIN) === "true";
+  private get mainError(): string | undefined {
+    const state = actionsCore.getState(STATE_ERROR_IN_MAIN);
+    return state !== "" ? state : undefined;
   }
 }
 
