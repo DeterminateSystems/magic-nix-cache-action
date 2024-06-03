@@ -94091,7 +94091,7 @@ const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createReq
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@9d66d2c89c150f796165fdcc20b3be538807c0f4_46ybmzqhaua4eiwu3nj2qm63te/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@fe64ba33b4bdeec0991bb65ae00420bf68b9954c_ler7zqcm5mrt635umsvjcuxcmy/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94428,7 +94428,7 @@ var IdsHost = class {
   setPrioritizedUrls(urls) {
     this.prioritizedURLs = urls;
   }
-  async getRootUrl() {
+  async getDynamicRootUrl() {
     const idsHost = process.env["IDS_HOST"];
     if (idsHost !== void 0) {
       try {
@@ -94449,9 +94449,17 @@ var IdsHost = class {
       );
     }
     if (url === void 0) {
-      url = new URL(DEFAULT_IDS_HOST);
+      return void 0;
+    } else {
+      return new URL(url);
     }
-    return new URL(url);
+  }
+  async getRootUrl() {
+    const url = await this.getDynamicRootUrl();
+    if (url === void 0) {
+      return new URL(DEFAULT_IDS_HOST);
+    }
+    return url;
   }
   async getDiagnosticsUrl() {
     if (this.runtimeDiagnosticsUrl === "") {
@@ -94762,6 +94770,7 @@ var STATE_KEY_EXECUTION_PHASE = "detsys_action_execution_phase";
 var STATE_KEY_NIX_NOT_FOUND = "detsys_action_nix_not_found";
 var STATE_NOT_FOUND = "not-found";
 var DIAGNOSTIC_ENDPOINT_TIMEOUT_MS = 3e4;
+var CHECK_IN_ENDPOINT_TIMEOUT_MS = 5e3;
 var DetSysAction = class {
   determineExecutionPhase() {
     const currentPhase = core.getState(STATE_KEY_EXECUTION_PHASE);
@@ -94784,6 +94793,8 @@ var DetSysAction = class {
     this.exceptionAttachments = /* @__PURE__ */ new Map();
     this.nixStoreTrust = "unknown";
     this.strictMode = getBool("_internal-strict-mode");
+    this.features = {};
+    this.featureEventMetadata = /* @__PURE__ */ new Map();
     this.events = [];
     this.client = got_dist_source.extend({
       retry: {
@@ -94893,11 +94904,13 @@ var DetSysAction = class {
     return this.identity;
   }
   recordEvent(eventName, context = {}) {
+    const prefixedName = eventName === "$feature_flag_called" ? eventName : `${this.actionOptions.eventPrefix}${eventName}`;
     this.events.push({
-      event_name: `${this.actionOptions.eventPrefix}${eventName}`,
+      event_name: prefixedName,
       context,
       correlation: this.identity,
       facts: this.facts,
+      features: this.featureEventMetadata,
       timestamp: /* @__PURE__ */ new Date(),
       uuid: (0,external_node_crypto_namespaceObject.randomUUID)()
     });
@@ -94933,6 +94946,7 @@ var DetSysAction = class {
   }
   async executeAsync() {
     try {
+      await this.checkIn();
       process.env.DETSYS_CORRELATION = JSON.stringify(
         this.getCorrelationHashes()
       );
@@ -94979,6 +94993,94 @@ var DetSysAction = class {
     } finally {
       await this.complete();
     }
+  }
+  async checkIn() {
+    const checkin = await this.requestCheckIn();
+    if (checkin === void 0) {
+      return;
+    }
+    this.features = checkin.options;
+    for (const [key, feature] of Object.entries(this.features)) {
+      this.featureEventMetadata.set(key, feature.variant);
+    }
+    const impactSymbol = /* @__PURE__ */ new Map([
+      ["none", "\u26AA"],
+      ["maintenance", "\u{1F6E0}\uFE0F"],
+      ["minor", "\u{1F7E1}"],
+      ["major", "\u{1F7E0}"],
+      ["critical", "\u{1F534}"]
+    ]);
+    const defaultImpactSymbol = "\u{1F535}";
+    if (checkin.status !== null) {
+      const summaries = [];
+      for (const incident of checkin.status.incidents) {
+        summaries.push(
+          `${impactSymbol.get(incident.impact) || defaultImpactSymbol} ${incident.status.replace("_", " ")}: ${incident.name} (${incident.shortlink})`
+        );
+      }
+      for (const maintenance of checkin.status.scheduled_maintenances) {
+        summaries.push(
+          `${impactSymbol.get(maintenance.impact) || defaultImpactSymbol} ${maintenance.status.replace("_", " ")}: ${maintenance.name} (${maintenance.shortlink})`
+        );
+      }
+      if (summaries.length > 0) {
+        core.info(
+          // Bright red, Bold, Underline
+          `${"\x1B[0;31m"}${"\x1B[1m"}${"\x1B[4m"}${checkin.status.page.name} Status`
+        );
+        for (const notice of summaries) {
+          core.info(notice);
+        }
+        core.info(`See: ${checkin.status.page.url}`);
+        core.info(``);
+      }
+    }
+  }
+  getFeature(name) {
+    if (!this.features.hasOwnProperty(name)) {
+      return void 0;
+    }
+    const result = this.features[name];
+    if (result === void 0) {
+      return void 0;
+    }
+    this.recordEvent("$feature_flag_called", {
+      $feature_flag: name,
+      $feature_flag_response: result.variant
+    });
+    return result;
+  }
+  /**
+   * Check in to install.determinate.systems, to accomplish three things:
+   *
+   * 1. Preflight the server selected from IdsHost, to increase the chances of success.
+   * 2. Fetch any incidents and maintenance events to let users know in case things are weird.
+   * 3. Get feature flag data so we can gently roll out new features.
+   */
+  async requestCheckIn() {
+    for (let attemptsRemaining = 5; attemptsRemaining > 0; attemptsRemaining--) {
+      const checkInUrl = await this.getCheckInUrl();
+      if (checkInUrl === void 0) {
+        return void 0;
+      }
+      try {
+        core.debug(`Preflighting via ${checkInUrl}`);
+        checkInUrl.searchParams.set("ci", "github");
+        checkInUrl.searchParams.set(
+          "correlation",
+          JSON.stringify(this.identity)
+        );
+        return await this.client.get(checkInUrl, {
+          timeout: {
+            request: CHECK_IN_ENDPOINT_TIMEOUT_MS
+          }
+        }).json();
+      } catch (e) {
+        core.debug(`Error checking in: ${stringifyError2(e)}`);
+        this.idsHost.markCurrentHostBroken();
+      }
+    }
+    return void 0;
   }
   /**
    * Fetch an artifact, such as a tarball, from the location determined by the
@@ -95056,6 +95158,14 @@ var DetSysAction = class {
   async complete() {
     this.recordEvent(`complete_${this.executionPhase}`);
     await this.submitEvents();
+  }
+  async getCheckInUrl() {
+    const checkInUrl = await this.idsHost.getDynamicRootUrl();
+    if (checkInUrl === void 0) {
+      return void 0;
+    }
+    checkInUrl.pathname += "check-in";
+    return checkInUrl;
   }
   async getSourceUrl() {
     const p = this.sourceParameters;
