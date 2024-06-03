@@ -18,7 +18,6 @@ const FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 const FACT_DIFF_STORE_ENABLED = "diff_store";
 const FACT_NOOP_MODE = "noop_mode";
 
-const STATE_ERROR_IN_MAIN = "ERROR_IN_MAIN";
 const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
@@ -107,12 +106,6 @@ class MagicNixCacheAction extends DetSysAction {
   }
 
   async post(): Promise<void> {
-    // If strict mode is off and there was an error in main, such as the daemon not starting,
-    // then the post phase is skipped with a warning.
-    if (!this.strictMode && this.mainError) {
-      this.exitWithWarning(this.mainError);
-    }
-
     if (this.noopMode) {
       actionsCore.debug(TEXT_NOOP);
       return;
@@ -272,7 +265,6 @@ class MagicNixCacheAction extends DetSysAction {
           if (this.strictMode) {
             reject(new Error(`error in notifyPromise: ${msg}`));
           } else {
-            this.setMainError(msg);
             this.exitWithWarning(`failed to start daemon: ${msg}`);
           }
         });
@@ -290,7 +282,6 @@ class MagicNixCacheAction extends DetSysAction {
         if (this.strictMode) {
           reject(new Error(msg));
         } else {
-          this.setMainError(msg);
           this.exitWithWarning(`Failed to kill daemon: ${msg}`);
         }
       });
@@ -334,9 +325,6 @@ class MagicNixCacheAction extends DetSysAction {
         actionsCore.warning(inspect(e));
         actionsCore.warning(
           `Magic Nix Cache may not be running for this workflow.`,
-        );
-        this.setMainError(
-          `Error starting the Magic Nix Cache: ${stringifyError(e)}`,
         );
       }
     }
@@ -402,19 +390,6 @@ class MagicNixCacheAction extends DetSysAction {
     actionsCore.warning(msg);
     actionsCore.warning(`strict mode not enabled; exiting`);
     process.exit(0);
-  }
-
-  // If the main phase errors, save the state for use in post.
-  // This matters only when strict mode is NOT set.
-  private setMainError(msg: string): void {
-    actionsCore.saveState(STATE_ERROR_IN_MAIN, msg);
-  }
-
-  // In the post phase, if the main phase errored, return `true` so that the
-  // phase can be skipped (with a warning).
-  private get mainError(): string | undefined {
-    const state = actionsCore.getState(STATE_ERROR_IN_MAIN);
-    return state !== "" ? state : undefined;
   }
 }
 
