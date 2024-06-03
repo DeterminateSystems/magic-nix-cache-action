@@ -95468,6 +95468,7 @@ var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
 var FACT_NOOP_MODE = "noop_mode";
+var STATE_ERROR_IN_MAIN = "ERROR_IN_MAIN";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
@@ -95533,6 +95534,9 @@ var MagicNixCacheAction = class extends DetSysAction {
     await this.notifyAutoCache();
   }
   async post() {
+    if (!this.strictMode && this.mainError) {
+      this.exitWithWarning(this.mainError);
+    }
     if (this.noopMode) {
       core.debug(TEXT_NOOP);
       return;
@@ -95658,6 +95662,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         if (this.strictMode) {
           reject(new Error(`error in notifyPromise: ${msg}`));
         } else {
+          this.setMainError(msg);
           this.exitWithWarning(`failed to start daemon: ${msg}`);
         }
       });
@@ -95673,6 +95678,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         if (this.strictMode) {
           reject(new Error(msg));
         } else {
+          this.setMainError(msg);
           this.exitWithWarning(`Failed to kill daemon: ${msg}`);
         }
       });
@@ -95708,6 +95714,9 @@ var MagicNixCacheAction = class extends DetSysAction {
         core.warning((0,external_node_util_.inspect)(e));
         core.warning(
           `Magic Nix Cache may not be running for this workflow.`
+        );
+        this.setMainError(
+          `Error starting the Magic Nix Cache: ${stringifyError(e)}`
         );
       }
     }
@@ -95764,6 +95773,17 @@ var MagicNixCacheAction = class extends DetSysAction {
     core.warning(msg);
     core.warning(`strict mode not enabled; exiting`);
     process.exit(0);
+  }
+  // If the main phase errors, save the state for use in post.
+  // This matters only when strict mode is NOT set.
+  setMainError(msg) {
+    core.saveState(STATE_ERROR_IN_MAIN, msg);
+  }
+  // In the post phase, if the main phase errored, return `true` so that the
+  // phase can be skipped (with a warning).
+  get mainError() {
+    const state = core.getState(STATE_ERROR_IN_MAIN);
+    return state !== "" ? state : void 0;
   }
 };
 function main() {
