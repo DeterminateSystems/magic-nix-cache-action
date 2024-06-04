@@ -15,14 +15,14 @@ const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
 const FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 const FACT_DIFF_STORE_ENABLED = "diff_store";
-const FACT_NOOP_MODE = "noop_mode";
+const FACT_ALREADY_RUNNING = "noop_mode";
 
 const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 const STATE_ERROR_IN_MAIN = "ERROR_IN_MAIN";
 const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
 
-const TEXT_NOOP =
+const TEXT_ALREADY_RUNNING =
   "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
 const TEXT_TRUST_UNTRUSTED =
   "The Nix daemon does not consider the user running this workflow to be trusted. Magic Nix Cache is disabled.";
@@ -36,9 +36,9 @@ class MagicNixCacheAction extends DetSysAction {
   private daemonDir: string;
   private daemonStarted: boolean;
 
-  // No-op mode is set to `true` if the MNC is already running, in which case
-  // the workflow will use the existing process rather than starting a new one.
-  private noopMode: boolean;
+  // This is set to `true` if the MNC is already running, in which case the
+  // workflow will use the existing process rather than starting a new one.
+  private alreadyRunning: boolean;
 
   constructor() {
     super({
@@ -81,19 +81,19 @@ class MagicNixCacheAction extends DetSysAction {
     }
 
     if (process.env[ENV_DAEMON_DIR] === undefined) {
-      this.noopMode = false;
+      this.alreadyRunning = false;
       actionsCore.exportVariable(ENV_DAEMON_DIR, this.daemonDir);
     } else {
-      this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
+      this.alreadyRunning = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.addFact(FACT_NOOP_MODE, this.noopMode);
+    this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
 
     this.stapleFile("daemon.log", path.join(this.daemonDir, "daemon.log"));
   }
 
   async main(): Promise<void> {
-    if (this.noopMode) {
-      actionsCore.warning(TEXT_NOOP);
+    if (this.alreadyRunning) {
+      actionsCore.warning(TEXT_ALREADY_RUNNING);
       return;
     }
 
@@ -118,8 +118,8 @@ class MagicNixCacheAction extends DetSysAction {
       process.exit(0);
     }
 
-    if (this.noopMode) {
-      actionsCore.debug(TEXT_NOOP);
+    if (this.alreadyRunning) {
+      actionsCore.debug(TEXT_ALREADY_RUNNING);
       return;
     }
 

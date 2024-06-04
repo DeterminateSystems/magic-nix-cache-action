@@ -95466,12 +95466,12 @@ async function flakeHubLogin(netrc) {
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
-var FACT_NOOP_MODE = "noop_mode";
+var FACT_ALREADY_RUNNING = "noop_mode";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var STATE_ERROR_IN_MAIN = "ERROR_IN_MAIN";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
-var TEXT_NOOP = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
+var TEXT_ALREADY_RUNNING = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
 var TEXT_TRUST_UNTRUSTED = "The Nix daemon does not consider the user running this workflow to be trusted. Magic Nix Cache is disabled.";
 var TEXT_TRUST_UNKNOWN = "The Nix daemon may not consider the user running this workflow to be trusted. Magic Nix Cache may not start correctly.";
 var MagicNixCacheAction = class extends DetSysAction {
@@ -95510,17 +95510,17 @@ var MagicNixCacheAction = class extends DetSysAction {
       core.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
     if (process.env[ENV_DAEMON_DIR] === void 0) {
-      this.noopMode = false;
+      this.alreadyRunning = false;
       core.exportVariable(ENV_DAEMON_DIR, this.daemonDir);
     } else {
-      this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
+      this.alreadyRunning = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.addFact(FACT_NOOP_MODE, this.noopMode);
+    this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
     this.stapleFile("daemon.log", external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
   }
   async main() {
-    if (this.noopMode) {
-      core.warning(TEXT_NOOP);
+    if (this.alreadyRunning) {
+      core.warning(TEXT_ALREADY_RUNNING);
       return;
     }
     if (this.nixStoreTrust === "untrusted") {
@@ -95539,8 +95539,8 @@ var MagicNixCacheAction = class extends DetSysAction {
       );
       process.exit(0);
     }
-    if (this.noopMode) {
-      core.debug(TEXT_NOOP);
+    if (this.alreadyRunning) {
+      core.debug(TEXT_ALREADY_RUNNING);
       return;
     }
     if (this.nixStoreTrust === "untrusted") {
