@@ -95537,7 +95537,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       core.warning(
         `skipping post phase due to error in main phase: ${this.errorInMain}`
       );
-      process.exit(0);
+      return;
     }
     if (this.alreadyRunning) {
       core.debug(TEXT_ALREADY_RUNNING);
@@ -95656,7 +95656,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     const pidFile = external_node_path_namespaceObject.join(this.daemonDir, "daemon.pid");
     await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
     core.info("Waiting for magic-nix-cache to start...");
-    await new Promise((resolve, _reject) => {
+    await new Promise((resolve) => {
       notifyPromise.then((_value) => {
         resolve();
       }).catch((e) => {

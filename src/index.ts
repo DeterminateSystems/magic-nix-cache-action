@@ -115,7 +115,7 @@ class MagicNixCacheAction extends DetSysAction {
       actionsCore.warning(
         `skipping post phase due to error in main phase: ${this.errorInMain}`,
       );
-      process.exit(0);
+      return;
     }
 
     if (this.alreadyRunning) {
@@ -264,7 +264,7 @@ class MagicNixCacheAction extends DetSysAction {
 
     actionsCore.info("Waiting for magic-nix-cache to start...");
 
-    await new Promise<void>((resolve, _reject) => {
+    await new Promise<void>((resolve) => {
       notifyPromise
         // eslint-disable-next-line github/no-then
         .then((_value) => {
