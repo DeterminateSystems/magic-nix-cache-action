@@ -95581,7 +95581,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     let runEnv;
     if (core.isDebug()) {
       runEnv = {
-        RUST_LOG: "trace,magic_nix_cache=debug,gha_cache=debug",
+        RUST_LOG: "debug,magic_nix_cache=trace,gha_cache=trace",
         RUST_BACKTRACE: "full",
         ...process.env
       };
