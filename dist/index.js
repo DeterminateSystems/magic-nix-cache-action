@@ -95421,7 +95421,7 @@ function tailLog(daemonDir) {
 }
 async function netrcPath() {
   const expectedNetrcPath = external_node_path_namespaceObject.join(
-    process.env["RUNNER_TEMP"] || external_node_os_.tmpdir(),
+    process.env["RUNNER_TEMP"] ?? external_node_os_.tmpdir(),
     "determinate-nix-installer-netrc"
   );
   try {
@@ -95429,7 +95429,7 @@ async function netrcPath() {
     return expectedNetrcPath;
   } catch {
     const destinedNetrcPath = external_node_path_namespaceObject.join(
-      process.env["RUNNER_TEMP"] || external_node_os_.tmpdir(),
+      process.env["RUNNER_TEMP"] ?? external_node_os_.tmpdir(),
       "magic-nix-cache-netrc"
     );
     try {
