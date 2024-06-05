@@ -1,13 +1,12 @@
 import { netrcPath, tailLog } from "./helpers.js";
 import * as actionsCore from "@actions/core";
-import { DetSysAction, inputs } from "detsys-ts";
+import { DetSysAction, inputs, stringifyError } from "detsys-ts";
 import got, { Got, Response } from "got";
 import * as http from "http";
 import { SpawnOptions, spawn } from "node:child_process";
 import { mkdirSync, openSync, readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { inspect } from "node:util";
 
 // The ENV_DAEMON_DIR is intended to determine if we "own" the daemon or not,
 // in the case that a user has put the magic nix cache into their workflow
@@ -16,13 +15,14 @@ const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
 const FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 const FACT_DIFF_STORE_ENABLED = "diff_store";
-const FACT_NOOP_MODE = "noop_mode";
+const FACT_ALREADY_RUNNING = "noop_mode";
 
 const STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+const STATE_ERROR_IN_MAIN = "ERROR_IN_MAIN";
 const STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 const STARTED_HINT = "true";
 
-const TEXT_NOOP =
+const TEXT_ALREADY_RUNNING =
   "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
 const TEXT_TRUST_UNTRUSTED =
   "The Nix daemon does not consider the user running this workflow to be trusted. Magic Nix Cache is disabled.";
@@ -33,9 +33,12 @@ class MagicNixCacheAction extends DetSysAction {
   private hostAndPort: string;
   private diffStore: boolean;
   private httpClient: Got;
-  private noopMode: boolean;
   private daemonDir: string;
   private daemonStarted: boolean;
+
+  // This is set to `true` if the MNC is already running, in which case the
+  // workflow will use the existing process rather than starting a new one.
+  private alreadyRunning: boolean;
 
   constructor() {
     super({
@@ -78,19 +81,19 @@ class MagicNixCacheAction extends DetSysAction {
     }
 
     if (process.env[ENV_DAEMON_DIR] === undefined) {
-      this.noopMode = false;
+      this.alreadyRunning = false;
       actionsCore.exportVariable(ENV_DAEMON_DIR, this.daemonDir);
     } else {
-      this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
+      this.alreadyRunning = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.addFact(FACT_NOOP_MODE, this.noopMode);
+    this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
 
     this.stapleFile("daemon.log", path.join(this.daemonDir, "daemon.log"));
   }
 
   async main(): Promise<void> {
-    if (this.noopMode) {
-      actionsCore.warning(TEXT_NOOP);
+    if (this.alreadyRunning) {
+      actionsCore.warning(TEXT_ALREADY_RUNNING);
       return;
     }
 
@@ -106,8 +109,17 @@ class MagicNixCacheAction extends DetSysAction {
   }
 
   async post(): Promise<void> {
-    if (this.noopMode) {
-      actionsCore.debug(TEXT_NOOP);
+    // If strict mode is off and there was an error in main, such as the daemon not starting,
+    // then the post phase is skipped with a warning.
+    if (!this.strictMode && this.errorInMain) {
+      actionsCore.warning(
+        `skipping post phase due to error in main phase: ${this.errorInMain}`,
+      );
+      return;
+    }
+
+    if (this.alreadyRunning) {
+      actionsCore.debug(TEXT_ALREADY_RUNNING);
       return;
     }
 
@@ -252,17 +264,17 @@ class MagicNixCacheAction extends DetSysAction {
 
     actionsCore.info("Waiting for magic-nix-cache to start...");
 
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve) => {
       notifyPromise
         // eslint-disable-next-line github/no-then
         .then((_value) => {
           resolve();
         })
         // eslint-disable-next-line github/no-then
-        .catch((err) => {
-          const msg = `error in notifyPromise: ${err}`;
-          reject(new Error(msg));
+        .catch((e: unknown) => {
+          this.exitMain(`Error in notifyPromise: ${stringifyError(e)}`);
         });
+
       daemon.on("exit", async (code, signal) => {
         let msg: string;
         if (signal) {
@@ -272,7 +284,8 @@ class MagicNixCacheAction extends DetSysAction {
         } else {
           msg = "Daemon unexpectedly exited";
         }
-        reject(new Error(msg));
+
+        this.exitMain(msg);
       });
     });
 
@@ -306,11 +319,8 @@ class MagicNixCacheAction extends DetSysAction {
       }
 
       actionsCore.debug(`back from post: ${res.body}`);
-    } catch (e) {
-      actionsCore.info(`Error marking the workflow as started:`);
-      actionsCore.info(inspect(e));
-      actionsCore.info(`Magic Nix Cache may not be running for this workflow.`);
-      this.failOnError(`Magic Nix Cache failed to start: ${inspect(e)}`);
+    } catch (e: unknown) {
+      this.exitMain(`Error starting the Magic Nix Cache: ${stringifyError(e)}`);
     }
   }
 
@@ -349,12 +359,17 @@ class MagicNixCacheAction extends DetSysAction {
       log.unwatch();
     }
 
-    actionsCore.debug(`killing`);
+    actionsCore.debug(`killing daemon process ${pid}`);
+
     try {
       process.kill(pid, "SIGTERM");
-    } catch (e) {
+    } catch (e: unknown) {
       if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-        throw e;
+        // Throw an error only in strict mode, otherwise ignore because
+        // we're in the post phase and shutting down after this anyway
+        if (this.strictMode) {
+          throw e;
+        }
       }
     } finally {
       if (actionsCore.isDebug()) {
@@ -363,6 +378,24 @@ class MagicNixCacheAction extends DetSysAction {
         actionsCore.info(entireLog.toString());
       }
     }
+  }
+
+  // Exit the workflow during the main phase. If strict mode is set, fail; if not, save the error
+  // message to the workflow's state and exit successfully.
+  private exitMain(msg: string): void {
+    if (this.strictMode) {
+      actionsCore.setFailed(msg);
+    } else {
+      actionsCore.saveState(STATE_ERROR_IN_MAIN, msg);
+      process.exit(0);
+    }
+  }
+
+  // If the main phase threw an error (not in strict mode), this will be a non-empty
+  // string available in the post phase.
+  private get errorInMain(): string | undefined {
+    const state = actionsCore.getState(STATE_ERROR_IN_MAIN);
+    return state !== "" ? state : undefined;
   }
 }
 

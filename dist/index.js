@@ -94091,7 +94091,7 @@ const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createReq
 const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
 ;// CONCATENATED MODULE: external "node:zlib"
 const external_node_zlib_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:zlib");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@fe64ba33b4bdeec0991bb65ae00420bf68b9954c_ler7zqcm5mrt635umsvjcuxcmy/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@138ea0123a2a3c61fad2c998729b661405132119_63ifpzamfkw2vbemnszqtdfmnu/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -94794,7 +94794,7 @@ var DetSysAction = class {
     this.nixStoreTrust = "unknown";
     this.strictMode = getBool("_internal-strict-mode");
     this.features = {};
-    this.featureEventMetadata = /* @__PURE__ */ new Map();
+    this.featureEventMetadata = {};
     this.events = [];
     this.client = got_dist_source.extend({
       retry: {
@@ -95001,7 +95001,7 @@ var DetSysAction = class {
     }
     this.features = checkin.options;
     for (const [key, feature] of Object.entries(this.features)) {
-      this.featureEventMetadata.set(key, feature.variant);
+      this.featureEventMetadata[key] = feature.variant;
     }
     const impactSymbol = /* @__PURE__ */ new Map([
       ["none", "\u26AA"],
@@ -95463,15 +95463,15 @@ async function flakeHubLogin(netrc) {
 
 
 
-
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
-var FACT_NOOP_MODE = "noop_mode";
+var FACT_ALREADY_RUNNING = "noop_mode";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var STATE_ERROR_IN_MAIN = "ERROR_IN_MAIN";
 var STATE_STARTED = "MAGIC_NIX_CACHE_STARTED";
 var STARTED_HINT = "true";
-var TEXT_NOOP = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
+var TEXT_ALREADY_RUNNING = "Magic Nix Cache is already running, this workflow job is in noop mode. Is the Magic Nix Cache in the workflow twice?";
 var TEXT_TRUST_UNTRUSTED = "The Nix daemon does not consider the user running this workflow to be trusted. Magic Nix Cache is disabled.";
 var TEXT_TRUST_UNKNOWN = "The Nix daemon may not consider the user running this workflow to be trusted. Magic Nix Cache may not start correctly.";
 var MagicNixCacheAction = class extends DetSysAction {
@@ -95510,17 +95510,17 @@ var MagicNixCacheAction = class extends DetSysAction {
       core.saveState(STATE_DAEMONDIR, this.daemonDir);
     }
     if (process.env[ENV_DAEMON_DIR] === void 0) {
-      this.noopMode = false;
+      this.alreadyRunning = false;
       core.exportVariable(ENV_DAEMON_DIR, this.daemonDir);
     } else {
-      this.noopMode = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
+      this.alreadyRunning = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
-    this.addFact(FACT_NOOP_MODE, this.noopMode);
+    this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
     this.stapleFile("daemon.log", external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
   }
   async main() {
-    if (this.noopMode) {
-      core.warning(TEXT_NOOP);
+    if (this.alreadyRunning) {
+      core.warning(TEXT_ALREADY_RUNNING);
       return;
     }
     if (this.nixStoreTrust === "untrusted") {
@@ -95533,8 +95533,14 @@ var MagicNixCacheAction = class extends DetSysAction {
     await this.notifyAutoCache();
   }
   async post() {
-    if (this.noopMode) {
-      core.debug(TEXT_NOOP);
+    if (!this.strictMode && this.errorInMain) {
+      core.warning(
+        `skipping post phase due to error in main phase: ${this.errorInMain}`
+      );
+      return;
+    }
+    if (this.alreadyRunning) {
+      core.debug(TEXT_ALREADY_RUNNING);
       return;
     }
     if (this.nixStoreTrust === "untrusted") {
@@ -95650,12 +95656,11 @@ var MagicNixCacheAction = class extends DetSysAction {
     const pidFile = external_node_path_namespaceObject.join(this.daemonDir, "daemon.pid");
     await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
     core.info("Waiting for magic-nix-cache to start...");
-    await new Promise((resolve, reject) => {
+    await new Promise((resolve) => {
       notifyPromise.then((_value) => {
         resolve();
-      }).catch((err) => {
-        const msg = `error in notifyPromise: ${err}`;
-        reject(new Error(msg));
+      }).catch((e) => {
+        this.exitMain(`Error in notifyPromise: ${stringifyError(e)}`);
       });
       daemon.on("exit", async (code, signal) => {
         let msg;
@@ -95666,7 +95671,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         } else {
           msg = "Daemon unexpectedly exited";
         }
-        reject(new Error(msg));
+        this.exitMain(msg);
       });
     });
     daemon.unref();
@@ -95693,10 +95698,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       }
       core.debug(`back from post: ${res.body}`);
     } catch (e) {
-      core.info(`Error marking the workflow as started:`);
-      core.info((0,external_node_util_.inspect)(e));
-      core.info(`Magic Nix Cache may not be running for this workflow.`);
-      this.failOnError(`Magic Nix Cache failed to start: ${(0,external_node_util_.inspect)(e)}`);
+      this.exitMain(`Error starting the Magic Nix Cache: ${stringifyError(e)}`);
     }
   }
   async tearDownAutoCache() {
@@ -95728,12 +95730,14 @@ var MagicNixCacheAction = class extends DetSysAction {
       core.debug(`unwatching the daemon log`);
       log.unwatch();
     }
-    core.debug(`killing`);
+    core.debug(`killing daemon process ${pid}`);
     try {
       process.kill(pid, "SIGTERM");
     } catch (e) {
       if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-        throw e;
+        if (this.strictMode) {
+          throw e;
+        }
       }
     } finally {
       if (core.isDebug()) {
@@ -95742,6 +95746,22 @@ var MagicNixCacheAction = class extends DetSysAction {
         core.info(entireLog.toString());
       }
     }
+  }
+  // Exit the workflow during the main phase. If strict mode is set, fail; if not, save the error
+  // message to the workflow's state and exit successfully.
+  exitMain(msg) {
+    if (this.strictMode) {
+      core.setFailed(msg);
+    } else {
+      core.saveState(STATE_ERROR_IN_MAIN, msg);
+      process.exit(0);
+    }
+  }
+  // If the main phase threw an error (not in strict mode), this will be a non-empty
+  // string available in the post phase.
+  get errorInMain() {
+    const state = core.getState(STATE_ERROR_IN_MAIN);
+    return state !== "" ? state : void 0;
   }
 };
 function main() {
