@@ -15,7 +15,7 @@ export function tailLog(daemonDir: string): Tail {
 
 export async function netrcPath(): Promise<string> {
   const expectedNetrcPath = path.join(
-    process.env["RUNNER_TEMP"] || os.tmpdir(),
+    process.env["RUNNER_TEMP"] ?? os.tmpdir(),
     "determinate-nix-installer-netrc",
   );
   try {
@@ -24,7 +24,7 @@ export async function netrcPath(): Promise<string> {
   } catch {
     // `nix-installer` was not used, the user may be registered with FlakeHub though.
     const destinedNetrcPath = path.join(
-      process.env["RUNNER_TEMP"] || os.tmpdir(),
+      process.env["RUNNER_TEMP"] ?? os.tmpdir(),
       "magic-nix-cache-netrc",
     );
     try {
