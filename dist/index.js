@@ -88421,7 +88421,12 @@ async function netrcPath() {
     try {
       await flakeHubLogin(destinedNetrcPath);
     } catch (e) {
-      core.info("FlakeHub cache disabled.");
+      core.info(
+        "FlakeHub Cache is disabled due to missing or invalid token"
+      );
+      core.info(
+        `If you're signed up for FlakeHub Cache, make sure that your Actions config has a \`permissions\` block with \`id-token\` set to "write" and \`contents\` set to "read"`
+      );
       core.debug(`Error while logging into FlakeHub: ${e}`);
     }
     return destinedNetrcPath;

@@ -30,7 +30,12 @@ export async function netrcPath(): Promise<string> {
     try {
       await flakeHubLogin(destinedNetrcPath);
     } catch (e) {
-      actionsCore.info("FlakeHub cache disabled.");
+      actionsCore.info(
+        "FlakeHub Cache is disabled due to missing or invalid token",
+      );
+      actionsCore.info(
+        `If you're signed up for FlakeHub Cache, make sure that your Actions config has a \`permissions\` block with \`id-token\` set to "write" and \`contents\` set to "read"`,
+      );
       actionsCore.debug(`Error while logging into FlakeHub: ${e}`);
     }
     return destinedNetrcPath;
