@@ -89,8 +89,10 @@ jobs:
             runner: "macos-latest-xlarge"
           - nix-system: "x86_64-darwin"
             runner: "macos-12"
-          - nix-system: "aarch64-linux"
+          - nix-system: "namespace-aarch64-linux"
             runner: "namespace-profile-default-arm64"
+          - nix-system: "namespace-x86_64-linux"
+            runner: "namespace-profile-default"
           - nix-system: "x86_64-linux"
             runner: "ubuntu-22.04"
     steps:
