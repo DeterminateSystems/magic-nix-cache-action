@@ -98,7 +98,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@fix-namespace-x86
         with:
           flakehub: true
           extra-conf: |
