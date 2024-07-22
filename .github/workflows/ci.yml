@@ -110,3 +110,8 @@ jobs:
       - name: Check the cache for liveness
         run: |
           .github/workflows/cache-test.sh
+      - uses: namespacelabs/breakpoint-action@v0
+        if: failure()
+        with:
+          duration: 30m
+          authorized-users: grahamc
