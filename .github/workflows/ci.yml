@@ -89,14 +89,16 @@ jobs:
             runner: "macos-latest-xlarge"
           - nix-system: "x86_64-darwin"
             runner: "macos-12"
-          - nix-system: "aarch64-linux"
+          - nix-system: "namespace-aarch64-linux"
             runner: "namespace-profile-default-arm64"
+          - nix-system: "namespace-x86_64-linux"
+            runner: "namespace-profile-default"
           - nix-system: "x86_64-linux"
             runner: "ubuntu-22.04"
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@fix-namespace-x86
         with:
           flakehub: true
           extra-conf: |
@@ -108,3 +110,8 @@ jobs:
       - name: Check the cache for liveness
         run: |
           .github/workflows/cache-test.sh
+      - uses: namespacelabs/breakpoint-action@v0
+        if: failure()
+        with:
+          duration: 30m
+          authorized-users: grahamc
