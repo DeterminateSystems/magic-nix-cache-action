@@ -47,6 +47,7 @@ class MagicNixCacheAction extends DetSysAction {
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn",
       diagnosticsSuffix: "perf",
+      binaryNamePrefixes: ["magic-nix-cache", "nix"],
     });
 
     this.hostAndPort = inputs.getString("listen");

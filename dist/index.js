@@ -85847,7 +85847,8 @@ var MagicNixCacheAction = class extends DetSysAction {
       fetchStyle: "gh-env-style",
       idsProjectName: "magic-nix-cache-closure",
       requireNix: "warn",
-      diagnosticsSuffix: "perf"
+      diagnosticsSuffix: "perf",
+      binaryNamePrefixes: ["magic-nix-cache", "nix"]
     });
     this.hostAndPort = inputs_exports.getString("listen");
     this.diffStore = inputs_exports.getBool("diff-store");
