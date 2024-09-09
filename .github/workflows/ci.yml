@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  merge_group:
   pull_request:
   push:
     branches: [main]
@@ -74,6 +75,7 @@ jobs:
           [ $(nix config show substituters) == "https://cache.nixos.org/" ]
 
   run-systems:
+    if: github.event_name != 'pull_request'
     needs: build
     name: "Run ${{ matrix.systems.nix-system }}"
     runs-on: "${{ matrix.systems.runner }}"
