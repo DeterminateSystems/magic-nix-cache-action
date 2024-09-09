@@ -75,7 +75,6 @@ jobs:
           [ $(nix config show substituters) == "https://cache.nixos.org/" ]
 
   run-systems:
-    if: github.event_name == 'merge_group'
     needs: build
     name: "Run ${{ matrix.systems.nix-system }}"
     runs-on: "${{ matrix.systems.runner }}"
@@ -97,16 +96,20 @@ jobs:
             runner: "ubuntu-22.04"
     steps:
       - uses: actions/checkout@v4
-      - name: Install Nix on ${{ matrix.systems.nix-system }} system
+        if: github.event_name == 'merge_group'
+      - name: Install Nix on ${{ matrix.systems.nix-system }} system      
+        if: github.event_name == 'merge_group'
         uses: DeterminateSystems/nix-installer-action@main
         with:
           flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
+        if: github.event_name == 'merge_group'
         uses: ./
         with:
           _internal-strict-mode: true
       - name: Check the cache for liveness
+        if: github.event_name == 'merge_group'
         run: |
           .github/workflows/cache-test.sh
