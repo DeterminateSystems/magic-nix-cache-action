@@ -97,7 +97,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         if: github.event_name == 'merge_group'
-      - name: Install Nix on ${{ matrix.systems.nix-system }} system      
+      - name: Install Nix on ${{ matrix.systems.nix-system }} system
         if: github.event_name == 'merge_group'
         uses: DeterminateSystems/nix-installer-action@main
         with:
