@@ -72,6 +72,7 @@ jobs:
           _internal-strict-mode: true
       - name: Check the cache isn't enabled
         run: |
+          nix config show substituters
           [ $(nix config show substituters) == "https://cache.nixos.org/" ]
 
   run-systems:
