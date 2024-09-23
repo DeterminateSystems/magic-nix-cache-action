@@ -73,7 +73,7 @@ jobs:
       - name: Check the cache isn't enabled
         run: |
           nix config show substituters
-          [ $(nix config show substituters) == "https://cache.nixos.org/" ]
+          [[ "$(nix config show substituters)" == "https://cache.nixos.org/" ]]
 
   run-systems:
     needs: build
