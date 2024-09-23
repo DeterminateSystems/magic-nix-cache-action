@@ -86110,7 +86110,9 @@ var MagicNixCacheAction = class extends DetSysAction {
       "--diagnostic-endpoint",
       diagnosticEndpoint,
       "--nix-conf",
-      nixConfPath
+      nixConfPath,
+      "--flakehub-api-server-netrc",
+      netrc
     ].concat(this.diffStore ? ["--diff-store"] : []).concat(
       useFlakeHub ? [
         "--use-flakehub",

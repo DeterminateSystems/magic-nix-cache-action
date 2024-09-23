@@ -224,6 +224,8 @@ class MagicNixCacheAction extends DetSysAction {
       diagnosticEndpoint,
       "--nix-conf",
       nixConfPath,
+      "--flakehub-api-server-netrc",
+      netrc,
     ]
       .concat(this.diffStore ? ["--diff-store"] : [])
       .concat(
