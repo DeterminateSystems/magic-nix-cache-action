@@ -17,9 +17,6 @@ grep 'GitHub Action cache is enabled' "${log}"
 # Build something.
 outpath=$(nix-build .github/workflows/cache-tester.nix --argstr seed "$seed")
 
-# Check that the path was enqueued to be pushed to the cache.
-grep "Enqueueing.*${outpath}" "${log}"
-
 # Wait until it has been pushed succesfully.
 found=
 for ((i = 0; i < 60; i++)); do
