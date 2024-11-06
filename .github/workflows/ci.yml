@@ -101,8 +101,8 @@ jobs:
       - name: Bust up the identity token
         if: ${{ matrix.id-token == 'none' }}
         run: |
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL=" >> $GITHUB_ENV
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN=" >> $GITHUB_ENV
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL=a" >> $GITHUB_ENV
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN=b" >> $GITHUB_ENV
       - run: |
           env
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
