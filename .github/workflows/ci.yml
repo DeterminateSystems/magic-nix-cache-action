@@ -77,7 +77,7 @@ jobs:
     name: "Run ${{ matrix.systems.nix-system }}"
     runs-on: "${{ matrix.systems.runner }}"
     permissions:
-      id-token: "${{ matrix.id-token }}"
+      id-token: "write"
       contents: "read"
     env:
       ACTIONS_STEP_DEBUG: true
@@ -103,6 +103,11 @@ jobs:
           flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
+      - name: Bust up the identity token
+        if: ${{ matrix.id-token == 'none' }}
+        run: |
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL=" >> $GITHUB_ENV
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN=" >> $GITHUB_ENV
       - name: Cache the store
         uses: ./
         with:
