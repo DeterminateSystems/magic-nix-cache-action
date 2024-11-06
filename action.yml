@@ -5,8 +5,12 @@ branding:
 description: "Free, no-configuration Nix cache. Cut CI time by 50% or more by caching to GitHub Actions' cache."
 inputs:
   use-gha-cache:
-    description: "Whether to upload build results to the GitHub Actions cache."
-    default: true
+    description: |
+      Whether to upload build results to the Github Actions cache.
+      Set to "no-preference" or null to have the GitHub Actions cache turn on if it is available, and FlakeHub Cache is not available (default).
+      Set to "enabled" or true to explicitly request the GitHub Actions Cache.
+      Set to "disabled" or false to explicitly disable the GitHub Actions Cache.
+    default: null
     required: false
   listen:
     description: The host and port to listen on.
@@ -18,8 +22,12 @@ inputs:
     description: "Diagnostic endpoint url where diagnostics and performance data is sent. To disable set this to an empty string."
     default: "-"
   use-flakehub:
-    description: "Whether to upload build results to FlakeHub Cache."
-    default: true
+    description: |
+      Whether to upload build results to FlakeHub Cache.
+      Set to "no-preference" or null to have FlakeHub Cache turn on opportunistically (default).
+      Set to "enabled" or true to explicitly request FlakeHub Cache.
+      Set to "disabled" or false to explicitly disable FlakeHub Cache.
+    default: null
     required: false
   flakehub-cache-server:
     description: "The FlakeHub binary cache server."
