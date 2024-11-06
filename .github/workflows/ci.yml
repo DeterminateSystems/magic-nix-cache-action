@@ -72,7 +72,7 @@ jobs:
           _internal-strict-mode: true
 
   run-systems:
-    # if: github.event_name == 'merge_group'
+    if: github.event_name == 'merge_group'
     needs: build
     name: "Test: ${{ matrix.systems.nix-system }} gha:${{matrix.use-gha-cache}},fhc:${{matrix.use-flakehub}},id:${{matrix.id-token}},determinate:${{matrix.determinate}}"
     runs-on: "${{ matrix.systems.runner }}"
@@ -125,3 +125,15 @@ jobs:
             ) }}
         run: |
           .github/workflows/cache-test.sh
+
+  success:
+    runs-on: ubuntu-latest
+    needs: run-systems
+    steps:
+      - run: "true"
+      - run: |
+          echo "A dependent in the build matrix failed."
+          exit 1
+        if: |
+          contains(needs.*.result, 'failure') ||
+          contains(needs.*.result, 'cancelled')
