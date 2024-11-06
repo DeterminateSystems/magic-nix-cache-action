@@ -102,7 +102,7 @@ jobs:
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
         uses: DeterminateSystems/nix-installer-action@main
         with:
-          _internal-obliterate-actions-id-token-request-url: ${{ matrix.id-token == 'none' }}
+          _internal-obliterate-actions-id-token-request-variables: ${{ matrix.id-token == 'none' }}
           determinate: ${{ matrix.determinate }}
           extra-conf: |
             narinfo-cache-negative-ttl = 0
@@ -110,7 +110,7 @@ jobs:
         uses: ./
         with:
           _internal-strict-mode: true
-          _internal-obliterate-actions-id-token-request-url: ${{ matrix.id-token == 'none' }}
+          _internal-obliterate-actions-id-token-request-variables: ${{ matrix.id-token == 'none' }}
           use-gha-cache: ${{ matrix.use-gha-cache }}
           use-flakehub: ${{ matrix.use-flakehub }}
       - name: Check the cache for liveness
