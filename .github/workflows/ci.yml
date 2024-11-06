@@ -82,6 +82,7 @@ jobs:
     env:
       ACTIONS_STEP_DEBUG: true
     strategy:
+      fail-fast: false
       matrix:
         use-gha-cache: ["disabled", "no-preference", "enabled"]
         use-flakehub: ["disabled", "no-preference", "enabled"]
