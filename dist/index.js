@@ -33210,14 +33210,14 @@ module.exports["default"] = deferToConnect;
 
 /***/ }),
 
-/***/ 3601:
+/***/ 5542:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 
 
-const validator = __nccwpck_require__(8128);
-const XMLParser = __nccwpck_require__(897);
-const XMLBuilder = __nccwpck_require__(6762);
+const validator = __nccwpck_require__(1876);
+const XMLParser = __nccwpck_require__(4120);
+const XMLBuilder = __nccwpck_require__(534);
 
 module.exports = {
   XMLParser: XMLParser,
@@ -33227,7 +33227,33 @@ module.exports = {
 
 /***/ }),
 
-/***/ 3480:
+/***/ 3628:
+/***/ ((module) => {
+
+function getIgnoreAttributesFn(ignoreAttributes) {
+    if (typeof ignoreAttributes === 'function') {
+        return ignoreAttributes
+    }
+    if (Array.isArray(ignoreAttributes)) {
+        return (attrName) => {
+            for (const pattern of ignoreAttributes) {
+                if (typeof pattern === 'string' && attrName === pattern) {
+                    return true
+                }
+                if (pattern instanceof RegExp && pattern.test(attrName)) {
+                    return true
+                }
+            }
+        }
+    }
+    return () => false
+}
+
+module.exports = getIgnoreAttributesFn
+
+/***/ }),
+
+/***/ 4340:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -33306,12 +33332,12 @@ exports.nameRegexp = nameRegexp;
 
 /***/ }),
 
-/***/ 8128:
+/***/ 1876:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
 
-const util = __nccwpck_require__(3480);
+const util = __nccwpck_require__(4340);
 
 const defaultOptions = {
   allowBooleanAttributes: false, //A tag can have attributes without any value
@@ -33738,12 +33764,13 @@ function getPositionFromMatch(match) {
 
 /***/ }),
 
-/***/ 6762:
+/***/ 534:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 
 //parse Empty Node as self closing node
-const buildFromOrderedJs = __nccwpck_require__(9603);
+const buildFromOrderedJs = __nccwpck_require__(4354);
+const getIgnoreAttributesFn = __nccwpck_require__(3628)
 
 const defaultOptions = {
   attributeNamePrefix: '@_',
@@ -33781,11 +33808,12 @@ const defaultOptions = {
 
 function Builder(options) {
   this.options = Object.assign({}, defaultOptions, options);
-  if (this.options.ignoreAttributes || this.options.attributesGroupName) {
+  if (this.options.ignoreAttributes === true || this.options.attributesGroupName) {
     this.isAttribute = function(/*a*/) {
       return false;
     };
   } else {
+    this.ignoreAttributesFn = getIgnoreAttributesFn(this.options.ignoreAttributes)
     this.attrPrefixLen = this.options.attributeNamePrefix.length;
     this.isAttribute = isAttribute;
   }
@@ -33814,13 +33842,14 @@ Builder.prototype.build = function(jObj) {
         [this.options.arrayNodeName] : jObj
       }
     }
-    return this.j2x(jObj, 0).val;
+    return this.j2x(jObj, 0, []).val;
   }
 };
 
-Builder.prototype.j2x = function(jObj, level) {
+Builder.prototype.j2x = function(jObj, level, ajPath) {
   let attrStr = '';
   let val = '';
+  const jPath = ajPath.join('.')
   for (let key in jObj) {
     if(!Object.prototype.hasOwnProperty.call(jObj, key)) continue;
     if (typeof jObj[key] === 'undefined') {
@@ -33843,9 +33872,9 @@ Builder.prototype.j2x = function(jObj, level) {
     } else if (typeof jObj[key] !== 'object') {
       //premitive type
       const attr = this.isAttribute(key);
-      if (attr) {
+      if (attr && !this.ignoreAttributesFn(attr, jPath)) {
         attrStr += this.buildAttrPairStr(attr, '' + jObj[key]);
-      }else {
+      } else if (!attr) {
         //tag value
         if (key === this.options.textNodeName) {
           let newval = this.options.tagValueProcessor(key, '' + jObj[key]);
@@ -33869,13 +33898,13 @@ Builder.prototype.j2x = function(jObj, level) {
           // val += this.indentate(level) + '<' + key + '/' + this.tagEndChar;
         } else if (typeof item === 'object') {
           if(this.options.oneListGroup){
-            const result = this.j2x(item, level + 1);
+            const result = this.j2x(item, level + 1, ajPath.concat(key));
             listTagVal += result.val;
             if (this.options.attributesGroupName && item.hasOwnProperty(this.options.attributesGroupName)) {
               listTagAttr += result.attrStr
             }
           }else{
-            listTagVal += this.processTextOrObjNode(item, key, level)
+            listTagVal += this.processTextOrObjNode(item, key, level, ajPath)
           }
         } else {
           if (this.options.oneListGroup) {
@@ -33900,7 +33929,7 @@ Builder.prototype.j2x = function(jObj, level) {
           attrStr += this.buildAttrPairStr(Ks[j], '' + jObj[key][Ks[j]]);
         }
       } else {
-        val += this.processTextOrObjNode(jObj[key], key, level)
+        val += this.processTextOrObjNode(jObj[key], key, level, ajPath)
       }
     }
   }
@@ -33915,8 +33944,8 @@ Builder.prototype.buildAttrPairStr = function(attrName, val){
   } else return ' ' + attrName + '="' + val + '"';
 }
 
-function processTextOrObjNode (object, key, level) {
-  const result = this.j2x(object, level + 1);
+function processTextOrObjNode (object, key, level, ajPath) {
+  const result = this.j2x(object, level + 1, ajPath.concat(key));
   if (object[this.options.textNodeName] !== undefined && Object.keys(object).length === 1) {
     return this.buildTextValNode(object[this.options.textNodeName], key, result.attrStr, level);
   } else {
@@ -34026,7 +34055,7 @@ module.exports = Builder;
 
 /***/ }),
 
-/***/ 9603:
+/***/ 4354:
 /***/ ((module) => {
 
 const EOL = "\n";
@@ -34168,10 +34197,10 @@ module.exports = toXml;
 
 /***/ }),
 
-/***/ 8778:
+/***/ 7573:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const util = __nccwpck_require__(3480);
+const util = __nccwpck_require__(4340);
 
 //TODO: handle comments
 function readDocType(xmlData, i){
@@ -34327,7 +34356,7 @@ module.exports = readDocType;
 
 /***/ }),
 
-/***/ 5922:
+/***/ 1405:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -34381,16 +34410,17 @@ exports.defaultOptions = defaultOptions;
 
 /***/ }),
 
-/***/ 1076:
+/***/ 3028:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 
 ///@ts-check
 
-const util = __nccwpck_require__(3480);
-const xmlNode = __nccwpck_require__(308);
-const readDocType = __nccwpck_require__(8778);
+const util = __nccwpck_require__(4340);
+const xmlNode = __nccwpck_require__(3555);
+const readDocType = __nccwpck_require__(7573);
 const toNumber = __nccwpck_require__(9578);
+const getIgnoreAttributesFn = __nccwpck_require__(3628)
 
 // const regx =
 //   '<((!\\[CDATA\\[([\\s\\S]*?)(]]>))|((NAME:)?(NAME))([^>]*)>|((\\/)(NAME)\\s*>))([^<]*)'
@@ -34439,6 +34469,7 @@ class OrderedObjParser{
     this.readStopNodeData = readStopNodeData;
     this.saveTextToParentTag = saveTextToParentTag;
     this.addChild = addChild;
+    this.ignoreAttributesFn = getIgnoreAttributesFn(this.options.ignoreAttributes)
   }
 
 }
@@ -34511,7 +34542,7 @@ function resolveNameSpace(tagname) {
 const attrsRegx = new RegExp('([^\\s=]+)\\s*(=\\s*([\'"])([\\s\\S]*?)\\3)?', 'gm');
 
 function buildAttributesMap(attrStr, jPath, tagName) {
-  if (!this.options.ignoreAttributes && typeof attrStr === 'string') {
+  if (this.options.ignoreAttributes !== true && typeof attrStr === 'string') {
     // attrStr = attrStr.replace(/\r?\n/g, ' ');
     //attrStr = attrStr || attrStr.trim();
 
@@ -34520,6 +34551,9 @@ function buildAttributesMap(attrStr, jPath, tagName) {
     const attrs = {};
     for (let i = 0; i < len; i++) {
       const attrName = this.resolveNameSpace(matches[i][1]);
+      if (this.ignoreAttributesFn(attrName, jPath)) {
+        continue
+      }
       let oldVal = matches[i][4];
       let aName = this.options.attributeNamePrefix + attrName;
       if (attrName.length) {
@@ -34989,13 +35023,13 @@ module.exports = OrderedObjParser;
 
 /***/ }),
 
-/***/ 897:
+/***/ 4120:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const { buildOptions} = __nccwpck_require__(5922);
-const OrderedObjParser = __nccwpck_require__(1076);
-const { prettify} = __nccwpck_require__(9872);
-const validator = __nccwpck_require__(8128);
+const { buildOptions} = __nccwpck_require__(1405);
+const OrderedObjParser = __nccwpck_require__(3028);
+const { prettify} = __nccwpck_require__(4036);
+const validator = __nccwpck_require__(1876);
 
 class XMLParser{
     
@@ -35053,7 +35087,7 @@ module.exports = XMLParser;
 
 /***/ }),
 
-/***/ 9872:
+/***/ 4036:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -35173,7 +35207,7 @@ exports.prettify = prettify;
 
 /***/ }),
 
-/***/ 308:
+/***/ 3555:
 /***/ ((module) => {
 
 
@@ -75202,7 +75236,7 @@ exports.XML_CHARKEY = "_";
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.stringifyXML = stringifyXML;
 exports.parseXML = parseXML;
-const fast_xml_parser_1 = __nccwpck_require__(3601);
+const fast_xml_parser_1 = __nccwpck_require__(5542);
 const xml_common_js_1 = __nccwpck_require__(8917);
 function getCommonOptions(options) {
     var _a;
@@ -84254,9 +84288,7 @@ const external_node_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequ
 var cache = __nccwpck_require__(6878);
 ;// CONCATENATED MODULE: external "node:child_process"
 const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
-;// CONCATENATED MODULE: external "node:stream/promises"
-const external_node_stream_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:stream/promises");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@cf1897a891edc164a8240f469cd56d14364e6be1_fq5hfjh622jf54cg4vepqdc2u4/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@65dd73c562ac60a068340f8e0c040bdcf2c59afe_eek3lsas7notlem5iqjfyrzcca/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -84486,16 +84518,16 @@ function stringifyError(e) {
 
 
 
-async function collectBacktraces(prefixes) {
+async function collectBacktraces(prefixes, startTimestampMs) {
   if (isMacOS) {
-    return await collectBacktracesMacOS(prefixes);
+    return await collectBacktracesMacOS(prefixes, startTimestampMs);
   }
   if (isLinux) {
-    return await collectBacktracesSystemd(prefixes);
+    return await collectBacktracesSystemd(prefixes, startTimestampMs);
   }
   return /* @__PURE__ */ new Map();
 }
-async function collectBacktracesMacOS(prefixes) {
+async function collectBacktracesMacOS(prefixes, startTimestampMs) {
   const backtraces = /* @__PURE__ */ new Map();
   try {
     const { stdout: logJson } = await exec.getExecOutput(
@@ -84537,16 +84569,20 @@ async function collectBacktracesMacOS(prefixes) {
   for (const [source, dir] of dirs) {
     const fileNames = (await (0,promises_namespaceObject.readdir)(dir)).filter((fileName) => {
       return prefixes.some((prefix) => fileName.startsWith(prefix));
+    }).filter((fileName) => {
+      return !fileName.endsWith(".diag");
     });
     const doGzip = (0,external_node_util_.promisify)(external_node_zlib_.gzip);
     for (const fileName of fileNames) {
       try {
-        const logText = await (0,promises_namespaceObject.readFile)(`${dir}/${fileName}`);
-        const buf = await doGzip(logText);
-        backtraces.set(
-          `backtrace_value_${source}_${fileName}`,
-          buf.toString("base64")
-        );
+        if ((await (0,promises_namespaceObject.stat)(`${dir}/${fileName}`)).ctimeMs >= startTimestampMs) {
+          const logText = await (0,promises_namespaceObject.readFile)(`${dir}/${fileName}`);
+          const buf = await doGzip(logText);
+          backtraces.set(
+            `backtrace_value_${source}_${fileName}`,
+            buf.toString("base64")
+          );
+        }
       } catch (innerError) {
         backtraces.set(
           `backtrace_failure_${source}_${fileName}`,
@@ -84557,13 +84593,14 @@ async function collectBacktracesMacOS(prefixes) {
   }
   return backtraces;
 }
-async function collectBacktracesSystemd(prefixes) {
+async function collectBacktracesSystemd(prefixes, startTimestampMs) {
+  const sinceSeconds = Math.ceil((Date.now() - startTimestampMs) / 1e3);
   const backtraces = /* @__PURE__ */ new Map();
   const coredumps = [];
   try {
     const { stdout: coredumpjson } = await exec.getExecOutput(
       "coredumpctl",
-      ["--json=pretty", "list", "--since", "1 hour ago"],
+      ["--json=pretty", "list", "--since", `${sinceSeconds} seconds ago`],
       {
         silent: true
       }
@@ -84725,7 +84762,7 @@ var ALLOWED_SUFFIXES = [
 ];
 var DEFAULT_IDS_HOST = "https://install.determinate.systems";
 var LOOKUP = process.env["IDS_LOOKUP"] ?? DEFAULT_LOOKUP;
-var DEFAULT_TIMEOUT = 3e4;
+var DEFAULT_TIMEOUT = 1e4;
 var IdsHost = class {
   constructor(idsProjectName, diagnosticsSuffix, runtimeDiagnosticsUrl) {
     this.idsProjectName = idsProjectName;
@@ -84740,7 +84777,7 @@ var IdsHost = class {
           request: DEFAULT_TIMEOUT
         },
         retry: {
-          limit: (await this.getUrlsByPreference()).length,
+          limit: Math.max((await this.getUrlsByPreference()).length, 3),
           methods: ["GET", "HEAD"]
         },
         hooks: {
@@ -84750,7 +84787,7 @@ var IdsHost = class {
               this.markCurrentHostBroken();
               const nextUrl = await this.getRootUrl();
               if (recordFailoverCallback !== void 0) {
-                recordFailoverCallback(prevUrl, nextUrl);
+                recordFailoverCallback(error3, prevUrl, nextUrl);
               }
               core.info(
                 `Retrying after error ${error3.code}, retry #: ${retryCount}`
@@ -85134,8 +85171,10 @@ var FACT_NIX_STORE_CHECK_ERROR = "nix_store_check_error";
 var STATE_KEY_EXECUTION_PHASE = "detsys_action_execution_phase";
 var STATE_KEY_NIX_NOT_FOUND = "detsys_action_nix_not_found";
 var STATE_NOT_FOUND = "not-found";
-var DIAGNOSTIC_ENDPOINT_TIMEOUT_MS = 3e4;
-var CHECK_IN_ENDPOINT_TIMEOUT_MS = 5e3;
+var STATE_KEY_CROSS_PHASE_ID = "detsys_cross_phase_id";
+var STATE_BACKTRACE_START_TIMESTAMP = "detsys_backtrace_start_timestamp";
+var DIAGNOSTIC_ENDPOINT_TIMEOUT_MS = 1e4;
+var CHECK_IN_ENDPOINT_TIMEOUT_MS = 1e3;
 var DetSysAction = class {
   determineExecutionPhase() {
     const currentPhase = core.getState(STATE_KEY_EXECUTION_PHASE);
@@ -85161,6 +85200,8 @@ var DetSysAction = class {
     this.features = {};
     this.featureEventMetadata = {};
     this.events = [];
+    this.getCrossPhaseId();
+    this.collectBacktraceSetup();
     this.facts = {
       $lib: "idslib",
       $lib_version: version,
@@ -85249,6 +85290,15 @@ var DetSysAction = class {
   }
   getUniqueId() {
     return this.identity.run_differentiator || process.env.RUNNER_TRACKING_ID || (0,external_node_crypto_namespaceObject.randomUUID)();
+  }
+  // This ID will be saved in the action's state, to be persisted across phase steps
+  getCrossPhaseId() {
+    let crossPhaseId = core.getState(STATE_KEY_CROSS_PHASE_ID);
+    if (crossPhaseId === "") {
+      crossPhaseId = (0,external_node_crypto_namespaceObject.randomUUID)();
+      core.saveState(STATE_KEY_CROSS_PHASE_ID, crossPhaseId);
+    }
+    return crossPhaseId;
   }
   getCorrelationHashes() {
     return this.identity;
@@ -85348,12 +85398,15 @@ var DetSysAction = class {
     }
   }
   async getClient() {
-    return await this.idsHost.getGot((prevUrl, nextUrl) => {
-      this.recordEvent("ids-failover", {
-        previousUrl: prevUrl.toString(),
-        nextUrl: nextUrl.toString()
-      });
-    });
+    return await this.idsHost.getGot(
+      (incitingError, prevUrl, nextUrl) => {
+        this.recordPlausibleTimeout(incitingError);
+        this.recordEvent("ids-failover", {
+          previousUrl: prevUrl.toString(),
+          nextUrl: nextUrl.toString()
+        });
+      }
+    );
   }
   async checkIn() {
     const checkin = await this.requestCheckIn();
@@ -85437,11 +85490,26 @@ var DetSysAction = class {
           }
         }).json();
       } catch (e) {
+        this.recordPlausibleTimeout(e);
         core.debug(`Error checking in: ${stringifyError2(e)}`);
         this.idsHost.markCurrentHostBroken();
       }
     }
     return void 0;
+  }
+  recordPlausibleTimeout(e) {
+    if (e instanceof TimeoutError && "timings" in e && "request" in e) {
+      const reportContext = {
+        url: e.request.requestUrl?.toString(),
+        retry_count: e.request.retryCount
+      };
+      for (const [key, value] of Object.entries(e.timings.phases)) {
+        if (Number.isFinite(value)) {
+          reportContext[`timing_phase_${key}`] = value;
+        }
+      }
+      this.recordEvent("timeout", reportContext);
+    }
   }
   /**
    * Fetch an artifact, such as a tarball, from the location determined by the
@@ -85486,13 +85554,9 @@ var DetSysAction = class {
         `No match from the cache, re-fetching from the redirect: ${versionCheckup.url}`
       );
       const destFile = this.getTemporaryName();
-      const fetchStream = (await this.getClient()).stream(versionCheckup.url);
-      await (0,external_node_stream_promises_namespaceObject.pipeline)(
-        fetchStream,
-        (0,external_node_fs_namespaceObject.createWriteStream)(destFile, {
-          encoding: "binary",
-          mode: 493
-        })
+      const fetchStream = await this.downloadFile(
+        new URL(versionCheckup.url),
+        destFile
       );
       if (fetchStream.response?.headers.etag) {
         const v = fetchStream.response.headers.etag;
@@ -85503,6 +85567,9 @@ var DetSysAction = class {
         }
       }
       return destFile;
+    } catch (e) {
+      this.recordPlausibleTimeout(e);
+      throw e;
     } finally {
       core.endGroup();
     }
@@ -85515,6 +85582,36 @@ var DetSysAction = class {
     if (this.strictMode) {
       core.setFailed(`strict mode failure: ${msg}`);
     }
+  }
+  async downloadFile(url, destination) {
+    const client = await this.getClient();
+    return new Promise((resolve, reject) => {
+      let writeStream;
+      let failed = false;
+      const retry = (stream) => {
+        if (writeStream) {
+          writeStream.destroy();
+        }
+        writeStream = (0,external_node_fs_namespaceObject.createWriteStream)(destination, {
+          encoding: "binary",
+          mode: 493
+        });
+        writeStream.once("error", (error3) => {
+          failed = true;
+          reject(error3);
+        });
+        writeStream.on("finish", () => {
+          if (!failed) {
+            resolve(stream);
+          }
+        });
+        stream.once("retry", (_count, _error, createRetryStream) => {
+          retry(createRetryStream());
+        });
+        stream.pipe(writeStream);
+      };
+      retry(client.stream(url));
+    });
   }
   async complete() {
     this.recordEvent(`complete_${this.executionPhase}`);
@@ -85603,10 +85700,23 @@ var DetSysAction = class {
       process.chdir(startCwd);
     }
   }
+  collectBacktraceSetup() {
+    if (process.env.DETSYS_BACKTRACE_COLLECTOR === "") {
+      core.exportVariable(
+        "DETSYS_BACKTRACE_COLLECTOR",
+        this.getCrossPhaseId()
+      );
+      core.saveState(STATE_BACKTRACE_START_TIMESTAMP, Date.now());
+    }
+  }
   async collectBacktraces() {
     try {
+      if (process.env.DETSYS_BACKTRACE_COLLECTOR !== this.getCrossPhaseId()) {
+        return;
+      }
       const backtraces = await collectBacktraces(
-        this.actionOptions.binaryNamePrefixes
+        this.actionOptions.binaryNamePrefixes,
+        parseInt(core.getState(STATE_BACKTRACE_START_TIMESTAMP))
       );
       core.debug(`Backtraces identified: ${backtraces.size}`);
       if (backtraces.size > 0) {
@@ -85726,6 +85836,7 @@ var DetSysAction = class {
         }
       });
     } catch (err) {
+      this.recordPlausibleTimeout(err);
       core.debug(
         `Error submitting diagnostics event to ${diagnosticsUrl}: ${stringifyError2(err)}`
       );
@@ -85745,7 +85856,11 @@ function makeOptionsConfident(actionOptions) {
     fetchStyle: actionOptions.fetchStyle,
     legacySourcePrefix: actionOptions.legacySourcePrefix,
     requireNix: actionOptions.requireNix,
-    binaryNamePrefixes: actionOptions.binaryNamePrefixes || ["nix"]
+    binaryNamePrefixes: actionOptions.binaryNamePrefixes ?? [
+      "nix",
+      "determinate-nixd",
+      actionOptions.name
+    ]
   };
   core.debug("idslib options:");
   core.debug(JSON.stringify(finalOpts, void 0, 2));
