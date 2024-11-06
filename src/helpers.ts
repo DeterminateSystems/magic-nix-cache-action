@@ -4,6 +4,33 @@ import * as os from "node:os";
 import path from "node:path";
 import { Tail } from "tail";
 
+export function getTrinaryInput(
+  name: string,
+): "enabled" | "disabled" | "no-preference" {
+  const trueValue = ["true", "True", "TRUE", "enabled"];
+  const falseValue = ["false", "False", "FALSE", "disabled"];
+  const noPreferenceValue = ["", "null", "no-preference"];
+
+  const val = actionsCore.getInput(name);
+  if (trueValue.includes(val)) {
+    return "enabled";
+  }
+  if (falseValue.includes(val)) {
+    return "disabled";
+  }
+  if (noPreferenceValue.includes(val)) {
+    return "no-preference";
+  }
+
+  const possibleValues = trueValue
+    .concat(falseValue)
+    .concat(noPreferenceValue)
+    .join(" | ");
+  throw new TypeError(
+    `Input ${name} does not look like a trinary, which requires one of:\n${possibleValues}`,
+  );
+}
+
 export function tailLog(daemonDir: string): Tail {
   const log = new Tail(path.join(daemonDir, "daemon.log"));
   actionsCore.debug(`tailing daemon.log...`);
