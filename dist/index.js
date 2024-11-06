@@ -91907,7 +91907,9 @@ var MagicNixCacheAction = class extends DetSysAction {
       requireNix: "warn",
       diagnosticsSuffix: "perf"
     });
-    if (inputs_exports.getBool("_internal-obliterate-actions-id-token-request-url")) {
+    if (inputs_exports.getStringOrUndefined(
+      "_internal-obliterate-actions-id-token-request-url"
+    ) === "true") {
       process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] = void 0;
       process.env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"] = void 0;
     }
