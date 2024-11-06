@@ -60,7 +60,7 @@ if [ "$EXPECT_GITHUB_CACHE" == "true" ]; then
   if [[ -z $found ]]; then
       echo "GitHub Actions Cache push did not happen." >&2
 
-      if !is_gh_throttled; then
+      if ! is_gh_throttled; then
         exit 1
       fi
   fi
@@ -73,7 +73,7 @@ if [ "$EXPECT_FLAKEHUB" == "true" ]; then
   nix path-info --store "${flakehub_binary_cache}" "${outpath}"
 fi
 
-if [ "$EXPECT_GITHUB_CACHE" == "true" ] && !is_gh_throttled; then
+if [ "$EXPECT_GITHUB_CACHE" == "true" ] && ! is_gh_throttled; then
   # Check the GitHub binary cache to see if the path is really there.
   nix path-info --store "${gha_binary_cache}" "${outpath}"
 fi
@@ -96,11 +96,11 @@ if [ "$EXPECT_FLAKEHUB" == "true" ]; then
   nix path-info --store "${flakehub_binary_cache}" "${outpath}"
 fi
 
-if [ "$EXPECT_GITHUB_CACHE" == "true" ] && !is_gh_throttled; then
+if [ "$EXPECT_GITHUB_CACHE" == "true" ] && ! is_gh_throttled; then
   # Check the FlakeHub binary cache to see if the path is really there.
   nix path-info --store "${gha_binary_cache}" "${outpath}"
 fi
 
-if ([ "$EXPECT_GITHUB_CACHE" == "true" ] && !is_gh_throttled) || [ "$EXPECT_FLAKEHUB" == "true" ]; then
+if ([ "$EXPECT_GITHUB_CACHE" == "true" ] && ! is_gh_throttled) || [ "$EXPECT_FLAKEHUB" == "true" ]; then
   nix-store --realize -vvvvvvvv "$outpath"
 fi
