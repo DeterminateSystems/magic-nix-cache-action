@@ -98,23 +98,17 @@ jobs:
             runner: "ubuntu-22.04"
     steps:
       - uses: actions/checkout@v4
-      - name: Bust up the identity token
-        if: ${{ matrix.id-token == 'none' }}
-        run: |
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL=a" >> $GITHUB_ENV
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN=b" >> $GITHUB_ENV
-      - run: |
-          env
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
         uses: DeterminateSystems/nix-installer-action@main
         with:
-          flakehub: true
+          determinate: ${{ matrix.id-token == 'write' }}
           extra-conf: |
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
         uses: ./
         with:
           _internal-strict-mode: true
+          _internal-obliterate-actions-id-token-request-url: true
           use-gha-cache: ${{ matrix.use-gha-cache }}
           use-flakehub: ${{ matrix.use-flakehub }}
       - name: Check the cache for liveness
