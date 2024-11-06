@@ -7,7 +7,8 @@ seed=$(date)
 
 log="${MAGIC_NIX_CACHE_DAEMONDIR}/daemon.log"
 
-binary_cache=https://cache.flakehub.com
+flakehub_binary_cache=https://cache.flakehub.com
+gha_binary_cache=http://127.0.0.1:37515
 
 # Check that the action initialized correctly.
 if [ "$EXPECT_FLAKEHUB" == "true" ]; then
@@ -27,24 +28,47 @@ fi
 outpath=$(nix-build .github/workflows/cache-tester.nix --argstr seed "$seed")
 
 # Wait until it has been pushed succesfully.
-found=
-for ((i = 0; i < 60; i++)); do
-    sleep 1
-    if grep "✅ $(basename "${outpath}")" "${log}"; then
-        found=1
-        break
-    fi
-done
-if [[ -z $found ]]; then
-    echo "FlakeHub push did not happen." >&2
-    exit 1
+if [ "$EXPECT_FLAKEHUB" == "true" ]; then
+  found=
+  for ((i = 0; i < 60; i++)); do
+      sleep 1
+      if grep "✅ $(basename "${outpath}")" "${log}"; then
+          found=1
+          break
+      fi
+  done
+  if [[ -z $found ]]; then
+      echo "FlakeHub push did not happen." >&2
+      exit 1
+  fi
 fi
 
-# Check the FlakeHub binary cache to see if the path is really there.
-nix path-info --store "${binary_cache}" "${outpath}"
+if [ "$EXPECT_GITHUB_CACHE" == "true" ]; then
+  found=
+  for ((i = 0; i < 60; i++)); do
+      sleep 1
+      if grep "Uploaded '${outpath}' to the GitHub Action Cache" "${log}"; then
+          found=1
+          break
+      fi
+  done
+  if [[ -z $found ]]; then
+      echo "GitHub Actions Cache push did not happen." >&2
+      exit 1
+  fi
+fi
 
-# FIXME: remove this once the daemon also uploads to GHA automatically.
-nix copy --to 'http://127.0.0.1:37515' "${outpath}"
+
+
+if [ "$EXPECT_FLAKEHUB" == "true" ]; then
+  # Check the FlakeHub binary cache to see if the path is really there.
+  nix path-info --store "${flakehub_binary_cache}" "${outpath}"
+fi
+
+if [ "$EXPECT_GITHUB_CACHE" == "true" ]; then
+  # Check the GitHub binary cache to see if the path is really there.
+  nix path-info --store "${gha_binary_cache}" "${outpath}"
+fi
 
 rm ./result
 nix store delete "${outpath}"
@@ -59,4 +83,16 @@ echo "-------"
 echo "Trying to substitute the build again..."
 echo "if it fails, the cache is broken."
 
-nix-store --realize -vvvvvvvv "$outpath"
+if [ "$EXPECT_FLAKEHUB" == "true" ]; then
+  # Check the FlakeHub binary cache to see if the path is really there.
+  nix path-info --store "${flakehub_binary_cache}" "${outpath}"
+fi
+
+if [ "$EXPECT_GITHUB_CACHE" == "true" ]; then
+  # Check the FlakeHub binary cache to see if the path is really there.
+  nix path-info --store "${gha_binary_cache}" "${outpath}"
+fi
+
+if [ "$EXPECT_GITHUB_CACHE" == "true" ] || [ "$EXPECT_FLAKEHUB" == "true" ]; then
+  nix-store --realize -vvvvvvvv "$outpath"
+fi
