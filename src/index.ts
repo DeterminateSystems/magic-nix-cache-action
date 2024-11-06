@@ -1,4 +1,4 @@
-import { netrcPath, tailLog } from "./helpers.js";
+import { getTrinaryInput, netrcPath, tailLog } from "./helpers.js";
 import * as actionsCore from "@actions/core";
 import { DetSysAction, inputs, stringifyError } from "detsys-ts";
 import got, { Got, Response } from "got";
@@ -207,11 +207,11 @@ class MagicNixCacheAction extends DetSysAction {
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
     const upstreamCache = inputs.getString("upstream-cache");
     const diagnosticEndpoint = inputs.getString("diagnostic-endpoint");
-    const useFlakeHub = inputs.getBool("use-flakehub");
+    const useFlakeHub = getTrinaryInput("use-flakehub");
     const flakeHubCacheServer = inputs.getString("flakehub-cache-server");
     const flakeHubApiServer = inputs.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs.getString("flakehub-flake-name");
-    const useGhaCache = inputs.getBool("use-gha-cache");
+    const useGhaCache = getTrinaryInput("use-gha-cache");
 
     const daemonCliFlags: string[] = [
       "--startup-notification-url",
@@ -224,12 +224,15 @@ class MagicNixCacheAction extends DetSysAction {
       diagnosticEndpoint,
       "--nix-conf",
       nixConfPath,
+      "--use-gha-cache",
+      useGhaCache,
+      "--use-flakehub",
+      useFlakeHub,
     ]
       .concat(this.diffStore ? ["--diff-store"] : [])
       .concat(
-        useFlakeHub
+        useFlakeHub !== "disabled"
           ? [
-              "--use-flakehub",
               "--flakehub-cache-server",
               flakeHubCacheServer,
               "--flakehub-api-server",
@@ -240,8 +243,7 @@ class MagicNixCacheAction extends DetSysAction {
               flakeHubFlakeName,
             ]
           : [],
-      )
-      .concat(useGhaCache ? ["--use-gha-cache"] : []);
+      );
 
     const opts: SpawnOptions = {
       stdio: ["ignore", output, output],

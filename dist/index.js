@@ -91810,6 +91810,26 @@ var external_http_ = __nccwpck_require__(3685);
 
 
 
+function getTrinaryInput(name) {
+  const trueValue = ["true", "True", "TRUE", "enabled"];
+  const falseValue = ["false", "False", "FALSE", "disabled"];
+  const noPreferenceValue = ["", "null", "no-preference"];
+  const val = core.getInput(name);
+  if (trueValue.includes(val)) {
+    return "enabled";
+  }
+  if (falseValue.includes(val)) {
+    return "disabled";
+  }
+  if (noPreferenceValue.includes(val)) {
+    return "no-preference";
+  }
+  const possibleValues = trueValue.concat(falseValue).concat(noPreferenceValue).join(" | ");
+  throw new TypeError(
+    `Input ${name} does not look like a trinary, which requires one of:
+${possibleValues}`
+  );
+}
 function tailLog(daemonDir) {
   const log = new tail/* Tail */.x(external_node_path_namespaceObject.join(daemonDir, "daemon.log"));
   core.debug(`tailing daemon.log...`);
@@ -92018,11 +92038,11 @@ var MagicNixCacheAction = class extends DetSysAction {
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
     const upstreamCache = inputs_exports.getString("upstream-cache");
     const diagnosticEndpoint = inputs_exports.getString("diagnostic-endpoint");
-    const useFlakeHub = inputs_exports.getBool("use-flakehub");
+    const useFlakeHub = getTrinaryInput("use-flakehub");
     const flakeHubCacheServer = inputs_exports.getString("flakehub-cache-server");
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
-    const useGhaCache = inputs_exports.getBool("use-gha-cache");
+    const useGhaCache = getTrinaryInput("use-gha-cache");
     const daemonCliFlags = [
       "--startup-notification-url",
       `http://127.0.0.1:${notifyPort}`,
@@ -92033,10 +92053,13 @@ var MagicNixCacheAction = class extends DetSysAction {
       "--diagnostic-endpoint",
       diagnosticEndpoint,
       "--nix-conf",
-      nixConfPath
+      nixConfPath,
+      "--use-gha-cache",
+      useGhaCache,
+      "--use-flakehub",
+      useFlakeHub
     ].concat(this.diffStore ? ["--diff-store"] : []).concat(
-      useFlakeHub ? [
-        "--use-flakehub",
+      useFlakeHub !== "disabled" ? [
         "--flakehub-cache-server",
         flakeHubCacheServer,
         "--flakehub-api-server",
@@ -92046,7 +92069,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         "--flakehub-flake-name",
         flakeHubFlakeName
       ] : []
-    ).concat(useGhaCache ? ["--use-gha-cache"] : []);
+    );
     const opts = {
       stdio: ["ignore", output, output],
       env: runEnv,
