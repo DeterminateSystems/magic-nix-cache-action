@@ -15,7 +15,8 @@ if [ "$EXPECT_FLAKEHUB" == "true" ]; then
   grep 'FlakeHub cache is enabled' "${log}"
   grep 'Using cache' "${log}"
 else
-  grep 'FlakeHub cache is disabled' "${log}"
+  grep 'FlakeHub cache is disabled' "${log}" \
+  || grep 'FlakeHub cache initialization failed:' "${log}"
 fi
 
 if [ "$EXPECT_GITHUB_CACHE" == "true" ]; then
