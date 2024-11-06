@@ -74,7 +74,7 @@ jobs:
   run-systems:
     # if: github.event_name == 'merge_group'
     needs: build
-    name: "Run ${{ matrix.systems.nix-system }}"
+    name: "Test: ${{ matrix.systems.nix-system }} gha:${{matrix.use-gha-cache}},fhc:${{matrix.use-flakehub}},id:${{matrix.id-token}},"
     runs-on: "${{ matrix.systems.runner }}"
     permissions:
       id-token: "write"
