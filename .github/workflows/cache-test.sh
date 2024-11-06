@@ -10,9 +10,18 @@ log="${MAGIC_NIX_CACHE_DAEMONDIR}/daemon.log"
 binary_cache=https://cache.flakehub.com
 
 # Check that the action initialized correctly.
-grep 'FlakeHub cache is enabled' "${log}"
-grep 'Using cache' "${log}"
-grep 'GitHub Action cache is enabled' "${log}"
+if [ "$EXPECT_FLAKEHUB" == "true" ]; then
+  grep 'FlakeHub cache is enabled' "${log}"
+  grep 'Using cache' "${log}"
+else
+  grep 'FlakeHub cache is disabled' "${log}"
+fi
+
+if [ "$EXPECT_GITHUB_CACHE" == "true" ]; then
+  grep 'GitHub Action cache is enabled' "${log}"
+else
+  grep 'Native GitHub Action cache is disabled' "${log}"
+fi
 
 # Build something.
 outpath=$(nix-build .github/workflows/cache-tester.nix --argstr seed "$seed")
