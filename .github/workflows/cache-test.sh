@@ -3,7 +3,7 @@
 set -e
 set -ux
 
-seed=$(date)
+seed="$(date)-$RANDOM"
 
 log="${MAGIC_NIX_CACHE_DAEMONDIR}/daemon.log"
 
