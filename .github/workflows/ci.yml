@@ -103,6 +103,8 @@ jobs:
         run: |
           echo "ACTIONS_ID_TOKEN_REQUEST_URL=" >> $GITHUB_ENV
           echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN=" >> $GITHUB_ENV
+      - run: |
+          env
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
         uses: DeterminateSystems/nix-installer-action@main
         with:
@@ -121,7 +123,7 @@ jobs:
           EXPECT_GITHUB_CACHE: ${{ toJson(
             (matrix.use-gha-cache != 'disabled')
             && (
-            (matrix.use-flakehub != 'disabled' && matrix.id-token == 'write')
+            (!(matrix.use-flakehub != 'disabled' && matrix.id-token == 'write'))
             || (matrix.use-gha-cache == 'enabled')
             )
             ) }}
