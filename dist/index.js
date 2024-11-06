@@ -91907,12 +91907,6 @@ var MagicNixCacheAction = class extends DetSysAction {
       requireNix: "warn",
       diagnosticsSuffix: "perf"
     });
-    if (inputs_exports.getStringOrUndefined(
-      "_internal-obliterate-actions-id-token-request-url"
-    ) === "true") {
-      process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] = void 0;
-      process.env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"] = void 0;
-    }
     this.hostAndPort = inputs_exports.getString("listen");
     this.diffStore = inputs_exports.getBool("diff-store");
     this.addFact(FACT_DIFF_STORE_ENABLED, this.diffStore);

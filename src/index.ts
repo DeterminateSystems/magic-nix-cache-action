@@ -49,15 +49,6 @@ class MagicNixCacheAction extends DetSysAction {
       diagnosticsSuffix: "perf",
     });
 
-    if (
-      inputs.getStringOrUndefined(
-        "_internal-obliterate-actions-id-token-request-url",
-      ) === "true"
-    ) {
-      process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] = undefined;
-      process.env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"] = undefined;
-    }
-
     this.hostAndPort = inputs.getString("listen");
     this.diffStore = inputs.getBool("diff-store");
 

@@ -74,7 +74,7 @@ jobs:
   run-systems:
     # if: github.event_name == 'merge_group'
     needs: build
-    name: "Test: ${{ matrix.systems.nix-system }} gha:${{matrix.use-gha-cache}},fhc:${{matrix.use-flakehub}},id:${{matrix.id-token}},"
+    name: "Test: ${{ matrix.systems.nix-system }} gha:${{matrix.use-gha-cache}},fhc:${{matrix.use-flakehub}},id:${{matrix.id-token}},determinate:${{matrix.determinate}}"
     runs-on: "${{ matrix.systems.runner }}"
     permissions:
       id-token: "write"
@@ -84,6 +84,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        determinate: [true, false]
         use-gha-cache: ["disabled", "no-preference", "enabled"]
         use-flakehub: ["disabled", "no-preference", "enabled"]
         id-token: ["write", "none"]
@@ -101,7 +102,8 @@ jobs:
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
         uses: DeterminateSystems/nix-installer-action@main
         with:
-          determinate: ${{ matrix.id-token == 'write' }}
+          _internal-obliterate-actions-id-token-request-url: true
+          determinate: ${{ matrix.determinate }}
           extra-conf: |
             narinfo-cache-negative-ttl = 0
       - name: Cache the store
