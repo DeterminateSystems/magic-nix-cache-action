@@ -365,6 +365,9 @@ class MagicNixCacheAction extends DetSysAction {
     actionsCore.debug(`killing daemon process ${pid}`);
 
     try {
+      // Repeatedly signal 0 the daemon to test if it is up.
+      // If it exits, kill will raise an exception which breaks us out of this control flow and skips the sigterm.
+      // If magic-nix-cache doesn't exit in 30s, we SIGTERM it.
       for (let i = 0; i < 30 * 10; i++) {
         process.kill(pid, 0);
         await setTimeout(100);
