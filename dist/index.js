@@ -84841,8 +84841,10 @@ async function flakeHubLogin(netrc) {
 
 
 
+
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
+var FACT_SENT_SIGTERM = "sent_sigterm";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
 var FACT_ALREADY_RUNNING = "noop_mode";
 var STATE_DAEMONDIR = "MAGIC_NIX_CACHE_DAEMONDIR";
@@ -85112,19 +85114,19 @@ var MagicNixCacheAction = class extends DetSysAction {
     }
     core.debug(`killing daemon process ${pid}`);
     try {
+      for (let i = 0; i < 30 * 10; i++) {
+        process.kill(pid, 0);
+        await (0,external_node_timers_promises_namespaceObject.setTimeout)(100);
+      }
+      this.addFact(FACT_SENT_SIGTERM, true);
+      core.info(`Sending Magic Nix Cache a SIGTERM`);
       process.kill(pid, "SIGTERM");
-    } catch (e) {
-      if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-        if (this.strictMode) {
-          throw e;
-        }
-      }
-    } finally {
-      if (core.isDebug()) {
-        core.info("Entire log:");
-        const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
-        core.info(entireLog.toString());
-      }
+    } catch {
+    }
+    if (core.isDebug()) {
+      core.info("Entire log:");
+      const entireLog = (0,external_node_fs_namespaceObject.readFileSync)(external_node_path_namespaceObject.join(this.daemonDir, "daemon.log"));
+      core.info(entireLog.toString());
     }
   }
   // Exit the workflow during the main phase. If strict mode is set, fail; if not, save the error

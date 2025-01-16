@@ -7,6 +7,7 @@ import { SpawnOptions, spawn } from "node:child_process";
 import { mkdirSync, openSync, readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { setTimeout } from "node:timers/promises";
 
 // The ENV_DAEMON_DIR is intended to determine if we "own" the daemon or not,
 // in the case that a user has put the magic nix cache into their workflow
@@ -14,6 +15,7 @@ import * as path from "node:path";
 const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
 const FACT_ENV_VARS_PRESENT = "required_env_vars_present";
+const FACT_SENT_SIGTERM = "sent_sigterm";
 const FACT_DIFF_STORE_ENABLED = "diff_store";
 const FACT_ALREADY_RUNNING = "noop_mode";
 
@@ -363,21 +365,22 @@ class MagicNixCacheAction extends DetSysAction {
     actionsCore.debug(`killing daemon process ${pid}`);
 
     try {
+      for (let i = 0; i < 30 * 10; i++) {
+        process.kill(pid, 0);
+        await setTimeout(100);
+      }
+
+      this.addFact(FACT_SENT_SIGTERM, true);
+      actionsCore.info(`Sending Magic Nix Cache a SIGTERM`);
       process.kill(pid, "SIGTERM");
-    } catch (e: unknown) {
-      if (typeof e === "object" && e && "code" in e && e.code !== "ESRCH") {
-        // Throw an error only in strict mode, otherwise ignore because
-        // we're in the post phase and shutting down after this anyway
-        if (this.strictMode) {
-          throw e;
-        }
-      }
-    } finally {
-      if (actionsCore.isDebug()) {
-        actionsCore.info("Entire log:");
-        const entireLog = readFileSync(path.join(this.daemonDir, "daemon.log"));
-        actionsCore.info(entireLog.toString());
-      }
+    } catch {
+      // Perfectly normal to get an exception here, because the process shut down.
+    }
+
+    if (actionsCore.isDebug()) {
+      actionsCore.info("Entire log:");
+      const entireLog = readFileSync(path.join(this.daemonDir, "daemon.log"));
+      actionsCore.info(entireLog.toString());
     }
   }
 
