@@ -84939,7 +84939,6 @@ var MagicNixCacheAction = class extends DetSysAction {
     const netrc = await netrcPath();
     const nixConfPath = `${process.env["HOME"]}/.config/nix/nix.conf`;
     const upstreamCache = inputs_exports.getString("upstream-cache");
-    const diagnosticEndpoint = inputs_exports.getString("diagnostic-endpoint");
     const useFlakeHub = getTrinaryInput("use-flakehub");
     const flakeHubCacheServer = inputs_exports.getString("flakehub-cache-server");
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
@@ -84953,7 +84952,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       "--upstream",
       upstreamCache,
       "--diagnostic-endpoint",
-      diagnosticEndpoint,
+      (await this.getDiagnosticsUrl())?.toString() ?? "",
       "--nix-conf",
       nixConfPath,
       "--use-gha-cache",
