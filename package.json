@@ -28,23 +28,23 @@
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "detsys-ts": "github:DeterminateSystems/detsys-ts",
-    "got": "^14.4.4",
+    "got": "^14.4.5",
     "tail": "^2.2.6"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/node": "^20.17.6",
+    "@types/node": "^20.17.14",
     "@types/tail": "^2.2.3",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@vercel/ncc": "^0.38.3",
     "eslint": "^8.57.1",
-    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-github": "^4.10.2",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "prettier": "^3.3.3",
+    "eslint-plugin-prettier": "^5.2.2",
+    "prettier": "^3.4.2",
     "tsup": "^8.3.5",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.3"
   }
 }
