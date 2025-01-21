@@ -1,4 +1,5 @@
 import { getTrinaryInput, netrcPath, tailLog } from "./helpers.js";
+import { warnOnMnc } from "./mnc-warn.js";
 import * as actionsCore from "@actions/core";
 import { DetSysAction, inputs, stringifyError } from "detsys-ts";
 import got, { Got, Response } from "got";
@@ -98,6 +99,8 @@ class MagicNixCacheAction extends DetSysAction {
       actionsCore.warning(TEXT_ALREADY_RUNNING);
       return;
     }
+
+    await warnOnMnc();
 
     if (this.nixStoreTrust === "untrusted") {
       actionsCore.warning(TEXT_TRUST_UNTRUSTED);
