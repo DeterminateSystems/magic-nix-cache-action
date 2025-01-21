@@ -86096,7 +86096,7 @@ async function warnOnMnc() {
               "With:",
               newLine,
               "",
-              "For more details: https://flakehub.com/cache?mnc"
+              "For more details: https://dtr.mn/magic-nix-cache-eol"
             ].join("\n"),
             {
               title: "Magic Nix Cache is deprecated",
