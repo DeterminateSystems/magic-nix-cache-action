@@ -40,13 +40,13 @@ export async function warnOnMnc(): Promise<void> {
           );
           actionsCore.warning(
             [
-              "Magic Nix Cache has been deprecated due to a change in the underlying GitHub APIs, and will stop working on 1 February 2025.",
+              "Magic Nix Cache has been deprecated due to a change in the underlying GitHub APIs and will stop working on 1 February 2025.",
               "To continue caching Nix builds in GitHub Actions, use FlakeHub Cache instead.",
               "",
-              "Replace:",
+              "Replace...",
               line,
               "",
-              "With:",
+              "...with...",
               newLine,
               "",
               "For more details: https://dtr.mn/magic-nix-cache-eol",
