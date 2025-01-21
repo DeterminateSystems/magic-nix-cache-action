@@ -11,6 +11,9 @@ dependencies:
   '@actions/exec':
     specifier: ^1.1.1
     version: 1.1.1
+  '@actions/glob':
+    specifier: ^0.5.0
+    version: 0.5.0
   detsys-ts:
     specifier: github:DeterminateSystems/detsys-ts
     version: github.com/DeterminateSystems/detsys-ts/eb87094f35072ac911526ad052c3437c9e0c42d6
@@ -99,6 +102,13 @@ packages:
 
   /@actions/glob@0.1.2:
     resolution: {integrity: sha512-SclLR7Ia5sEqjkJTPs7Sd86maMDw43p769YxBOxvPvEWuPEhpAnBsQfENOpXjFYMmhCqd127bmf+YdvJqVqR4A==}
+    dependencies:
+      '@actions/core': 1.11.1
+      minimatch: 3.1.2
+    dev: false
+
+  /@actions/glob@0.5.0:
+    resolution: {integrity: sha512-tST2rjPvJLRZLuT9NMUtyBjvj9Yo0MiJS3ow004slMvm8GFM+Zv9HvMJ7HWzfUyJnGrJvDsYkWBaaG3YKXRtCw==}
     dependencies:
       '@actions/core': 1.11.1
       minimatch: 3.1.2
