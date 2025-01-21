@@ -100,7 +100,9 @@ class MagicNixCacheAction extends DetSysAction {
       return;
     }
 
-    await warnOnMnc();
+    if (this.getFeature("warn-magic-nix-cache-eol")?.variant === true) {
+      await warnOnMnc();
+    }
 
     if (this.nixStoreTrust === "untrusted") {
       actionsCore.warning(TEXT_TRUST_UNTRUSTED);

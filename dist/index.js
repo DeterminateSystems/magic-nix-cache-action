@@ -86185,7 +86185,9 @@ var MagicNixCacheAction = class extends DetSysAction {
       core.warning(TEXT_ALREADY_RUNNING);
       return;
     }
-    await warnOnMnc();
+    if (this.getFeature("warn-magic-nix-cache-eol")?.variant === true) {
+      await warnOnMnc();
+    }
     if (this.nixStoreTrust === "untrusted") {
       core.warning(TEXT_TRUST_UNTRUSTED);
       return;
