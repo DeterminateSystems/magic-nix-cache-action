@@ -53,7 +53,7 @@ class MagicNixCacheAction extends DetSysAction {
       diagnosticsSuffix: "perf",
     });
 
-    actionsCore.info(JSON.stringify(github.context));
+    actionsCore.info(github.context.payload.repository?.default_branch);
 
     this.hostAndPort = inputs.getString("listen");
     this.diffStore = inputs.getBool("diff-store");

@@ -90406,7 +90406,7 @@ var MagicNixCacheAction = class extends DetSysAction {
       requireNix: "warn",
       diagnosticsSuffix: "perf"
     });
-    core.info(JSON.stringify(github.context));
+    core.info(github.context.payload.repository?.default_branch);
     this.hostAndPort = inputs_exports.getString("listen");
     this.diffStore = inputs_exports.getBool("diff-store");
     this.addFact(FACT_DIFF_STORE_ENABLED, this.diffStore);
