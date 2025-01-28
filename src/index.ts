@@ -1,6 +1,7 @@
 import { getTrinaryInput, netrcPath, tailLog } from "./helpers.js";
 import { warnOnMnc } from "./mnc-warn.js";
 import * as actionsCore from "@actions/core";
+import github from "@actions/github";
 import { DetSysAction, inputs, stringifyError } from "detsys-ts";
 import got, { Got, Response } from "got";
 import * as http from "http";
@@ -51,6 +52,8 @@ class MagicNixCacheAction extends DetSysAction {
       requireNix: "warn",
       diagnosticsSuffix: "perf",
     });
+
+    actionsCore.info(JSON.stringify(github.context));
 
     this.hostAndPort = inputs.getString("listen");
     this.diffStore = inputs.getBool("diff-store");
