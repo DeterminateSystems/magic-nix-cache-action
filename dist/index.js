@@ -84377,15 +84377,12 @@ const external_node_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequ
 var cache = __nccwpck_require__(5500);
 ;// CONCATENATED MODULE: external "node:child_process"
 const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@eb87094f35072ac911526ad052c3437c9e0c42d6_jwilbi5lzaum4bdwlmwjqt7ufe/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@b3319a2c78c46d5ad6bc00d3453266d3d9fdde44_ulwzeovui5oifch7ww3ifoisei/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
-
-// package.json
-var version = "1.0.0";
 
 // src/linux-release-info.ts
 
@@ -84504,7 +84501,7 @@ ${fileData}`);
 
 
 var getWindowsInfo = async () => {
-  const { stdout: version2 } = await exec.getExecOutput(
+  const { stdout: version } = await exec.getExecOutput(
     'powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"',
     void 0,
     {
@@ -84520,18 +84517,18 @@ var getWindowsInfo = async () => {
   );
   return {
     name: name.trim(),
-    version: version2.trim()
+    version: version.trim()
   };
 };
 var getMacOsInfo = async () => {
   const { stdout } = await exec.getExecOutput("sw_vers", void 0, {
     silent: true
   });
-  const version2 = stdout.match(/ProductVersion:\s*(.+)/)?.[1] ?? "";
+  const version = stdout.match(/ProductVersion:\s*(.+)/)?.[1] ?? "";
   const name = stdout.match(/ProductName:\s*(.+)/)?.[1] ?? "";
   return {
     name,
-    version: version2
+    version
   };
 };
 var getLinuxInfo = async () => {
@@ -85246,6 +85243,7 @@ function noisilyGetInput(suffix, legacyPrefix) {
 
 
 
+var pkgVersion = "1.0";
 var EVENT_BACKTRACES = "backtrace";
 var EVENT_EXCEPTION = "exception";
 var EVENT_ARTIFACT_CACHE_HIT = "artifact_cache_hit";
@@ -85306,7 +85304,7 @@ var DetSysAction = class {
     this.collectBacktraceSetup();
     this.facts = {
       $lib: "idslib",
-      $lib_version: version,
+      $lib_version: pkgVersion,
       project: this.actionOptions.name,
       ids_project: this.actionOptions.idsProjectName
     };
@@ -85750,11 +85748,11 @@ var DetSysAction = class {
     this.addFact(FACT_SOURCE_URL, fetchUrl.toString());
     return fetchUrl;
   }
-  cacheKey(version2) {
-    const cleanedVersion = version2.replace(/[^a-zA-Z0-9-+.]/g, "");
+  cacheKey(version) {
+    const cleanedVersion = version.replace(/[^a-zA-Z0-9-+.]/g, "");
     return `determinatesystem-${this.actionOptions.name}-${this.architectureFetchSuffix}-${cleanedVersion}`;
   }
-  async getCachedVersion(version2) {
+  async getCachedVersion(version) {
     const startCwd = process.cwd();
     try {
       const tempDir = this.getTemporaryName();
@@ -85764,7 +85762,7 @@ var DetSysAction = class {
       delete process.env.GITHUB_WORKSPACE;
       if (await cache.restoreCache(
         [this.actionOptions.name],
-        this.cacheKey(version2),
+        this.cacheKey(version),
         [],
         void 0,
         true
@@ -85780,7 +85778,7 @@ var DetSysAction = class {
       process.chdir(startCwd);
     }
   }
-  async saveCachedVersion(version2, toolPath) {
+  async saveCachedVersion(version, toolPath) {
     const startCwd = process.cwd();
     try {
       const tempDir = this.getTemporaryName();
@@ -85791,7 +85789,7 @@ var DetSysAction = class {
       delete process.env.GITHUB_WORKSPACE;
       await cache.saveCache(
         [this.actionOptions.name],
-        this.cacheKey(version2),
+        this.cacheKey(version),
         void 0,
         true
       );
