@@ -1,5 +1,12 @@
 # Magic Nix Cache
 
+> [!WARNING]
+> The [Magic Nix Cache will will stop working](https://determinate.systems/posts/magic-nix-cache-free-tier-eol) on **February 1st, 2025** unless you're on [GitHub Enterprise Server](https://github.com/enterprise).
+>
+> You can upgrade to [FlakeHub Cache](https://flakehub.com/cache) and get **one month free** using the coupon code **`FHC`**.
+>
+> For more information, read [this blog post](https://determinate.systems/posts/magic-nix-cache-free-tier-eol/).
+
 Save 30-50%+ of CI time without any effort or cost.
 Use Magic Nix Cache, a totally free and zero-configuration binary cache for Nix on GitHub Actions.
 
