@@ -27,6 +27,7 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
+    "@actions/github": "^6.0.0",
     "@actions/glob": "^0.5.0",
     "detsys-ts": "github:DeterminateSystems/detsys-ts",
     "got": "^14.4.5",
