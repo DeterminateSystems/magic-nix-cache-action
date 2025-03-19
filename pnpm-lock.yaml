@@ -16,7 +16,7 @@ dependencies:
     version: 0.5.0
   detsys-ts:
     specifier: github:DeterminateSystems/detsys-ts
-    version: github.com/DeterminateSystems/detsys-ts/c54767c24f0861de794605b03ed5604546d4a337
+    version: github.com/DeterminateSystems/detsys-ts/4c7ff9706e6466d7c03c58a3479ed212d6ffb5ba
   got:
     specifier: ^14.4.6
     version: 14.4.6
@@ -70,9 +70,8 @@ devDependencies:
 
 packages:
 
-  /@actions/cache@3.3.0:
-    resolution: {integrity: sha512-+eCsMTIZUEm+QA9GqjollOhCdvRrZ1JV8d9Rp34zVNizBkYITO8dhKczP5Xps1dFzc5n59p7vYVtZrGt18bb5Q==}
-    deprecated: Please upgrade to v4 or higher. See https://github.com/actions/toolkit/discussions/1890 for more details.
+  /@actions/cache@4.0.3:
+    resolution: {integrity: sha512-SvrqFtYJ7I48A/uXNkoJrnukx5weQv1fGquhs3+4nkByZThBH109KTIqj5x/cGV7JGNvb8dLPVywUOqX1fjiXg==}
     dependencies:
       '@actions/core': 1.11.1
       '@actions/exec': 1.1.1
@@ -82,6 +81,7 @@ packages:
       '@azure/abort-controller': 1.1.0
       '@azure/ms-rest-js': 2.7.0
       '@azure/storage-blob': 12.27.0
+      '@protobuf-ts/plugin': 2.9.6
       semver: 6.3.1
     transitivePeerDependencies:
       - encoding
@@ -800,6 +800,39 @@ packages:
     resolution: {integrity: sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
     dev: true
+
+  /@protobuf-ts/plugin-framework@2.9.6:
+    resolution: {integrity: sha512-w7A1RXrDCiVzcaRE6YJP7FCARuAFe/Vc4SNQnHAi4CF0V6mEtyjAYEIC5BNYgIRaJEqB26zzsBQjIem3R02SCA==}
+    dependencies:
+      '@protobuf-ts/runtime': 2.9.6
+      typescript: 3.9.10
+    dev: false
+
+  /@protobuf-ts/plugin@2.9.6:
+    resolution: {integrity: sha512-Wpv5rkXeu6E5Y4r0TjWE0bzRGddiTYl/RM+tLgVlS0r8CqOBqNAmlWv+s8ltf/F75rVrahUal0cpyhFwha9GRA==}
+    hasBin: true
+    dependencies:
+      '@protobuf-ts/plugin-framework': 2.9.6
+      '@protobuf-ts/protoc': 2.9.6
+      '@protobuf-ts/runtime': 2.9.6
+      '@protobuf-ts/runtime-rpc': 2.9.6
+      typescript: 3.9.10
+    dev: false
+
+  /@protobuf-ts/protoc@2.9.6:
+    resolution: {integrity: sha512-c0XvAPDIBAovH9HxV8gBv8gzOTreQIqibcusrB1+DxvFiSvy+2V1tjbUmG5gJEbjk3aAOaoj0a3+QuE+P28xUw==}
+    hasBin: true
+    dev: false
+
+  /@protobuf-ts/runtime-rpc@2.9.6:
+    resolution: {integrity: sha512-0UeqDRzNxgsh08lY5eWzFJNfD3gZ8Xf+WG1HzbIAbVAigzigwjwsYNNhTeas5H3gco1U5owTzCg177aambKOOw==}
+    dependencies:
+      '@protobuf-ts/runtime': 2.9.6
+    dev: false
+
+  /@protobuf-ts/runtime@2.9.6:
+    resolution: {integrity: sha512-C0CfpKx4n4LBbUrajOdRj2BTbd3qBoK0SiKWLq7RgCoU6xiN4wesBMFHUOBp3fFzKeZwgU8Q2KtzaqzIvPLRXg==}
+    dev: false
 
   /@rollup/rollup-android-arm-eabi@4.36.0:
     resolution: {integrity: sha512-jgrXjjcEwN6XpZXL0HUeOVGfjXhPyxAbbhD0BlXUB+abTOpbPiN5Wb3kOT7yb+uEtATNYF5x5gIfwutmuBA26w==}
@@ -3885,6 +3918,12 @@ packages:
       reflect.getprototypeof: 1.0.10
     dev: true
 
+  /typescript@3.9.10:
+    resolution: {integrity: sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
+    dev: false
+
   /typescript@5.8.2:
     resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
     engines: {node: '>=14.17'}
@@ -4063,12 +4102,12 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/DeterminateSystems/detsys-ts/c54767c24f0861de794605b03ed5604546d4a337:
-    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/c54767c24f0861de794605b03ed5604546d4a337}
+  github.com/DeterminateSystems/detsys-ts/4c7ff9706e6466d7c03c58a3479ed212d6ffb5ba:
+    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/4c7ff9706e6466d7c03c58a3479ed212d6ffb5ba}
     name: detsys-ts
     version: 1.0.0
     dependencies:
-      '@actions/cache': 3.3.0
+      '@actions/cache': 4.0.3
       '@actions/core': 1.11.1
       '@actions/exec': 1.1.1
       got: 14.4.6
