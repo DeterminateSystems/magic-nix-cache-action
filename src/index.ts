@@ -1,6 +1,7 @@
 import { getTrinaryInput, netrcPath, tailLog } from "./helpers.js";
 import { warnOnMnc } from "./mnc-warn.js";
 import * as actionsCore from "@actions/core";
+import * as actionsGithub from "@actions/github";
 import { DetSysAction, inputs, stringifyError } from "detsys-ts";
 import got, { Got, Response } from "got";
 import * as http from "http";
@@ -173,15 +174,22 @@ class MagicNixCacheAction extends DetSysAction {
 
     const daemonBin = await this.unpackClosure("magic-nix-cache");
 
-    let runEnv;
+    const extraEnv = {
+      GITHUB_CONTEXT: JSON.stringify(actionsGithub.context),
+    };
+    let runEnv = {};
     if (actionsCore.isDebug()) {
       runEnv = {
         RUST_LOG: "debug,magic_nix_cache=trace,gha_cache=trace",
         RUST_BACKTRACE: "full",
         ...process.env,
+        ...extraEnv,
       };
     } else {
-      runEnv = process.env;
+      runEnv = {
+        ...process.env,
+        ...extraEnv,
+      };
     }
 
     const notifyPort = inputs.getString("startup-notification-port");
