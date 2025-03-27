@@ -88795,7 +88795,7 @@ const external_node_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequ
 var cache = __nccwpck_require__(7389);
 ;// CONCATENATED MODULE: external "node:child_process"
 const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@38df301720b69972f084538dd44c181269f264b0_hrkui372z63w5lu7fvybdhrsby/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@8d9725c4856301321cd2508f5b8725cfb99366e2_fdev4auzlvbywtzbbq2infymuu/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -89023,16 +89023,24 @@ function stringifyError(e) {
 
 
 var START_SLOP_SECONDS = 5;
-async function collectBacktraces(prefixes, startTimestampMs) {
+async function collectBacktraces(prefixes, programNameDenyList, startTimestampMs) {
   if (isMacOS) {
-    return await collectBacktracesMacOS(prefixes, startTimestampMs);
+    return await collectBacktracesMacOS(
+      prefixes,
+      programNameDenyList,
+      startTimestampMs
+    );
   }
   if (isLinux) {
-    return await collectBacktracesSystemd(prefixes, startTimestampMs);
+    return await collectBacktracesSystemd(
+      prefixes,
+      programNameDenyList,
+      startTimestampMs
+    );
   }
   return /* @__PURE__ */ new Map();
 }
-async function collectBacktracesMacOS(prefixes, startTimestampMs) {
+async function collectBacktracesMacOS(prefixes, programNameDenyList, startTimestampMs) {
   const backtraces = /* @__PURE__ */ new Map();
   try {
     const { stdout: logJson } = await exec.getExecOutput(
@@ -89075,6 +89083,10 @@ async function collectBacktracesMacOS(prefixes, startTimestampMs) {
     const fileNames = (await (0,promises_namespaceObject.readdir)(dir)).filter((fileName) => {
       return prefixes.some((prefix) => fileName.startsWith(prefix));
     }).filter((fileName) => {
+      return !programNameDenyList.some(
+        (programName) => fileName.startsWith(`${programName}_${(/* @__PURE__ */ new Date()).getFullYear()}`)
+      );
+    }).filter((fileName) => {
       return !fileName.endsWith(".diag");
     });
     const doGzip = (0,external_node_util_.promisify)(external_node_zlib_.gzip);
@@ -89098,7 +89110,7 @@ async function collectBacktracesMacOS(prefixes, startTimestampMs) {
   }
   return backtraces;
 }
-async function collectBacktracesSystemd(prefixes, startTimestampMs) {
+async function collectBacktracesSystemd(prefixes, programNameDenyList, startTimestampMs) {
   const sinceSeconds = Math.ceil((Date.now() - startTimestampMs) / 1e3) + START_SLOP_SECONDS;
   const backtraces = /* @__PURE__ */ new Map();
   const coredumps = [];
@@ -89120,7 +89132,7 @@ async function collectBacktracesSystemd(prefixes, startTimestampMs) {
         if (typeof sussyObject.exe == "string" && typeof sussyObject.pid == "number") {
           const execParts = sussyObject.exe.split("/");
           const binaryName = execParts[execParts.length - 1];
-          if (prefixes.some((prefix) => binaryName.startsWith(prefix))) {
+          if (prefixes.some((prefix) => binaryName.startsWith(prefix)) && !programNameDenyList.includes(binaryName)) {
             coredumps.push({
               exe: sussyObject.exe,
               pid: sussyObject.pid
@@ -89688,6 +89700,7 @@ var STATE_KEY_CROSS_PHASE_ID = "detsys_cross_phase_id";
 var STATE_BACKTRACE_START_TIMESTAMP = "detsys_backtrace_start_timestamp";
 var DIAGNOSTIC_ENDPOINT_TIMEOUT_MS = 1e4;
 var CHECK_IN_ENDPOINT_TIMEOUT_MS = 1e3;
+var PROGRAM_NAME_CRASH_DENY_LIST = ["nix-expr-tests"];
 var DetSysAction = class {
   determineExecutionPhase() {
     const currentPhase = core.getState(STATE_KEY_EXECUTION_PHASE);
@@ -90235,6 +90248,7 @@ var DetSysAction = class {
       }
       const backtraces = await collectBacktraces(
         this.actionOptions.binaryNamePrefixes,
+        this.actionOptions.binaryNamesDenyList,
         parseInt(core.getState(STATE_BACKTRACE_START_TIMESTAMP))
       );
       core.debug(`Backtraces identified: ${backtraces.size}`);
@@ -90379,7 +90393,8 @@ function makeOptionsConfident(actionOptions) {
       "nix",
       "determinate-nixd",
       actionOptions.name
-    ]
+    ],
+    binaryNamesDenyList: actionOptions.binaryNamePrefixes ?? PROGRAM_NAME_CRASH_DENY_LIST
   };
   core.debug("idslib options:");
   core.debug(JSON.stringify(finalOpts, void 0, 2));
