@@ -88795,7 +88795,7 @@ const external_node_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequ
 var cache = __nccwpck_require__(7389);
 ;// CONCATENATED MODULE: external "node:child_process"
 const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@8d9725c4856301321cd2508f5b8725cfb99366e2_fdev4auzlvbywtzbbq2infymuu/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@03533d37dcd46f34d9e99385e665615b221a30d9_b5pw57rm3cyajl6hbsaouss3oa/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -89700,7 +89700,11 @@ var STATE_KEY_CROSS_PHASE_ID = "detsys_cross_phase_id";
 var STATE_BACKTRACE_START_TIMESTAMP = "detsys_backtrace_start_timestamp";
 var DIAGNOSTIC_ENDPOINT_TIMEOUT_MS = 1e4;
 var CHECK_IN_ENDPOINT_TIMEOUT_MS = 1e3;
-var PROGRAM_NAME_CRASH_DENY_LIST = ["nix-expr-tests"];
+var PROGRAM_NAME_CRASH_DENY_LIST = [
+  "nix-expr-tests",
+  "nix-store-tests",
+  "nix-util-tests"
+];
 var DetSysAction = class {
   determineExecutionPhase() {
     const currentPhase = core.getState(STATE_KEY_EXECUTION_PHASE);
