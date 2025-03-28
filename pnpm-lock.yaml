@@ -16,7 +16,7 @@ dependencies:
     version: 0.5.0
   detsys-ts:
     specifier: github:DeterminateSystems/detsys-ts
-    version: github.com/DeterminateSystems/detsys-ts/8d9725c4856301321cd2508f5b8725cfb99366e2
+    version: github.com/DeterminateSystems/detsys-ts/03533d37dcd46f34d9e99385e665615b221a30d9
   got:
     specifier: ^14.4.6
     version: 14.4.6
@@ -1525,7 +1525,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001707
-      electron-to-chromium: 1.5.126
+      electron-to-chromium: 1.5.128
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.24.4)
     dev: true
@@ -1777,8 +1777,8 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /electron-to-chromium@1.5.126:
-    resolution: {integrity: sha512-AtH1uLcTC72LA4vfYcEJJkrMk/MY/X0ub8Hv7QGAePW2JkeUFHEL/QfS4J77R6M87Sss8O0OcqReSaN1bpyA+Q==}
+  /electron-to-chromium@1.5.128:
+    resolution: {integrity: sha512-bo1A4HH/NS522Ws0QNFIzyPcyUUNV/yyy70Ho1xqfGYzPUme2F/xr4tlEOuM6/A538U1vDA7a4XfCd1CKRegKQ==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -4147,8 +4147,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/DeterminateSystems/detsys-ts/8d9725c4856301321cd2508f5b8725cfb99366e2:
-    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/8d9725c4856301321cd2508f5b8725cfb99366e2}
+  github.com/DeterminateSystems/detsys-ts/03533d37dcd46f34d9e99385e665615b221a30d9:
+    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/03533d37dcd46f34d9e99385e665615b221a30d9}
     name: detsys-ts
     version: 1.0.0
     dependencies:
