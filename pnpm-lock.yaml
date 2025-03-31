@@ -16,10 +16,10 @@ dependencies:
     version: 0.5.0
   detsys-ts:
     specifier: github:DeterminateSystems/detsys-ts
-    version: github.com/DeterminateSystems/detsys-ts/3ef4baee587df9fe98f70036386e361fa0d6dc7e
+    version: github.com/DeterminateSystems/detsys-ts/79634332de50a2cde17cf8d6fe41258af3d4bedf
   got:
-    specifier: ^14.4.6
-    version: 14.4.6
+    specifier: ^14.4.7
+    version: 14.4.7
   tail:
     specifier: ^2.2.6
     version: 2.2.6
@@ -2543,8 +2543,8 @@ packages:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
 
-  /got@14.4.6:
-    resolution: {integrity: sha512-rnhwfM/PhMNJ1i17k3DuDqgj0cKx3IHxBKVv/WX1uDKqrhi2Gv3l7rhPThR/Cc6uU++dD97W9c8Y0qyw9x0jag==}
+  /got@14.4.7:
+    resolution: {integrity: sha512-DI8zV1231tqiGzOiOzQWDhsBmncFW7oQDH6Zgy6pDPrqJuVZMtoSgPLLsBZQj8Jg4JFfwoOsDA8NGtLQLnIx2g==}
     engines: {node: '>=20'}
     dependencies:
       '@sindresorhus/is': 7.0.1
@@ -4147,15 +4147,15 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/DeterminateSystems/detsys-ts/3ef4baee587df9fe98f70036386e361fa0d6dc7e:
-    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/3ef4baee587df9fe98f70036386e361fa0d6dc7e}
+  github.com/DeterminateSystems/detsys-ts/79634332de50a2cde17cf8d6fe41258af3d4bedf:
+    resolution: {tarball: https://codeload.github.com/DeterminateSystems/detsys-ts/tar.gz/79634332de50a2cde17cf8d6fe41258af3d4bedf}
     name: detsys-ts
     version: 1.0.0
     dependencies:
       '@actions/cache': 4.0.3
       '@actions/core': 1.11.1
       '@actions/exec': 1.1.1
-      got: 14.4.6
+      got: 14.4.7
       type-fest: 4.38.0
     transitivePeerDependencies:
       - encoding
