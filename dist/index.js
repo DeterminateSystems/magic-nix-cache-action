@@ -40231,11 +40231,28 @@ module.exports = (flag, argv = process.argv) => {
 
 /***/ }),
 
-/***/ 9038:
+/***/ 6644:
 /***/ ((module) => {
 
 
-// rfc7231 6.1
+
+/**
+ * @typedef {Object} HttpRequest
+ * @property {Record<string, string>} headers - Request headers
+ * @property {string} [method] - HTTP method
+ * @property {string} [url] - Request URL
+ */
+
+/**
+ * @typedef {Object} HttpResponse
+ * @property {Record<string, string>} headers - Response headers
+ * @property {number} [status] - HTTP status code
+ */
+
+/**
+ * Set of default cacheable status codes per RFC 7231 section 6.1.
+ * @type {Set<number>}
+ */
 const statusCodeCacheableByDefault = new Set([
     200,
     203,
@@ -40251,7 +40268,11 @@ const statusCodeCacheableByDefault = new Set([
     501,
 ]);
 
-// This implementation does not understand partial responses (206)
+/**
+ * Set of HTTP status codes that the cache implementation understands.
+ * Note: This implementation does not understand partial responses (206).
+ * @type {Set<number>}
+ */
 const understoodStatuses = new Set([
     200,
     203,
@@ -40269,13 +40290,21 @@ const understoodStatuses = new Set([
     501,
 ]);
 
+/**
+ * Set of HTTP error status codes.
+ * @type {Set<number>}
+ */
 const errorStatusCodes = new Set([
     500,
     502,
-    503, 
+    503,
     504,
 ]);
 
+/**
+ * Object representing hop-by-hop headers that should be removed.
+ * @type {Record<string, boolean>}
+ */
 const hopByHopHeaders = {
     date: true, // included, because we add Age update Date
     connection: true,
@@ -40288,6 +40317,10 @@ const hopByHopHeaders = {
     upgrade: true,
 };
 
+/**
+ * Headers that are excluded from revalidation update.
+ * @type {Record<string, boolean>}
+ */
 const excludedFromRevalidationUpdate = {
     // Since the old body is reused, it doesn't make sense to change properties of the body
     'content-length': true,
@@ -40296,21 +40329,37 @@ const excludedFromRevalidationUpdate = {
     'content-range': true,
 };
 
+/**
+ * Converts a string to a number or returns zero if the conversion fails.
+ * @param {string} s - The string to convert.
+ * @returns {number} The parsed number or 0.
+ */
 function toNumberOrZero(s) {
     const n = parseInt(s, 10);
     return isFinite(n) ? n : 0;
 }
 
-// RFC 5861
+/**
+ * Determines if the given response is an error response.
+ * Implements RFC 5861 behavior.
+ * @param {HttpResponse|undefined} response - The HTTP response object.
+ * @returns {boolean} true if the response is an error or undefined, false otherwise.
+ */
 function isErrorResponse(response) {
     // consider undefined response as faulty
-    if(!response) {
-        return true
+    if (!response) {
+        return true;
     }
     return errorStatusCodes.has(response.status);
 }
 
+/**
+ * Parses a Cache-Control header string into an object.
+ * @param {string} [header] - The Cache-Control header value.
+ * @returns {Record<string, string|boolean>} An object representing Cache-Control directives.
+ */
 function parseCacheControl(header) {
+    /** @type {Record<string, string|boolean>} */
     const cc = {};
     if (!header) return cc;
 
@@ -40325,6 +40374,11 @@ function parseCacheControl(header) {
     return cc;
 }
 
+/**
+ * Formats a Cache-Control directives object into a header string.
+ * @param {Record<string, string|boolean>} cc - The Cache-Control directives.
+ * @returns {string|undefined} A formatted Cache-Control header string or undefined if empty.
+ */
 function formatCacheControl(cc) {
     let parts = [];
     for (const k in cc) {
@@ -40338,6 +40392,17 @@ function formatCacheControl(cc) {
 }
 
 module.exports = class CachePolicy {
+    /**
+     * Creates a new CachePolicy instance.
+     * @param {HttpRequest} req - Incoming client request.
+     * @param {HttpResponse} res - Received server response.
+     * @param {Object} [options={}] - Configuration options.
+     * @param {boolean} [options.shared=true] - Is the cache shared (a public proxy)? `false` for personal browser caches.
+     * @param {number} [options.cacheHeuristic=0.1] - Fallback heuristic (age fraction) for cache duration.
+     * @param {number} [options.immutableMinTimeToLive=86400000] - Minimum TTL for immutable responses in milliseconds.
+     * @param {boolean} [options.ignoreCargoCult=false] - Detect nonsense cache headers, and override them.
+     * @param {any} [options._fromObject] - Internal parameter for deserialization. Do not use.
+     */
     constructor(
         req,
         res,
@@ -40359,29 +40424,44 @@ module.exports = class CachePolicy {
         }
         this._assertRequestHasHeaders(req);
 
+        /** @type {number} Timestamp when the response was received */
         this._responseTime = this.now();
+        /** @type {boolean} Indicates if the cache is shared */
         this._isShared = shared !== false;
+        /** @type {boolean} Indicates if legacy cargo cult directives should be ignored */
+        this._ignoreCargoCult = !!ignoreCargoCult;
+        /** @type {number} Heuristic cache fraction */
         this._cacheHeuristic =
             undefined !== cacheHeuristic ? cacheHeuristic : 0.1; // 10% matches IE
+        /** @type {number} Minimum TTL for immutable responses in ms */
         this._immutableMinTtl =
             undefined !== immutableMinTimeToLive
                 ? immutableMinTimeToLive
                 : 24 * 3600 * 1000;
 
+        /** @type {number} HTTP status code */
         this._status = 'status' in res ? res.status : 200;
+        /** @type {Record<string, string>} Response headers */
         this._resHeaders = res.headers;
+        /** @type {Record<string, string|boolean>} Parsed Cache-Control directives from response */
         this._rescc = parseCacheControl(res.headers['cache-control']);
+        /** @type {string} HTTP method (e.g., GET, POST) */
         this._method = 'method' in req ? req.method : 'GET';
+        /** @type {string} Request URL */
         this._url = req.url;
+        /** @type {string} Host header from the request */
         this._host = req.headers.host;
+        /** @type {boolean} Whether the request does not include an Authorization header */
         this._noAuthorization = !req.headers.authorization;
+        /** @type {Record<string, string>|null} Request headers used for Vary matching */
         this._reqHeaders = res.headers.vary ? req.headers : null; // Don't keep all request headers if they won't be used
+        /** @type {Record<string, string|boolean>} Parsed Cache-Control directives from request */
         this._reqcc = parseCacheControl(req.headers['cache-control']);
 
         // Assume that if someone uses legacy, non-standard uncecessary options they don't understand caching,
         // so there's no point stricly adhering to the blindly copy&pasted directives.
         if (
-            ignoreCargoCult &&
+            this._ignoreCargoCult &&
             'pre-check' in this._rescc &&
             'post-check' in this._rescc
         ) {
@@ -40407,10 +40487,18 @@ module.exports = class CachePolicy {
         }
     }
 
+    /**
+     * You can monkey-patch it for testing.
+     * @returns {number} Current time in milliseconds.
+     */
     now() {
         return Date.now();
     }
 
+    /**
+     * Determines if the response is storable in a cache.
+     * @returns {boolean} `false` if can never be cached.
+     */
     storable() {
         // The "no-store" request directive indicates that a cache MUST NOT store any part of either this request or any response to it.
         return !!(
@@ -40444,62 +40532,160 @@ module.exports = class CachePolicy {
         );
     }
 
+    /**
+     * @returns {boolean} true if expiration is explicitly defined.
+     */
     _hasExplicitExpiration() {
         // 4.2.1 Calculating Freshness Lifetime
-        return (
+        return !!(
             (this._isShared && this._rescc['s-maxage']) ||
             this._rescc['max-age'] ||
             this._resHeaders.expires
         );
     }
 
+    /**
+     * @param {HttpRequest} req - a request
+     * @throws {Error} if the headers are missing.
+     */
     _assertRequestHasHeaders(req) {
         if (!req || !req.headers) {
             throw Error('Request headers missing');
         }
     }
 
+    /**
+     * Checks if the request matches the cache and can be satisfied from the cache immediately,
+     * without having to make a request to the server.
+     *
+     * This doesn't support `stale-while-revalidate`. See `evaluateRequest()` for a more complete solution.
+     *
+     * @param {HttpRequest} req - The new incoming HTTP request.
+     * @returns {boolean} `true`` if the cached response used to construct this cache policy satisfies the request without revalidation.
+     */
     satisfiesWithoutRevalidation(req) {
+        const result = this.evaluateRequest(req);
+        return !result.revalidation;
+    }
+
+    /**
+     * @param {{headers: Record<string, string>, synchronous: boolean}|undefined} revalidation - Revalidation information, if any.
+     * @returns {{response: {headers: Record<string, string>}, revalidation: {headers: Record<string, string>, synchronous: boolean}|undefined}} An object with a cached response headers and revalidation info.
+     */
+    _evaluateRequestHitResult(revalidation) {
+        return {
+            response: {
+                headers: this.responseHeaders(),
+            },
+            revalidation,
+        };
+    }
+
+    /**
+     * @param {HttpRequest} request - new incoming
+     * @param {boolean} synchronous - whether revalidation must be synchronous (not s-w-r).
+     * @returns {{headers: Record<string, string>, synchronous: boolean}} An object with revalidation headers and a synchronous flag.
+     */
+    _evaluateRequestRevalidation(request, synchronous) {
+        return {
+            synchronous,
+            headers: this.revalidationHeaders(request),
+        };
+    }
+
+    /**
+     * @param {HttpRequest} request - new incoming
+     * @returns {{response: undefined, revalidation: {headers: Record<string, string>, synchronous: boolean}}} An object indicating no cached response and revalidation details.
+     */
+    _evaluateRequestMissResult(request) {
+        return {
+            response: undefined,
+            revalidation: this._evaluateRequestRevalidation(request, true),
+        };
+    }
+
+    /**
+     * Checks if the given request matches this cache entry, and how the cache can be used to satisfy it. Returns an object with:
+     *
+     * ```
+     * {
+     *     // If defined, you must send a request to the server.
+     *     revalidation: {
+     *         headers: {}, // HTTP headers to use when sending the revalidation response
+     *         // If true, you MUST wait for a response from the server before using the cache
+     *         // If false, this is stale-while-revalidate. The cache is stale, but you can use it while you update it asynchronously.
+     *         synchronous: bool,
+     *     },
+     *     // If defined, you can use this cached response.
+     *     response: {
+     *         headers: {}, // Updated cached HTTP headers you must use when responding to the client
+     *     },
+     * }
+     * ```
+     * @param {HttpRequest} req - new incoming HTTP request
+     * @returns {{response: {headers: Record<string, string>}|undefined, revalidation: {headers: Record<string, string>, synchronous: boolean}|undefined}} An object containing keys:
+     *   - revalidation: { headers: Record<string, string>, synchronous: boolean } Set if you should send this to the origin server
+     *   - response: { headers: Record<string, string> } Set if you can respond to the client with these cached headers
+     */
+    evaluateRequest(req) {
         this._assertRequestHasHeaders(req);
+
+        // In all circumstances, a cache MUST NOT ignore the must-revalidate directive
+        if (this._rescc['must-revalidate']) {
+            return this._evaluateRequestMissResult(req);
+        }
+
+        if (!this._requestMatches(req, false)) {
+            return this._evaluateRequestMissResult(req);
+        }
 
         // When presented with a request, a cache MUST NOT reuse a stored response, unless:
         // the presented request does not contain the no-cache pragma (Section 5.4), nor the no-cache cache directive,
         // unless the stored response is successfully validated (Section 4.3), and
         const requestCC = parseCacheControl(req.headers['cache-control']);
+
         if (requestCC['no-cache'] || /no-cache/.test(req.headers.pragma)) {
-            return false;
+            return this._evaluateRequestMissResult(req);
         }
 
-        if (requestCC['max-age'] && this.age() > requestCC['max-age']) {
-            return false;
+        if (requestCC['max-age'] && this.age() > toNumberOrZero(requestCC['max-age'])) {
+            return this._evaluateRequestMissResult(req);
         }
 
-        if (
-            requestCC['min-fresh'] &&
-            this.timeToLive() < 1000 * requestCC['min-fresh']
-        ) {
-            return false;
+        if (requestCC['min-fresh'] && this.maxAge() - this.age() < toNumberOrZero(requestCC['min-fresh'])) {
+            return this._evaluateRequestMissResult(req);
         }
 
         // the stored response is either:
         // fresh, or allowed to be served stale
         if (this.stale()) {
-            const allowsStale =
-                requestCC['max-stale'] &&
-                !this._rescc['must-revalidate'] &&
-                (true === requestCC['max-stale'] ||
-                    requestCC['max-stale'] > this.age() - this.maxAge());
-            if (!allowsStale) {
-                return false;
+            // If a value is present, then the client is willing to accept a response that has
+            // exceeded its freshness lifetime by no more than the specified number of seconds
+            const allowsStaleWithoutRevalidation = 'max-stale' in requestCC &&
+                (true === requestCC['max-stale'] || requestCC['max-stale'] > this.age() - this.maxAge());
+
+            if (allowsStaleWithoutRevalidation) {
+                return this._evaluateRequestHitResult(undefined);
             }
+
+            if (this.useStaleWhileRevalidate()) {
+                return this._evaluateRequestHitResult(this._evaluateRequestRevalidation(req, false));
+            }
+
+            return this._evaluateRequestMissResult(req);
         }
 
-        return this._requestMatches(req, false);
+        return this._evaluateRequestHitResult(undefined);
     }
 
+    /**
+     * @param {HttpRequest} req - check if this is for the same cache entry
+     * @param {boolean} allowHeadMethod - allow a HEAD method to match.
+     * @returns {boolean} `true` if the request matches.
+     */
     _requestMatches(req, allowHeadMethod) {
         // The presented effective request URI and that of the stored response match, and
-        return (
+        return !!(
             (!this._url || this._url === req.url) &&
             this._host === req.headers.host &&
             // the request method associated with the stored response allows it to be used for the presented request, and
@@ -40511,15 +40697,24 @@ module.exports = class CachePolicy {
         );
     }
 
+    /**
+     * Determines whether storing authenticated responses is allowed.
+     * @returns {boolean} `true` if allowed.
+     */
     _allowsStoringAuthenticated() {
-        //  following Cache-Control response directives (Section 5.2.2) have such an effect: must-revalidate, public, and s-maxage.
-        return (
+        // following Cache-Control response directives (Section 5.2.2) have such an effect: must-revalidate, public, and s-maxage.
+        return !!(
             this._rescc['must-revalidate'] ||
             this._rescc.public ||
             this._rescc['s-maxage']
         );
     }
 
+    /**
+     * Checks whether the Vary header in the response matches the new request.
+     * @param {HttpRequest} req - incoming HTTP request
+     * @returns {boolean} `true` if the vary headers match.
+     */
     _varyMatches(req) {
         if (!this._resHeaders.vary) {
             return true;
@@ -40540,7 +40735,13 @@ module.exports = class CachePolicy {
         return true;
     }
 
+    /**
+     * Creates a copy of the given headers without any hop-by-hop headers.
+     * @param {Record<string, string>} inHeaders - old headers from the cached response
+     * @returns {Record<string, string>} A new headers object without hop-by-hop headers.
+     */
     _copyWithoutHopByHopHeaders(inHeaders) {
+        /** @type {Record<string, string>} */
         const headers = {};
         for (const name in inHeaders) {
             if (hopByHopHeaders[name]) continue;
@@ -40566,6 +40767,11 @@ module.exports = class CachePolicy {
         return headers;
     }
 
+    /**
+     * Returns the response headers adjusted for serving the cached response.
+     * Removes hop-by-hop headers and updates the Age and Date headers.
+     * @returns {Record<string, string>} The adjusted response headers.
+     */
     responseHeaders() {
         const headers = this._copyWithoutHopByHopHeaders(this._resHeaders);
         const age = this.age();
@@ -40587,8 +40793,8 @@ module.exports = class CachePolicy {
     }
 
     /**
-     * Value of the Date response header or current time if Date was invalid
-     * @return timestamp
+     * Returns the Date header value from the response or the current time if invalid.
+     * @returns {number} Timestamp (in milliseconds) representing the Date header or response time.
      */
     date() {
         const serverDate = Date.parse(this._resHeaders.date);
@@ -40601,8 +40807,7 @@ module.exports = class CachePolicy {
     /**
      * Value of the Age header, in seconds, updated for the current time.
      * May be fractional.
-     *
-     * @return Number
+     * @returns {number} The age in seconds.
      */
     age() {
         let age = this._ageValue();
@@ -40611,16 +40816,21 @@ module.exports = class CachePolicy {
         return age + residentTime;
     }
 
+    /**
+     * @returns {number} The Age header value as a number.
+     */
     _ageValue() {
         return toNumberOrZero(this._resHeaders.age);
     }
 
     /**
-     * Value of applicable max-age (or heuristic equivalent) in seconds. This counts since response's `Date`.
+     * Possibly outdated value of applicable max-age (or heuristic equivalent) in seconds.
+     * This counts since response's `Date`.
      *
      * For an up-to-date value, see `timeToLive()`.
      *
-     * @return Number
+     * Returns the maximum age (freshness lifetime) of the response in seconds.
+     * @returns {number} The max-age value in seconds.
      */
     maxAge() {
         if (!this.storable() || this._rescc['no-cache']) {
@@ -40682,29 +40892,57 @@ module.exports = class CachePolicy {
         return defaultMinTtl;
     }
 
+    /**
+     * Remaining time this cache entry may be useful for, in *milliseconds*.
+     * You can use this as an expiration time for your cache storage.
+     *
+     * Prefer this method over `maxAge()`, because it includes other factors like `age` and `stale-while-revalidate`.
+     * @returns {number} Time-to-live in milliseconds.
+     */
     timeToLive() {
         const age = this.maxAge() - this.age();
         const staleIfErrorAge = age + toNumberOrZero(this._rescc['stale-if-error']);
         const staleWhileRevalidateAge = age + toNumberOrZero(this._rescc['stale-while-revalidate']);
-        return Math.max(0, age, staleIfErrorAge, staleWhileRevalidateAge) * 1000;
+        return Math.round(Math.max(0, age, staleIfErrorAge, staleWhileRevalidateAge) * 1000);
     }
 
+    /**
+     * If true, this cache entry is past its expiration date.
+     * Note that stale cache may be useful sometimes, see `evaluateRequest()`.
+     * @returns {boolean} `false` doesn't mean it's fresh nor usable
+     */
     stale() {
         return this.maxAge() <= this.age();
     }
 
+    /**
+     * @returns {boolean} `true` if `stale-if-error` condition allows use of a stale response.
+     */
     _useStaleIfError() {
         return this.maxAge() + toNumberOrZero(this._rescc['stale-if-error']) > this.age();
     }
 
+    /** See `evaluateRequest()` for a more complete solution
+     * @returns {boolean} `true` if `stale-while-revalidate` is currently allowed.
+     */
     useStaleWhileRevalidate() {
-        return this.maxAge() + toNumberOrZero(this._rescc['stale-while-revalidate']) > this.age();
+        const swr = toNumberOrZero(this._rescc['stale-while-revalidate']);
+        return swr > 0 && this.maxAge() + swr > this.age();
     }
 
+    /**
+     * Creates a `CachePolicy` instance from a serialized object.
+     * @param {Object} obj - The serialized object.
+     * @returns {CachePolicy} A new CachePolicy instance.
+     */
     static fromObject(obj) {
         return new this(undefined, undefined, { _fromObject: obj });
     }
 
+    /**
+     * @param {any} obj - The serialized object.
+     * @throws {Error} If already initialized or if the object is invalid.
+     */
     _fromObject(obj) {
         if (this._responseTime) throw Error('Reinitialized');
         if (!obj || obj.v !== 1) throw Error('Invalid serialization');
@@ -40714,6 +40952,7 @@ module.exports = class CachePolicy {
         this._cacheHeuristic = obj.ch;
         this._immutableMinTtl =
             obj.imm !== undefined ? obj.imm : 24 * 3600 * 1000;
+        this._ignoreCargoCult = !!obj.icc;
         this._status = obj.st;
         this._resHeaders = obj.resh;
         this._rescc = obj.rescc;
@@ -40725,6 +40964,10 @@ module.exports = class CachePolicy {
         this._reqcc = obj.reqcc;
     }
 
+    /**
+     * Serializes the `CachePolicy` instance into a JSON-serializable object.
+     * @returns {Object} The serialized object.
+     */
     toObject() {
         return {
             v: 1,
@@ -40732,6 +40975,7 @@ module.exports = class CachePolicy {
             sh: this._isShared,
             ch: this._cacheHeuristic,
             imm: this._immutableMinTtl,
+            icc: this._ignoreCargoCult,
             st: this._status,
             resh: this._resHeaders,
             rescc: this._rescc,
@@ -40750,6 +40994,8 @@ module.exports = class CachePolicy {
      *
      * Hop by hop headers are always stripped.
      * Revalidation headers may be added or removed, depending on request.
+     * @param {HttpRequest} incomingReq - The incoming HTTP request.
+     * @returns {Record<string, string>} The headers for the revalidation request.
      */
     revalidationHeaders(incomingReq) {
         this._assertRequestHasHeaders(incomingReq);
@@ -40814,17 +41060,22 @@ module.exports = class CachePolicy {
      * Returns {policy, modified} where modified is a boolean indicating
      * whether the response body has been modified, and old cached body can't be used.
      *
-     * @return {Object} {policy: CachePolicy, modified: Boolean}
+     * @param {HttpRequest} request - The latest HTTP request asking for the cached entry.
+     * @param {HttpResponse} response - The latest revalidation HTTP response from the origin server.
+     * @returns {{policy: CachePolicy, modified: boolean, matches: boolean}} The updated policy and modification status.
+     * @throws {Error} If the response headers are missing.
      */
     revalidatedPolicy(request, response) {
         this._assertRequestHasHeaders(request);
-        if(this._useStaleIfError() && isErrorResponse(response)) {  // I consider the revalidation request unsuccessful
+
+        if (this._useStaleIfError() && isErrorResponse(response)) {
           return {
-            modified: false,
-            matches: false,
-            policy: this,
+              policy: this,
+              modified: false,
+              matches: true,
           };
         }
+
         if (!response || !response.headers) {
             throw Error('Response headers missing');
         }
@@ -40871,9 +41122,16 @@ module.exports = class CachePolicy {
             }
         }
 
+        const optionsCopy = {
+            shared: this._isShared,
+            cacheHeuristic: this._cacheHeuristic,
+            immutableMinTimeToLive: this._immutableMinTtl,
+            ignoreCargoCult: this._ignoreCargoCult,
+        };
+
         if (!matches) {
             return {
-                policy: new this.constructor(request, response),
+                policy: new this.constructor(request, response, optionsCopy),
                 // Client receiving 304 without body, even if it's invalid/mismatched has no option
                 // but to reuse a cached body. We don't have a good way to tell clients to do
                 // error recovery in such case.
@@ -40898,11 +41156,7 @@ module.exports = class CachePolicy {
             headers,
         });
         return {
-            policy: new this.constructor(request, newResponse, {
-                shared: this._isShared,
-                cacheHeuristic: this._cacheHeuristic,
-                immutableMinTimeToLive: this._immutableMinTtl,
-            }),
+            policy: new this.constructor(request, newResponse, optionsCopy),
             modified: false,
             matches: true,
         };
@@ -77740,7 +77994,7 @@ exports.XML_CHARKEY = "_";
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.stringifyXML = stringifyXML;
 exports.parseXML = parseXML;
-const fast_xml_parser_1 = __nccwpck_require__(3353);
+const fast_xml_parser_1 = __nccwpck_require__(6783);
 const xml_common_js_1 = __nccwpck_require__(9261);
 function getCommonOptions(options) {
     var _a;
@@ -83661,10 +83915,10 @@ function randomUUID() {
 
 /***/ }),
 
-/***/ 3353:
+/***/ 6783:
 /***/ ((module) => {
 
-(()=>{"use strict";var t={d:(e,n)=>{for(var i in n)t.o(n,i)&&!t.o(e,i)&&Object.defineProperty(e,i,{enumerable:!0,get:n[i]})},o:(t,e)=>Object.prototype.hasOwnProperty.call(t,e),r:t=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})}},e={};t.r(e),t.d(e,{XMLBuilder:()=>gt,XMLParser:()=>at,XMLValidator:()=>Nt});const n=":A-Za-z_\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD",i=new RegExp("^["+n+"]["+n+"\\-.\\d\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$");function r(t,e){const n=[];let i=e.exec(t);for(;i;){const r=[];r.startIndex=e.lastIndex-i[0].length;const s=i.length;for(let t=0;t<s;t++)r.push(i[t]);n.push(r),i=e.exec(t)}return n}const s=function(t){return!(null==i.exec(t))},o={allowBooleanAttributes:!1,unpairedTags:[]};function a(t,e){e=Object.assign({},o,e);const n=[];let i=!1,r=!1;"\ufeff"===t[0]&&(t=t.substr(1));for(let o=0;o<t.length;o++)if("<"===t[o]&&"?"===t[o+1]){if(o+=2,o=u(t,o),o.err)return o}else{if("<"!==t[o]){if(l(t[o]))continue;return x("InvalidChar","char '"+t[o]+"' is not expected.",N(t,o))}{let a=o;if(o++,"!"===t[o]){o=h(t,o);continue}{let d=!1;"/"===t[o]&&(d=!0,o++);let c="";for(;o<t.length&&">"!==t[o]&&" "!==t[o]&&"\t"!==t[o]&&"\n"!==t[o]&&"\r"!==t[o];o++)c+=t[o];if(c=c.trim(),"/"===c[c.length-1]&&(c=c.substring(0,c.length-1),o--),!s(c)){let e;return e=0===c.trim().length?"Invalid space after '<'.":"Tag '"+c+"' is an invalid name.",x("InvalidTag",e,N(t,o))}const p=f(t,o);if(!1===p)return x("InvalidAttr","Attributes for '"+c+"' have open quote.",N(t,o));let b=p.value;if(o=p.index,"/"===b[b.length-1]){const n=o-b.length;b=b.substring(0,b.length-1);const r=g(b,e);if(!0!==r)return x(r.err.code,r.err.msg,N(t,n+r.err.line));i=!0}else if(d){if(!p.tagClosed)return x("InvalidTag","Closing tag '"+c+"' doesn't have proper closing.",N(t,o));if(b.trim().length>0)return x("InvalidTag","Closing tag '"+c+"' can't have attributes or invalid starting.",N(t,a));if(0===n.length)return x("InvalidTag","Closing tag '"+c+"' has not been opened.",N(t,a));{const e=n.pop();if(c!==e.tagName){let n=N(t,e.tagStartPos);return x("InvalidTag","Expected closing tag '"+e.tagName+"' (opened in line "+n.line+", col "+n.col+") instead of closing tag '"+c+"'.",N(t,a))}0==n.length&&(r=!0)}}else{const s=g(b,e);if(!0!==s)return x(s.err.code,s.err.msg,N(t,o-b.length+s.err.line));if(!0===r)return x("InvalidXml","Multiple possible root nodes found.",N(t,o));-1!==e.unpairedTags.indexOf(c)||n.push({tagName:c,tagStartPos:a}),i=!0}for(o++;o<t.length;o++)if("<"===t[o]){if("!"===t[o+1]){o++,o=h(t,o);continue}if("?"!==t[o+1])break;if(o=u(t,++o),o.err)return o}else if("&"===t[o]){const e=m(t,o);if(-1==e)return x("InvalidChar","char '&' is not expected.",N(t,o));o=e}else if(!0===r&&!l(t[o]))return x("InvalidXml","Extra text at the end",N(t,o));"<"===t[o]&&o--}}}return i?1==n.length?x("InvalidTag","Unclosed tag '"+n[0].tagName+"'.",N(t,n[0].tagStartPos)):!(n.length>0)||x("InvalidXml","Invalid '"+JSON.stringify(n.map((t=>t.tagName)),null,4).replace(/\r?\n/g,"")+"' found.",{line:1,col:1}):x("InvalidXml","Start tag expected.",1)}function l(t){return" "===t||"\t"===t||"\n"===t||"\r"===t}function u(t,e){const n=e;for(;e<t.length;e++)if("?"!=t[e]&&" "!=t[e]);else{const i=t.substr(n,e-n);if(e>5&&"xml"===i)return x("InvalidXml","XML declaration allowed only at the start of the document.",N(t,e));if("?"==t[e]&&">"==t[e+1]){e++;break}}return e}function h(t,e){if(t.length>e+5&&"-"===t[e+1]&&"-"===t[e+2]){for(e+=3;e<t.length;e++)if("-"===t[e]&&"-"===t[e+1]&&">"===t[e+2]){e+=2;break}}else if(t.length>e+8&&"D"===t[e+1]&&"O"===t[e+2]&&"C"===t[e+3]&&"T"===t[e+4]&&"Y"===t[e+5]&&"P"===t[e+6]&&"E"===t[e+7]){let n=1;for(e+=8;e<t.length;e++)if("<"===t[e])n++;else if(">"===t[e]&&(n--,0===n))break}else if(t.length>e+9&&"["===t[e+1]&&"C"===t[e+2]&&"D"===t[e+3]&&"A"===t[e+4]&&"T"===t[e+5]&&"A"===t[e+6]&&"["===t[e+7])for(e+=8;e<t.length;e++)if("]"===t[e]&&"]"===t[e+1]&&">"===t[e+2]){e+=2;break}return e}const d='"',c="'";function f(t,e){let n="",i="",r=!1;for(;e<t.length;e++){if(t[e]===d||t[e]===c)""===i?i=t[e]:i!==t[e]||(i="");else if(">"===t[e]&&""===i){r=!0;break}n+=t[e]}return""===i&&{value:n,index:e,tagClosed:r}}const p=new RegExp("(\\s*)([^\\s=]+)(\\s*=)?(\\s*(['\"])(([\\s\\S])*?)\\5)?","g");function g(t,e){const n=r(t,p),i={};for(let t=0;t<n.length;t++){if(0===n[t][1].length)return x("InvalidAttr","Attribute '"+n[t][2]+"' has no space in starting.",E(n[t]));if(void 0!==n[t][3]&&void 0===n[t][4])return x("InvalidAttr","Attribute '"+n[t][2]+"' is without value.",E(n[t]));if(void 0===n[t][3]&&!e.allowBooleanAttributes)return x("InvalidAttr","boolean attribute '"+n[t][2]+"' is not allowed.",E(n[t]));const r=n[t][2];if(!b(r))return x("InvalidAttr","Attribute '"+r+"' is an invalid name.",E(n[t]));if(i.hasOwnProperty(r))return x("InvalidAttr","Attribute '"+r+"' is repeated.",E(n[t]));i[r]=1}return!0}function m(t,e){if(";"===t[++e])return-1;if("#"===t[e])return function(t,e){let n=/\d/;for("x"===t[e]&&(e++,n=/[\da-fA-F]/);e<t.length;e++){if(";"===t[e])return e;if(!t[e].match(n))break}return-1}(t,++e);let n=0;for(;e<t.length;e++,n++)if(!(t[e].match(/\w/)&&n<20)){if(";"===t[e])break;return-1}return e}function x(t,e,n){return{err:{code:t,msg:e,line:n.line||n,col:n.col}}}function b(t){return s(t)}function N(t,e){const n=t.substring(0,e).split(/\r?\n/);return{line:n.length,col:n[n.length-1].length+1}}function E(t){return t.startIndex+t[1].length}const v={preserveOrder:!1,attributeNamePrefix:"@_",attributesGroupName:!1,textNodeName:"#text",ignoreAttributes:!0,removeNSPrefix:!1,allowBooleanAttributes:!1,parseTagValue:!0,parseAttributeValue:!1,trimValues:!0,cdataPropName:!1,numberParseOptions:{hex:!0,leadingZeros:!0,eNotation:!0},tagValueProcessor:function(t,e){return e},attributeValueProcessor:function(t,e){return e},stopNodes:[],alwaysCreateTextNode:!1,isArray:()=>!1,commentPropName:!1,unpairedTags:[],processEntities:!0,htmlEntities:!1,ignoreDeclaration:!1,ignorePiTags:!1,transformTagName:!1,transformAttributeName:!1,updateTag:function(t,e,n){return t},captureMetaData:!1};let y;y="function"!=typeof Symbol?"@@xmlMetadata":Symbol("XML Node Metadata");class T{constructor(t){this.tagname=t,this.child=[],this[":@"]={}}add(t,e){"__proto__"===t&&(t="#__proto__"),this.child.push({[t]:e})}addChild(t,e){"__proto__"===t.tagname&&(t.tagname="#__proto__"),t[":@"]&&Object.keys(t[":@"]).length>0?this.child.push({[t.tagname]:t.child,":@":t[":@"]}):this.child.push({[t.tagname]:t.child}),void 0!==e&&(this.child[this.child.length-1][y]={startIndex:e})}static getMetaDataSymbol(){return y}}function w(t,e){const n={};if("O"!==t[e+3]||"C"!==t[e+4]||"T"!==t[e+5]||"Y"!==t[e+6]||"P"!==t[e+7]||"E"!==t[e+8])throw new Error("Invalid Tag instead of DOCTYPE");{e+=9;let i=1,r=!1,s=!1,o="";for(;e<t.length;e++)if("<"!==t[e]||s)if(">"===t[e]){if(s?"-"===t[e-1]&&"-"===t[e-2]&&(s=!1,i--):i--,0===i)break}else"["===t[e]?r=!0:o+=t[e];else{if(r&&$(t,e)){let i,r;e+=7,[i,r,e]=O(t,e+1),-1===r.indexOf("&")&&(n[i]={regx:RegExp(`&${i};`,"g"),val:r})}else if(r&&j(t,e)){e+=8;const{index:n}=S(t,e+1);e=n}else if(r&&D(t,e))e+=8;else if(r&&V(t,e)){e+=9;const{index:n}=A(t,e+1);e=n}else{if(!C)throw new Error("Invalid DOCTYPE");s=!0}i++,o=""}if(0!==i)throw new Error("Unclosed DOCTYPE")}return{entities:n,i:e}}const P=(t,e)=>{for(;e<t.length&&/\s/.test(t[e]);)e++;return e};function O(t,e){e=P(t,e);let n="";for(;e<t.length&&!/\s/.test(t[e])&&'"'!==t[e]&&"'"!==t[e];)n+=t[e],e++;if(_(n),e=P(t,e),"SYSTEM"===t.substring(e,e+6).toUpperCase())throw new Error("External entities are not supported");if("%"===t[e])throw new Error("Parameter entities are not supported");let i="";return[e,i]=I(t,e,"entity"),[n,i,--e]}function A(t,e){e=P(t,e);let n="";for(;e<t.length&&!/\s/.test(t[e]);)n+=t[e],e++;_(n),e=P(t,e);const i=t.substring(e,e+6).toUpperCase();if("SYSTEM"!==i&&"PUBLIC"!==i)throw new Error(`Expected SYSTEM or PUBLIC, found "${i}"`);e+=i.length,e=P(t,e);let r=null,s=null;if("PUBLIC"===i)[e,r]=I(t,e,"publicIdentifier"),'"'!==t[e=P(t,e)]&&"'"!==t[e]||([e,s]=I(t,e,"systemIdentifier"));else if("SYSTEM"===i&&([e,s]=I(t,e,"systemIdentifier"),!s))throw new Error("Missing mandatory system identifier for SYSTEM notation");return{notationName:n,publicIdentifier:r,systemIdentifier:s,index:--e}}function I(t,e,n){let i="";const r=t[e];if('"'!==r&&"'"!==r)throw new Error(`Expected quoted string, found "${r}"`);for(e++;e<t.length&&t[e]!==r;)i+=t[e],e++;if(t[e]!==r)throw new Error(`Unterminated ${n} value`);return[++e,i]}function S(t,e){e=P(t,e);let n="";for(;e<t.length&&!/\s/.test(t[e]);)n+=t[e],e++;if(!_(n))throw new Error(`Invalid element name: "${n}"`);if("("!==t[e=P(t,e)])throw new Error(`Expected '(', found "${t[e]}"`);e++;let i="";for(;e<t.length&&")"!==t[e];)i+=t[e],e++;if(")"!==t[e])throw new Error("Unterminated content model");return{elementName:n,contentModel:i.trim(),index:e}}function C(t,e){return"!"===t[e+1]&&"-"===t[e+2]&&"-"===t[e+3]}function $(t,e){return"!"===t[e+1]&&"E"===t[e+2]&&"N"===t[e+3]&&"T"===t[e+4]&&"I"===t[e+5]&&"T"===t[e+6]&&"Y"===t[e+7]}function j(t,e){return"!"===t[e+1]&&"E"===t[e+2]&&"L"===t[e+3]&&"E"===t[e+4]&&"M"===t[e+5]&&"E"===t[e+6]&&"N"===t[e+7]&&"T"===t[e+8]}function D(t,e){return"!"===t[e+1]&&"A"===t[e+2]&&"T"===t[e+3]&&"T"===t[e+4]&&"L"===t[e+5]&&"I"===t[e+6]&&"S"===t[e+7]&&"T"===t[e+8]}function V(t,e){return"!"===t[e+1]&&"N"===t[e+2]&&"O"===t[e+3]&&"T"===t[e+4]&&"A"===t[e+5]&&"T"===t[e+6]&&"I"===t[e+7]&&"O"===t[e+8]&&"N"===t[e+9]}function _(t){if(s(t))return t;throw new Error(`Invalid entity name ${t}`)}const k=/^[-+]?0x[a-fA-F0-9]+$/,F=/^([\-\+])?(0*)([0-9]*(\.[0-9]*)?)$/,M={hex:!0,leadingZeros:!0,decimalPoint:".",eNotation:!0};function L(t){return"function"==typeof t?t:Array.isArray(t)?e=>{for(const n of t){if("string"==typeof n&&e===n)return!0;if(n instanceof RegExp&&n.test(e))return!0}}:()=>!1}class B{constructor(t){this.options=t,this.currentNode=null,this.tagsNodeStack=[],this.docTypeEntities={},this.lastEntities={apos:{regex:/&(apos|#39|#x27);/g,val:"'"},gt:{regex:/&(gt|#62|#x3E);/g,val:">"},lt:{regex:/&(lt|#60|#x3C);/g,val:"<"},quot:{regex:/&(quot|#34|#x22);/g,val:'"'}},this.ampEntity={regex:/&(amp|#38|#x26);/g,val:"&"},this.htmlEntities={space:{regex:/&(nbsp|#160);/g,val:" "},cent:{regex:/&(cent|#162);/g,val:"¢"},pound:{regex:/&(pound|#163);/g,val:"£"},yen:{regex:/&(yen|#165);/g,val:"¥"},euro:{regex:/&(euro|#8364);/g,val:"€"},copyright:{regex:/&(copy|#169);/g,val:"©"},reg:{regex:/&(reg|#174);/g,val:"®"},inr:{regex:/&(inr|#8377);/g,val:"₹"},num_dec:{regex:/&#([0-9]{1,7});/g,val:(t,e)=>String.fromCodePoint(Number.parseInt(e,10))},num_hex:{regex:/&#x([0-9a-fA-F]{1,6});/g,val:(t,e)=>String.fromCodePoint(Number.parseInt(e,16))}},this.addExternalEntities=U,this.parseXml=Z,this.parseTextData=G,this.resolveNameSpace=X,this.buildAttributesMap=Y,this.isItStopNode=J,this.replaceEntitiesValue=W,this.readStopNodeData=Q,this.saveTextToParentTag=z,this.addChild=q,this.ignoreAttributesFn=L(this.options.ignoreAttributes)}}function U(t){const e=Object.keys(t);for(let n=0;n<e.length;n++){const i=e[n];this.lastEntities[i]={regex:new RegExp("&"+i+";","g"),val:t[i]}}}function G(t,e,n,i,r,s,o){if(void 0!==t&&(this.options.trimValues&&!i&&(t=t.trim()),t.length>0)){o||(t=this.replaceEntitiesValue(t));const i=this.options.tagValueProcessor(e,t,n,r,s);return null==i?t:typeof i!=typeof t||i!==t?i:this.options.trimValues||t.trim()===t?tt(t,this.options.parseTagValue,this.options.numberParseOptions):t}}function X(t){if(this.options.removeNSPrefix){const e=t.split(":"),n="/"===t.charAt(0)?"/":"";if("xmlns"===e[0])return"";2===e.length&&(t=n+e[1])}return t}const R=new RegExp("([^\\s=]+)\\s*(=\\s*(['\"])([\\s\\S]*?)\\3)?","gm");function Y(t,e,n){if(!0!==this.options.ignoreAttributes&&"string"==typeof t){const n=r(t,R),i=n.length,s={};for(let t=0;t<i;t++){const i=this.resolveNameSpace(n[t][1]);if(this.ignoreAttributesFn(i,e))continue;let r=n[t][4],o=this.options.attributeNamePrefix+i;if(i.length)if(this.options.transformAttributeName&&(o=this.options.transformAttributeName(o)),"__proto__"===o&&(o="#__proto__"),void 0!==r){this.options.trimValues&&(r=r.trim()),r=this.replaceEntitiesValue(r);const t=this.options.attributeValueProcessor(i,r,e);s[o]=null==t?r:typeof t!=typeof r||t!==r?t:tt(r,this.options.parseAttributeValue,this.options.numberParseOptions)}else this.options.allowBooleanAttributes&&(s[o]=!0)}if(!Object.keys(s).length)return;if(this.options.attributesGroupName){const t={};return t[this.options.attributesGroupName]=s,t}return s}}const Z=function(t){t=t.replace(/\r\n?/g,"\n");const e=new T("!xml");let n=e,i="",r="";for(let s=0;s<t.length;s++)if("<"===t[s])if("/"===t[s+1]){const e=H(t,">",s,"Closing Tag is not closed.");let o=t.substring(s+2,e).trim();if(this.options.removeNSPrefix){const t=o.indexOf(":");-1!==t&&(o=o.substr(t+1))}this.options.transformTagName&&(o=this.options.transformTagName(o)),n&&(i=this.saveTextToParentTag(i,n,r));const a=r.substring(r.lastIndexOf(".")+1);if(o&&-1!==this.options.unpairedTags.indexOf(o))throw new Error(`Unpaired tag can not be used as closing tag: </${o}>`);let l=0;a&&-1!==this.options.unpairedTags.indexOf(a)?(l=r.lastIndexOf(".",r.lastIndexOf(".")-1),this.tagsNodeStack.pop()):l=r.lastIndexOf("."),r=r.substring(0,l),n=this.tagsNodeStack.pop(),i="",s=e}else if("?"===t[s+1]){let e=K(t,s,!1,"?>");if(!e)throw new Error("Pi Tag is not closed.");if(i=this.saveTextToParentTag(i,n,r),this.options.ignoreDeclaration&&"?xml"===e.tagName||this.options.ignorePiTags);else{const t=new T(e.tagName);t.add(this.options.textNodeName,""),e.tagName!==e.tagExp&&e.attrExpPresent&&(t[":@"]=this.buildAttributesMap(e.tagExp,r,e.tagName)),this.addChild(n,t,r,s)}s=e.closeIndex+1}else if("!--"===t.substr(s+1,3)){const e=H(t,"--\x3e",s+4,"Comment is not closed.");if(this.options.commentPropName){const o=t.substring(s+4,e-2);i=this.saveTextToParentTag(i,n,r),n.add(this.options.commentPropName,[{[this.options.textNodeName]:o}])}s=e}else if("!D"===t.substr(s+1,2)){const e=w(t,s);this.docTypeEntities=e.entities,s=e.i}else if("!["===t.substr(s+1,2)){const e=H(t,"]]>",s,"CDATA is not closed.")-2,o=t.substring(s+9,e);i=this.saveTextToParentTag(i,n,r);let a=this.parseTextData(o,n.tagname,r,!0,!1,!0,!0);null==a&&(a=""),this.options.cdataPropName?n.add(this.options.cdataPropName,[{[this.options.textNodeName]:o}]):n.add(this.options.textNodeName,a),s=e+2}else{let o=K(t,s,this.options.removeNSPrefix),a=o.tagName;const l=o.rawTagName;let u=o.tagExp,h=o.attrExpPresent,d=o.closeIndex;this.options.transformTagName&&(a=this.options.transformTagName(a)),n&&i&&"!xml"!==n.tagname&&(i=this.saveTextToParentTag(i,n,r,!1));const c=n;c&&-1!==this.options.unpairedTags.indexOf(c.tagname)&&(n=this.tagsNodeStack.pop(),r=r.substring(0,r.lastIndexOf("."))),a!==e.tagname&&(r+=r?"."+a:a);const f=s;if(this.isItStopNode(this.options.stopNodes,r,a)){let e="";if(u.length>0&&u.lastIndexOf("/")===u.length-1)"/"===a[a.length-1]?(a=a.substr(0,a.length-1),r=r.substr(0,r.length-1),u=a):u=u.substr(0,u.length-1),s=o.closeIndex;else if(-1!==this.options.unpairedTags.indexOf(a))s=o.closeIndex;else{const n=this.readStopNodeData(t,l,d+1);if(!n)throw new Error(`Unexpected end of ${l}`);s=n.i,e=n.tagContent}const i=new T(a);a!==u&&h&&(i[":@"]=this.buildAttributesMap(u,r,a)),e&&(e=this.parseTextData(e,a,r,!0,h,!0,!0)),r=r.substr(0,r.lastIndexOf(".")),i.add(this.options.textNodeName,e),this.addChild(n,i,r,f)}else{if(u.length>0&&u.lastIndexOf("/")===u.length-1){"/"===a[a.length-1]?(a=a.substr(0,a.length-1),r=r.substr(0,r.length-1),u=a):u=u.substr(0,u.length-1),this.options.transformTagName&&(a=this.options.transformTagName(a));const t=new T(a);a!==u&&h&&(t[":@"]=this.buildAttributesMap(u,r,a)),this.addChild(n,t,r,f),r=r.substr(0,r.lastIndexOf("."))}else{const t=new T(a);this.tagsNodeStack.push(n),a!==u&&h&&(t[":@"]=this.buildAttributesMap(u,r,a)),this.addChild(n,t,r,f),n=t}i="",s=d}}else i+=t[s];return e.child};function q(t,e,n,i){this.options.captureMetaData||(i=void 0);const r=this.options.updateTag(e.tagname,n,e[":@"]);!1===r||("string"==typeof r?(e.tagname=r,t.addChild(e,i)):t.addChild(e,i))}const W=function(t){if(this.options.processEntities){for(let e in this.docTypeEntities){const n=this.docTypeEntities[e];t=t.replace(n.regx,n.val)}for(let e in this.lastEntities){const n=this.lastEntities[e];t=t.replace(n.regex,n.val)}if(this.options.htmlEntities)for(let e in this.htmlEntities){const n=this.htmlEntities[e];t=t.replace(n.regex,n.val)}t=t.replace(this.ampEntity.regex,this.ampEntity.val)}return t};function z(t,e,n,i){return t&&(void 0===i&&(i=0===e.child.length),void 0!==(t=this.parseTextData(t,e.tagname,n,!1,!!e[":@"]&&0!==Object.keys(e[":@"]).length,i))&&""!==t&&e.add(this.options.textNodeName,t),t=""),t}function J(t,e,n){const i="*."+n;for(const n in t){const r=t[n];if(i===r||e===r)return!0}return!1}function H(t,e,n,i){const r=t.indexOf(e,n);if(-1===r)throw new Error(i);return r+e.length-1}function K(t,e,n,i=">"){const r=function(t,e,n=">"){let i,r="";for(let s=e;s<t.length;s++){let e=t[s];if(i)e===i&&(i="");else if('"'===e||"'"===e)i=e;else if(e===n[0]){if(!n[1])return{data:r,index:s};if(t[s+1]===n[1])return{data:r,index:s}}else"\t"===e&&(e=" ");r+=e}}(t,e+1,i);if(!r)return;let s=r.data;const o=r.index,a=s.search(/\s/);let l=s,u=!0;-1!==a&&(l=s.substring(0,a),s=s.substring(a+1).trimStart());const h=l;if(n){const t=l.indexOf(":");-1!==t&&(l=l.substr(t+1),u=l!==r.data.substr(t+1))}return{tagName:l,tagExp:s,closeIndex:o,attrExpPresent:u,rawTagName:h}}function Q(t,e,n){const i=n;let r=1;for(;n<t.length;n++)if("<"===t[n])if("/"===t[n+1]){const s=H(t,">",n,`${e} is not closed`);if(t.substring(n+2,s).trim()===e&&(r--,0===r))return{tagContent:t.substring(i,n),i:s};n=s}else if("?"===t[n+1])n=H(t,"?>",n+1,"StopNode is not closed.");else if("!--"===t.substr(n+1,3))n=H(t,"--\x3e",n+3,"StopNode is not closed.");else if("!["===t.substr(n+1,2))n=H(t,"]]>",n,"StopNode is not closed.")-2;else{const i=K(t,n,">");i&&((i&&i.tagName)===e&&"/"!==i.tagExp[i.tagExp.length-1]&&r++,n=i.closeIndex)}}function tt(t,e,n){if(e&&"string"==typeof t){const e=t.trim();return"true"===e||"false"!==e&&function(t,e={}){if(e=Object.assign({},M,e),!t||"string"!=typeof t)return t;let n=t.trim();if(void 0!==e.skipLike&&e.skipLike.test(n))return t;if("0"===t)return 0;if(e.hex&&k.test(n))return function(t){if(parseInt)return parseInt(t,16);if(Number.parseInt)return Number.parseInt(t,16);if(window&&window.parseInt)return window.parseInt(t,16);throw new Error("parseInt, Number.parseInt, window.parseInt are not supported")}(n);if(-1!==n.search(/[eE]/)){const i=n.match(/^([-\+])?(0*)([0-9]*(\.[0-9]*)?[eE][-\+]?[0-9]+)$/);if(i){if(e.leadingZeros)n=(i[1]||"")+i[3];else if("0"!==i[2]||"."!==i[3][0])return t;return e.eNotation?Number(n):t}return t}{const r=F.exec(n);if(r){const s=r[1],o=r[2];let a=(i=r[3])&&-1!==i.indexOf(".")?("."===(i=i.replace(/0+$/,""))?i="0":"."===i[0]?i="0"+i:"."===i[i.length-1]&&(i=i.substr(0,i.length-1)),i):i;if(!e.leadingZeros&&o.length>0&&s&&"."!==n[2])return t;if(!e.leadingZeros&&o.length>0&&!s&&"."!==n[1])return t;if(e.leadingZeros&&o===t)return 0;{const i=Number(n),r=""+i;return-1!==r.search(/[eE]/)?e.eNotation?i:t:-1!==n.indexOf(".")?"0"===r&&""===a||r===a||s&&r==="-"+a?i:t:o?a===r||s+a===r?i:t:n===r||n===s+r?i:t}}return t}var i}(t,n)}return void 0!==t?t:""}const et=T.getMetaDataSymbol();function nt(t,e){return it(t,e)}function it(t,e,n){let i;const r={};for(let s=0;s<t.length;s++){const o=t[s],a=rt(o);let l="";if(l=void 0===n?a:n+"."+a,a===e.textNodeName)void 0===i?i=o[a]:i+=""+o[a];else{if(void 0===a)continue;if(o[a]){let t=it(o[a],e,l);const n=ot(t,e);void 0!==o[et]&&(t[et]=o[et]),o[":@"]?st(t,o[":@"],l,e):1!==Object.keys(t).length||void 0===t[e.textNodeName]||e.alwaysCreateTextNode?0===Object.keys(t).length&&(e.alwaysCreateTextNode?t[e.textNodeName]="":t=""):t=t[e.textNodeName],void 0!==r[a]&&r.hasOwnProperty(a)?(Array.isArray(r[a])||(r[a]=[r[a]]),r[a].push(t)):e.isArray(a,l,n)?r[a]=[t]:r[a]=t}}}return"string"==typeof i?i.length>0&&(r[e.textNodeName]=i):void 0!==i&&(r[e.textNodeName]=i),r}function rt(t){const e=Object.keys(t);for(let t=0;t<e.length;t++){const n=e[t];if(":@"!==n)return n}}function st(t,e,n,i){if(e){const r=Object.keys(e),s=r.length;for(let o=0;o<s;o++){const s=r[o];i.isArray(s,n+"."+s,!0,!0)?t[s]=[e[s]]:t[s]=e[s]}}}function ot(t,e){const{textNodeName:n}=e,i=Object.keys(t).length;return 0===i||!(1!==i||!t[n]&&"boolean"!=typeof t[n]&&0!==t[n])}class at{constructor(t){this.externalEntities={},this.options=function(t){return Object.assign({},v,t)}(t)}parse(t,e){if("string"==typeof t);else{if(!t.toString)throw new Error("XML data is accepted in String or Bytes[] form.");t=t.toString()}if(e){!0===e&&(e={});const n=a(t,e);if(!0!==n)throw Error(`${n.err.msg}:${n.err.line}:${n.err.col}`)}const n=new B(this.options);n.addExternalEntities(this.externalEntities);const i=n.parseXml(t);return this.options.preserveOrder||void 0===i?i:nt(i,this.options)}addEntity(t,e){if(-1!==e.indexOf("&"))throw new Error("Entity value can't have '&'");if(-1!==t.indexOf("&")||-1!==t.indexOf(";"))throw new Error("An entity must be set without '&' and ';'. Eg. use '#xD' for '&#xD;'");if("&"===e)throw new Error("An entity with value '&' is not permitted");this.externalEntities[t]=e}static getMetaDataSymbol(){return T.getMetaDataSymbol()}}function lt(t,e){let n="";return e.format&&e.indentBy.length>0&&(n="\n"),ut(t,e,"",n)}function ut(t,e,n,i){let r="",s=!1;for(let o=0;o<t.length;o++){const a=t[o],l=ht(a);if(void 0===l)continue;let u="";if(u=0===n.length?l:`${n}.${l}`,l===e.textNodeName){let t=a[l];ct(u,e)||(t=e.tagValueProcessor(l,t),t=ft(t,e)),s&&(r+=i),r+=t,s=!1;continue}if(l===e.cdataPropName){s&&(r+=i),r+=`<![CDATA[${a[l][0][e.textNodeName]}]]>`,s=!1;continue}if(l===e.commentPropName){r+=i+`\x3c!--${a[l][0][e.textNodeName]}--\x3e`,s=!0;continue}if("?"===l[0]){const t=dt(a[":@"],e),n="?xml"===l?"":i;let o=a[l][0][e.textNodeName];o=0!==o.length?" "+o:"",r+=n+`<${l}${o}${t}?>`,s=!0;continue}let h=i;""!==h&&(h+=e.indentBy);const d=i+`<${l}${dt(a[":@"],e)}`,c=ut(a[l],e,u,h);-1!==e.unpairedTags.indexOf(l)?e.suppressUnpairedNode?r+=d+">":r+=d+"/>":c&&0!==c.length||!e.suppressEmptyNode?c&&c.endsWith(">")?r+=d+`>${c}${i}</${l}>`:(r+=d+">",c&&""!==i&&(c.includes("/>")||c.includes("</"))?r+=i+e.indentBy+c+i:r+=c,r+=`</${l}>`):r+=d+"/>",s=!0}return r}function ht(t){const e=Object.keys(t);for(let n=0;n<e.length;n++){const i=e[n];if(t.hasOwnProperty(i)&&":@"!==i)return i}}function dt(t,e){let n="";if(t&&!e.ignoreAttributes)for(let i in t){if(!t.hasOwnProperty(i))continue;let r=e.attributeValueProcessor(i,t[i]);r=ft(r,e),!0===r&&e.suppressBooleanAttributes?n+=` ${i.substr(e.attributeNamePrefix.length)}`:n+=` ${i.substr(e.attributeNamePrefix.length)}="${r}"`}return n}function ct(t,e){let n=(t=t.substr(0,t.length-e.textNodeName.length-1)).substr(t.lastIndexOf(".")+1);for(let i in e.stopNodes)if(e.stopNodes[i]===t||e.stopNodes[i]==="*."+n)return!0;return!1}function ft(t,e){if(t&&t.length>0&&e.processEntities)for(let n=0;n<e.entities.length;n++){const i=e.entities[n];t=t.replace(i.regex,i.val)}return t}const pt={attributeNamePrefix:"@_",attributesGroupName:!1,textNodeName:"#text",ignoreAttributes:!0,cdataPropName:!1,format:!1,indentBy:"  ",suppressEmptyNode:!1,suppressUnpairedNode:!0,suppressBooleanAttributes:!0,tagValueProcessor:function(t,e){return e},attributeValueProcessor:function(t,e){return e},preserveOrder:!1,commentPropName:!1,unpairedTags:[],entities:[{regex:new RegExp("&","g"),val:"&amp;"},{regex:new RegExp(">","g"),val:"&gt;"},{regex:new RegExp("<","g"),val:"&lt;"},{regex:new RegExp("'","g"),val:"&apos;"},{regex:new RegExp('"',"g"),val:"&quot;"}],processEntities:!0,stopNodes:[],oneListGroup:!1};function gt(t){this.options=Object.assign({},pt,t),!0===this.options.ignoreAttributes||this.options.attributesGroupName?this.isAttribute=function(){return!1}:(this.ignoreAttributesFn=L(this.options.ignoreAttributes),this.attrPrefixLen=this.options.attributeNamePrefix.length,this.isAttribute=bt),this.processTextOrObjNode=mt,this.options.format?(this.indentate=xt,this.tagEndChar=">\n",this.newLine="\n"):(this.indentate=function(){return""},this.tagEndChar=">",this.newLine="")}function mt(t,e,n,i){const r=this.j2x(t,n+1,i.concat(e));return void 0!==t[this.options.textNodeName]&&1===Object.keys(t).length?this.buildTextValNode(t[this.options.textNodeName],e,r.attrStr,n):this.buildObjectNode(r.val,e,r.attrStr,n)}function xt(t){return this.options.indentBy.repeat(t)}function bt(t){return!(!t.startsWith(this.options.attributeNamePrefix)||t===this.options.textNodeName)&&t.substr(this.attrPrefixLen)}gt.prototype.build=function(t){return this.options.preserveOrder?lt(t,this.options):(Array.isArray(t)&&this.options.arrayNodeName&&this.options.arrayNodeName.length>1&&(t={[this.options.arrayNodeName]:t}),this.j2x(t,0,[]).val)},gt.prototype.j2x=function(t,e,n){let i="",r="";const s=n.join(".");for(let o in t)if(Object.prototype.hasOwnProperty.call(t,o))if(void 0===t[o])this.isAttribute(o)&&(r+="");else if(null===t[o])this.isAttribute(o)||o===this.options.cdataPropName?r+="":"?"===o[0]?r+=this.indentate(e)+"<"+o+"?"+this.tagEndChar:r+=this.indentate(e)+"<"+o+"/"+this.tagEndChar;else if(t[o]instanceof Date)r+=this.buildTextValNode(t[o],o,"",e);else if("object"!=typeof t[o]){const n=this.isAttribute(o);if(n&&!this.ignoreAttributesFn(n,s))i+=this.buildAttrPairStr(n,""+t[o]);else if(!n)if(o===this.options.textNodeName){let e=this.options.tagValueProcessor(o,""+t[o]);r+=this.replaceEntitiesValue(e)}else r+=this.buildTextValNode(t[o],o,"",e)}else if(Array.isArray(t[o])){const i=t[o].length;let s="",a="";for(let l=0;l<i;l++){const i=t[o][l];if(void 0===i);else if(null===i)"?"===o[0]?r+=this.indentate(e)+"<"+o+"?"+this.tagEndChar:r+=this.indentate(e)+"<"+o+"/"+this.tagEndChar;else if("object"==typeof i)if(this.options.oneListGroup){const t=this.j2x(i,e+1,n.concat(o));s+=t.val,this.options.attributesGroupName&&i.hasOwnProperty(this.options.attributesGroupName)&&(a+=t.attrStr)}else s+=this.processTextOrObjNode(i,o,e,n);else if(this.options.oneListGroup){let t=this.options.tagValueProcessor(o,i);t=this.replaceEntitiesValue(t),s+=t}else s+=this.buildTextValNode(i,o,"",e)}this.options.oneListGroup&&(s=this.buildObjectNode(s,o,a,e)),r+=s}else if(this.options.attributesGroupName&&o===this.options.attributesGroupName){const e=Object.keys(t[o]),n=e.length;for(let r=0;r<n;r++)i+=this.buildAttrPairStr(e[r],""+t[o][e[r]])}else r+=this.processTextOrObjNode(t[o],o,e,n);return{attrStr:i,val:r}},gt.prototype.buildAttrPairStr=function(t,e){return e=this.options.attributeValueProcessor(t,""+e),e=this.replaceEntitiesValue(e),this.options.suppressBooleanAttributes&&"true"===e?" "+t:" "+t+'="'+e+'"'},gt.prototype.buildObjectNode=function(t,e,n,i){if(""===t)return"?"===e[0]?this.indentate(i)+"<"+e+n+"?"+this.tagEndChar:this.indentate(i)+"<"+e+n+this.closeTag(e)+this.tagEndChar;{let r="</"+e+this.tagEndChar,s="";return"?"===e[0]&&(s="?",r=""),!n&&""!==n||-1!==t.indexOf("<")?!1!==this.options.commentPropName&&e===this.options.commentPropName&&0===s.length?this.indentate(i)+`\x3c!--${t}--\x3e`+this.newLine:this.indentate(i)+"<"+e+n+s+this.tagEndChar+t+this.indentate(i)+r:this.indentate(i)+"<"+e+n+s+">"+t+r}},gt.prototype.closeTag=function(t){let e="";return-1!==this.options.unpairedTags.indexOf(t)?this.options.suppressUnpairedNode||(e="/"):e=this.options.suppressEmptyNode?"/":`></${t}`,e},gt.prototype.buildTextValNode=function(t,e,n,i){if(!1!==this.options.cdataPropName&&e===this.options.cdataPropName)return this.indentate(i)+`<![CDATA[${t}]]>`+this.newLine;if(!1!==this.options.commentPropName&&e===this.options.commentPropName)return this.indentate(i)+`\x3c!--${t}--\x3e`+this.newLine;if("?"===e[0])return this.indentate(i)+"<"+e+n+"?"+this.tagEndChar;{let r=this.options.tagValueProcessor(e,t);return r=this.replaceEntitiesValue(r),""===r?this.indentate(i)+"<"+e+n+this.closeTag(e)+this.tagEndChar:this.indentate(i)+"<"+e+n+">"+r+"</"+e+this.tagEndChar}},gt.prototype.replaceEntitiesValue=function(t){if(t&&t.length>0&&this.options.processEntities)for(let e=0;e<this.options.entities.length;e++){const n=this.options.entities[e];t=t.replace(n.regex,n.val)}return t};const Nt={validate:a};module.exports=e})();
+(()=>{"use strict";var t={d:(e,n)=>{for(var i in n)t.o(n,i)&&!t.o(e,i)&&Object.defineProperty(e,i,{enumerable:!0,get:n[i]})},o:(t,e)=>Object.prototype.hasOwnProperty.call(t,e),r:t=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})}},e={};t.r(e),t.d(e,{XMLBuilder:()=>ft,XMLParser:()=>st,XMLValidator:()=>mt});const n=":A-Za-z_\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD",i=new RegExp("^["+n+"]["+n+"\\-.\\d\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$");function s(t,e){const n=[];let i=e.exec(t);for(;i;){const s=[];s.startIndex=e.lastIndex-i[0].length;const r=i.length;for(let t=0;t<r;t++)s.push(i[t]);n.push(s),i=e.exec(t)}return n}const r=function(t){return!(null==i.exec(t))},o={allowBooleanAttributes:!1,unpairedTags:[]};function a(t,e){e=Object.assign({},o,e);const n=[];let i=!1,s=!1;"\ufeff"===t[0]&&(t=t.substr(1));for(let o=0;o<t.length;o++)if("<"===t[o]&&"?"===t[o+1]){if(o+=2,o=u(t,o),o.err)return o}else{if("<"!==t[o]){if(l(t[o]))continue;return x("InvalidChar","char '"+t[o]+"' is not expected.",N(t,o))}{let a=o;if(o++,"!"===t[o]){o=h(t,o);continue}{let d=!1;"/"===t[o]&&(d=!0,o++);let f="";for(;o<t.length&&">"!==t[o]&&" "!==t[o]&&"\t"!==t[o]&&"\n"!==t[o]&&"\r"!==t[o];o++)f+=t[o];if(f=f.trim(),"/"===f[f.length-1]&&(f=f.substring(0,f.length-1),o--),!r(f)){let e;return e=0===f.trim().length?"Invalid space after '<'.":"Tag '"+f+"' is an invalid name.",x("InvalidTag",e,N(t,o))}const p=c(t,o);if(!1===p)return x("InvalidAttr","Attributes for '"+f+"' have open quote.",N(t,o));let b=p.value;if(o=p.index,"/"===b[b.length-1]){const n=o-b.length;b=b.substring(0,b.length-1);const s=g(b,e);if(!0!==s)return x(s.err.code,s.err.msg,N(t,n+s.err.line));i=!0}else if(d){if(!p.tagClosed)return x("InvalidTag","Closing tag '"+f+"' doesn't have proper closing.",N(t,o));if(b.trim().length>0)return x("InvalidTag","Closing tag '"+f+"' can't have attributes or invalid starting.",N(t,a));if(0===n.length)return x("InvalidTag","Closing tag '"+f+"' has not been opened.",N(t,a));{const e=n.pop();if(f!==e.tagName){let n=N(t,e.tagStartPos);return x("InvalidTag","Expected closing tag '"+e.tagName+"' (opened in line "+n.line+", col "+n.col+") instead of closing tag '"+f+"'.",N(t,a))}0==n.length&&(s=!0)}}else{const r=g(b,e);if(!0!==r)return x(r.err.code,r.err.msg,N(t,o-b.length+r.err.line));if(!0===s)return x("InvalidXml","Multiple possible root nodes found.",N(t,o));-1!==e.unpairedTags.indexOf(f)||n.push({tagName:f,tagStartPos:a}),i=!0}for(o++;o<t.length;o++)if("<"===t[o]){if("!"===t[o+1]){o++,o=h(t,o);continue}if("?"!==t[o+1])break;if(o=u(t,++o),o.err)return o}else if("&"===t[o]){const e=m(t,o);if(-1==e)return x("InvalidChar","char '&' is not expected.",N(t,o));o=e}else if(!0===s&&!l(t[o]))return x("InvalidXml","Extra text at the end",N(t,o));"<"===t[o]&&o--}}}return i?1==n.length?x("InvalidTag","Unclosed tag '"+n[0].tagName+"'.",N(t,n[0].tagStartPos)):!(n.length>0)||x("InvalidXml","Invalid '"+JSON.stringify(n.map((t=>t.tagName)),null,4).replace(/\r?\n/g,"")+"' found.",{line:1,col:1}):x("InvalidXml","Start tag expected.",1)}function l(t){return" "===t||"\t"===t||"\n"===t||"\r"===t}function u(t,e){const n=e;for(;e<t.length;e++)if("?"!=t[e]&&" "!=t[e]);else{const i=t.substr(n,e-n);if(e>5&&"xml"===i)return x("InvalidXml","XML declaration allowed only at the start of the document.",N(t,e));if("?"==t[e]&&">"==t[e+1]){e++;break}}return e}function h(t,e){if(t.length>e+5&&"-"===t[e+1]&&"-"===t[e+2]){for(e+=3;e<t.length;e++)if("-"===t[e]&&"-"===t[e+1]&&">"===t[e+2]){e+=2;break}}else if(t.length>e+8&&"D"===t[e+1]&&"O"===t[e+2]&&"C"===t[e+3]&&"T"===t[e+4]&&"Y"===t[e+5]&&"P"===t[e+6]&&"E"===t[e+7]){let n=1;for(e+=8;e<t.length;e++)if("<"===t[e])n++;else if(">"===t[e]&&(n--,0===n))break}else if(t.length>e+9&&"["===t[e+1]&&"C"===t[e+2]&&"D"===t[e+3]&&"A"===t[e+4]&&"T"===t[e+5]&&"A"===t[e+6]&&"["===t[e+7])for(e+=8;e<t.length;e++)if("]"===t[e]&&"]"===t[e+1]&&">"===t[e+2]){e+=2;break}return e}const d='"',f="'";function c(t,e){let n="",i="",s=!1;for(;e<t.length;e++){if(t[e]===d||t[e]===f)""===i?i=t[e]:i!==t[e]||(i="");else if(">"===t[e]&&""===i){s=!0;break}n+=t[e]}return""===i&&{value:n,index:e,tagClosed:s}}const p=new RegExp("(\\s*)([^\\s=]+)(\\s*=)?(\\s*(['\"])(([\\s\\S])*?)\\5)?","g");function g(t,e){const n=s(t,p),i={};for(let t=0;t<n.length;t++){if(0===n[t][1].length)return x("InvalidAttr","Attribute '"+n[t][2]+"' has no space in starting.",E(n[t]));if(void 0!==n[t][3]&&void 0===n[t][4])return x("InvalidAttr","Attribute '"+n[t][2]+"' is without value.",E(n[t]));if(void 0===n[t][3]&&!e.allowBooleanAttributes)return x("InvalidAttr","boolean attribute '"+n[t][2]+"' is not allowed.",E(n[t]));const s=n[t][2];if(!b(s))return x("InvalidAttr","Attribute '"+s+"' is an invalid name.",E(n[t]));if(i.hasOwnProperty(s))return x("InvalidAttr","Attribute '"+s+"' is repeated.",E(n[t]));i[s]=1}return!0}function m(t,e){if(";"===t[++e])return-1;if("#"===t[e])return function(t,e){let n=/\d/;for("x"===t[e]&&(e++,n=/[\da-fA-F]/);e<t.length;e++){if(";"===t[e])return e;if(!t[e].match(n))break}return-1}(t,++e);let n=0;for(;e<t.length;e++,n++)if(!(t[e].match(/\w/)&&n<20)){if(";"===t[e])break;return-1}return e}function x(t,e,n){return{err:{code:t,msg:e,line:n.line||n,col:n.col}}}function b(t){return r(t)}function N(t,e){const n=t.substring(0,e).split(/\r?\n/);return{line:n.length,col:n[n.length-1].length+1}}function E(t){return t.startIndex+t[1].length}const v={preserveOrder:!1,attributeNamePrefix:"@_",attributesGroupName:!1,textNodeName:"#text",ignoreAttributes:!0,removeNSPrefix:!1,allowBooleanAttributes:!1,parseTagValue:!0,parseAttributeValue:!1,trimValues:!0,cdataPropName:!1,numberParseOptions:{hex:!0,leadingZeros:!0,eNotation:!0},tagValueProcessor:function(t,e){return e},attributeValueProcessor:function(t,e){return e},stopNodes:[],alwaysCreateTextNode:!1,isArray:()=>!1,commentPropName:!1,unpairedTags:[],processEntities:!0,htmlEntities:!1,ignoreDeclaration:!1,ignorePiTags:!1,transformTagName:!1,transformAttributeName:!1,updateTag:function(t,e,n){return t},captureMetaData:!1};let y;y="function"!=typeof Symbol?"@@xmlMetadata":Symbol("XML Node Metadata");class T{constructor(t){this.tagname=t,this.child=[],this[":@"]={}}add(t,e){"__proto__"===t&&(t="#__proto__"),this.child.push({[t]:e})}addChild(t,e){"__proto__"===t.tagname&&(t.tagname="#__proto__"),t[":@"]&&Object.keys(t[":@"]).length>0?this.child.push({[t.tagname]:t.child,":@":t[":@"]}):this.child.push({[t.tagname]:t.child}),void 0!==e&&(this.child[this.child.length-1][y]={startIndex:e})}static getMetaDataSymbol(){return y}}function w(t,e){const n={};if("O"!==t[e+3]||"C"!==t[e+4]||"T"!==t[e+5]||"Y"!==t[e+6]||"P"!==t[e+7]||"E"!==t[e+8])throw new Error("Invalid Tag instead of DOCTYPE");{e+=9;let i=1,s=!1,r=!1,o="";for(;e<t.length;e++)if("<"!==t[e]||r)if(">"===t[e]){if(r?"-"===t[e-1]&&"-"===t[e-2]&&(r=!1,i--):i--,0===i)break}else"["===t[e]?s=!0:o+=t[e];else{if(s&&C(t,"!ENTITY",e)){let i,s;e+=7,[i,s,e]=O(t,e+1),-1===s.indexOf("&")&&(n[i]={regx:RegExp(`&${i};`,"g"),val:s})}else if(s&&C(t,"!ELEMENT",e)){e+=8;const{index:n}=S(t,e+1);e=n}else if(s&&C(t,"!ATTLIST",e))e+=8;else if(s&&C(t,"!NOTATION",e)){e+=9;const{index:n}=A(t,e+1);e=n}else{if(!C(t,"!--",e))throw new Error("Invalid DOCTYPE");r=!0}i++,o=""}if(0!==i)throw new Error("Unclosed DOCTYPE")}return{entities:n,i:e}}const P=(t,e)=>{for(;e<t.length&&/\s/.test(t[e]);)e++;return e};function O(t,e){e=P(t,e);let n="";for(;e<t.length&&!/\s/.test(t[e])&&'"'!==t[e]&&"'"!==t[e];)n+=t[e],e++;if($(n),e=P(t,e),"SYSTEM"===t.substring(e,e+6).toUpperCase())throw new Error("External entities are not supported");if("%"===t[e])throw new Error("Parameter entities are not supported");let i="";return[e,i]=I(t,e,"entity"),[n,i,--e]}function A(t,e){e=P(t,e);let n="";for(;e<t.length&&!/\s/.test(t[e]);)n+=t[e],e++;$(n),e=P(t,e);const i=t.substring(e,e+6).toUpperCase();if("SYSTEM"!==i&&"PUBLIC"!==i)throw new Error(`Expected SYSTEM or PUBLIC, found "${i}"`);e+=i.length,e=P(t,e);let s=null,r=null;if("PUBLIC"===i)[e,s]=I(t,e,"publicIdentifier"),'"'!==t[e=P(t,e)]&&"'"!==t[e]||([e,r]=I(t,e,"systemIdentifier"));else if("SYSTEM"===i&&([e,r]=I(t,e,"systemIdentifier"),!r))throw new Error("Missing mandatory system identifier for SYSTEM notation");return{notationName:n,publicIdentifier:s,systemIdentifier:r,index:--e}}function I(t,e,n){let i="";const s=t[e];if('"'!==s&&"'"!==s)throw new Error(`Expected quoted string, found "${s}"`);for(e++;e<t.length&&t[e]!==s;)i+=t[e],e++;if(t[e]!==s)throw new Error(`Unterminated ${n} value`);return[++e,i]}function S(t,e){e=P(t,e);let n="";for(;e<t.length&&!/\s/.test(t[e]);)n+=t[e],e++;if(!$(n))throw new Error(`Invalid element name: "${n}"`);let i="";if("E"===t[e=P(t,e)]&&C(t,"MPTY",e))e+=6;else if("A"===t[e]&&C(t,"NY",e))e+=4;else{if("("!==t[e])throw new Error(`Invalid Element Expression, found "${t[e]}"`);for(e++;e<t.length&&")"!==t[e];)i+=t[e],e++;if(")"!==t[e])throw new Error("Unterminated content model")}return{elementName:n,contentModel:i.trim(),index:e}}function C(t,e,n){for(let i=0;i<e.length;i++)if(e[i]!==t[n+i+1])return!1;return!0}function $(t){if(r(t))return t;throw new Error(`Invalid entity name ${t}`)}const j=/^[-+]?0x[a-fA-F0-9]+$/,D=/^([\-\+])?(0*)([0-9]*(\.[0-9]*)?)$/,V={hex:!0,leadingZeros:!0,decimalPoint:".",eNotation:!0};const M=/^([-+])?(0*)(\d*(\.\d*)?[eE][-\+]?\d+)$/;function _(t){return"function"==typeof t?t:Array.isArray(t)?e=>{for(const n of t){if("string"==typeof n&&e===n)return!0;if(n instanceof RegExp&&n.test(e))return!0}}:()=>!1}class k{constructor(t){this.options=t,this.currentNode=null,this.tagsNodeStack=[],this.docTypeEntities={},this.lastEntities={apos:{regex:/&(apos|#39|#x27);/g,val:"'"},gt:{regex:/&(gt|#62|#x3E);/g,val:">"},lt:{regex:/&(lt|#60|#x3C);/g,val:"<"},quot:{regex:/&(quot|#34|#x22);/g,val:'"'}},this.ampEntity={regex:/&(amp|#38|#x26);/g,val:"&"},this.htmlEntities={space:{regex:/&(nbsp|#160);/g,val:" "},cent:{regex:/&(cent|#162);/g,val:"¢"},pound:{regex:/&(pound|#163);/g,val:"£"},yen:{regex:/&(yen|#165);/g,val:"¥"},euro:{regex:/&(euro|#8364);/g,val:"€"},copyright:{regex:/&(copy|#169);/g,val:"©"},reg:{regex:/&(reg|#174);/g,val:"®"},inr:{regex:/&(inr|#8377);/g,val:"₹"},num_dec:{regex:/&#([0-9]{1,7});/g,val:(t,e)=>String.fromCodePoint(Number.parseInt(e,10))},num_hex:{regex:/&#x([0-9a-fA-F]{1,6});/g,val:(t,e)=>String.fromCodePoint(Number.parseInt(e,16))}},this.addExternalEntities=F,this.parseXml=X,this.parseTextData=L,this.resolveNameSpace=B,this.buildAttributesMap=G,this.isItStopNode=Z,this.replaceEntitiesValue=R,this.readStopNodeData=J,this.saveTextToParentTag=q,this.addChild=Y,this.ignoreAttributesFn=_(this.options.ignoreAttributes)}}function F(t){const e=Object.keys(t);for(let n=0;n<e.length;n++){const i=e[n];this.lastEntities[i]={regex:new RegExp("&"+i+";","g"),val:t[i]}}}function L(t,e,n,i,s,r,o){if(void 0!==t&&(this.options.trimValues&&!i&&(t=t.trim()),t.length>0)){o||(t=this.replaceEntitiesValue(t));const i=this.options.tagValueProcessor(e,t,n,s,r);return null==i?t:typeof i!=typeof t||i!==t?i:this.options.trimValues||t.trim()===t?H(t,this.options.parseTagValue,this.options.numberParseOptions):t}}function B(t){if(this.options.removeNSPrefix){const e=t.split(":"),n="/"===t.charAt(0)?"/":"";if("xmlns"===e[0])return"";2===e.length&&(t=n+e[1])}return t}const U=new RegExp("([^\\s=]+)\\s*(=\\s*(['\"])([\\s\\S]*?)\\3)?","gm");function G(t,e,n){if(!0!==this.options.ignoreAttributes&&"string"==typeof t){const n=s(t,U),i=n.length,r={};for(let t=0;t<i;t++){const i=this.resolveNameSpace(n[t][1]);if(this.ignoreAttributesFn(i,e))continue;let s=n[t][4],o=this.options.attributeNamePrefix+i;if(i.length)if(this.options.transformAttributeName&&(o=this.options.transformAttributeName(o)),"__proto__"===o&&(o="#__proto__"),void 0!==s){this.options.trimValues&&(s=s.trim()),s=this.replaceEntitiesValue(s);const t=this.options.attributeValueProcessor(i,s,e);r[o]=null==t?s:typeof t!=typeof s||t!==s?t:H(s,this.options.parseAttributeValue,this.options.numberParseOptions)}else this.options.allowBooleanAttributes&&(r[o]=!0)}if(!Object.keys(r).length)return;if(this.options.attributesGroupName){const t={};return t[this.options.attributesGroupName]=r,t}return r}}const X=function(t){t=t.replace(/\r\n?/g,"\n");const e=new T("!xml");let n=e,i="",s="";for(let r=0;r<t.length;r++)if("<"===t[r])if("/"===t[r+1]){const e=W(t,">",r,"Closing Tag is not closed.");let o=t.substring(r+2,e).trim();if(this.options.removeNSPrefix){const t=o.indexOf(":");-1!==t&&(o=o.substr(t+1))}this.options.transformTagName&&(o=this.options.transformTagName(o)),n&&(i=this.saveTextToParentTag(i,n,s));const a=s.substring(s.lastIndexOf(".")+1);if(o&&-1!==this.options.unpairedTags.indexOf(o))throw new Error(`Unpaired tag can not be used as closing tag: </${o}>`);let l=0;a&&-1!==this.options.unpairedTags.indexOf(a)?(l=s.lastIndexOf(".",s.lastIndexOf(".")-1),this.tagsNodeStack.pop()):l=s.lastIndexOf("."),s=s.substring(0,l),n=this.tagsNodeStack.pop(),i="",r=e}else if("?"===t[r+1]){let e=z(t,r,!1,"?>");if(!e)throw new Error("Pi Tag is not closed.");if(i=this.saveTextToParentTag(i,n,s),this.options.ignoreDeclaration&&"?xml"===e.tagName||this.options.ignorePiTags);else{const t=new T(e.tagName);t.add(this.options.textNodeName,""),e.tagName!==e.tagExp&&e.attrExpPresent&&(t[":@"]=this.buildAttributesMap(e.tagExp,s,e.tagName)),this.addChild(n,t,s,r)}r=e.closeIndex+1}else if("!--"===t.substr(r+1,3)){const e=W(t,"--\x3e",r+4,"Comment is not closed.");if(this.options.commentPropName){const o=t.substring(r+4,e-2);i=this.saveTextToParentTag(i,n,s),n.add(this.options.commentPropName,[{[this.options.textNodeName]:o}])}r=e}else if("!D"===t.substr(r+1,2)){const e=w(t,r);this.docTypeEntities=e.entities,r=e.i}else if("!["===t.substr(r+1,2)){const e=W(t,"]]>",r,"CDATA is not closed.")-2,o=t.substring(r+9,e);i=this.saveTextToParentTag(i,n,s);let a=this.parseTextData(o,n.tagname,s,!0,!1,!0,!0);null==a&&(a=""),this.options.cdataPropName?n.add(this.options.cdataPropName,[{[this.options.textNodeName]:o}]):n.add(this.options.textNodeName,a),r=e+2}else{let o=z(t,r,this.options.removeNSPrefix),a=o.tagName;const l=o.rawTagName;let u=o.tagExp,h=o.attrExpPresent,d=o.closeIndex;this.options.transformTagName&&(a=this.options.transformTagName(a)),n&&i&&"!xml"!==n.tagname&&(i=this.saveTextToParentTag(i,n,s,!1));const f=n;f&&-1!==this.options.unpairedTags.indexOf(f.tagname)&&(n=this.tagsNodeStack.pop(),s=s.substring(0,s.lastIndexOf("."))),a!==e.tagname&&(s+=s?"."+a:a);const c=r;if(this.isItStopNode(this.options.stopNodes,s,a)){let e="";if(u.length>0&&u.lastIndexOf("/")===u.length-1)"/"===a[a.length-1]?(a=a.substr(0,a.length-1),s=s.substr(0,s.length-1),u=a):u=u.substr(0,u.length-1),r=o.closeIndex;else if(-1!==this.options.unpairedTags.indexOf(a))r=o.closeIndex;else{const n=this.readStopNodeData(t,l,d+1);if(!n)throw new Error(`Unexpected end of ${l}`);r=n.i,e=n.tagContent}const i=new T(a);a!==u&&h&&(i[":@"]=this.buildAttributesMap(u,s,a)),e&&(e=this.parseTextData(e,a,s,!0,h,!0,!0)),s=s.substr(0,s.lastIndexOf(".")),i.add(this.options.textNodeName,e),this.addChild(n,i,s,c)}else{if(u.length>0&&u.lastIndexOf("/")===u.length-1){"/"===a[a.length-1]?(a=a.substr(0,a.length-1),s=s.substr(0,s.length-1),u=a):u=u.substr(0,u.length-1),this.options.transformTagName&&(a=this.options.transformTagName(a));const t=new T(a);a!==u&&h&&(t[":@"]=this.buildAttributesMap(u,s,a)),this.addChild(n,t,s,c),s=s.substr(0,s.lastIndexOf("."))}else{const t=new T(a);this.tagsNodeStack.push(n),a!==u&&h&&(t[":@"]=this.buildAttributesMap(u,s,a)),this.addChild(n,t,s,c),n=t}i="",r=d}}else i+=t[r];return e.child};function Y(t,e,n,i){this.options.captureMetaData||(i=void 0);const s=this.options.updateTag(e.tagname,n,e[":@"]);!1===s||("string"==typeof s?(e.tagname=s,t.addChild(e,i)):t.addChild(e,i))}const R=function(t){if(this.options.processEntities){for(let e in this.docTypeEntities){const n=this.docTypeEntities[e];t=t.replace(n.regx,n.val)}for(let e in this.lastEntities){const n=this.lastEntities[e];t=t.replace(n.regex,n.val)}if(this.options.htmlEntities)for(let e in this.htmlEntities){const n=this.htmlEntities[e];t=t.replace(n.regex,n.val)}t=t.replace(this.ampEntity.regex,this.ampEntity.val)}return t};function q(t,e,n,i){return t&&(void 0===i&&(i=0===e.child.length),void 0!==(t=this.parseTextData(t,e.tagname,n,!1,!!e[":@"]&&0!==Object.keys(e[":@"]).length,i))&&""!==t&&e.add(this.options.textNodeName,t),t=""),t}function Z(t,e,n){const i="*."+n;for(const n in t){const s=t[n];if(i===s||e===s)return!0}return!1}function W(t,e,n,i){const s=t.indexOf(e,n);if(-1===s)throw new Error(i);return s+e.length-1}function z(t,e,n,i=">"){const s=function(t,e,n=">"){let i,s="";for(let r=e;r<t.length;r++){let e=t[r];if(i)e===i&&(i="");else if('"'===e||"'"===e)i=e;else if(e===n[0]){if(!n[1])return{data:s,index:r};if(t[r+1]===n[1])return{data:s,index:r}}else"\t"===e&&(e=" ");s+=e}}(t,e+1,i);if(!s)return;let r=s.data;const o=s.index,a=r.search(/\s/);let l=r,u=!0;-1!==a&&(l=r.substring(0,a),r=r.substring(a+1).trimStart());const h=l;if(n){const t=l.indexOf(":");-1!==t&&(l=l.substr(t+1),u=l!==s.data.substr(t+1))}return{tagName:l,tagExp:r,closeIndex:o,attrExpPresent:u,rawTagName:h}}function J(t,e,n){const i=n;let s=1;for(;n<t.length;n++)if("<"===t[n])if("/"===t[n+1]){const r=W(t,">",n,`${e} is not closed`);if(t.substring(n+2,r).trim()===e&&(s--,0===s))return{tagContent:t.substring(i,n),i:r};n=r}else if("?"===t[n+1])n=W(t,"?>",n+1,"StopNode is not closed.");else if("!--"===t.substr(n+1,3))n=W(t,"--\x3e",n+3,"StopNode is not closed.");else if("!["===t.substr(n+1,2))n=W(t,"]]>",n,"StopNode is not closed.")-2;else{const i=z(t,n,">");i&&((i&&i.tagName)===e&&"/"!==i.tagExp[i.tagExp.length-1]&&s++,n=i.closeIndex)}}function H(t,e,n){if(e&&"string"==typeof t){const e=t.trim();return"true"===e||"false"!==e&&function(t,e={}){if(e=Object.assign({},V,e),!t||"string"!=typeof t)return t;let n=t.trim();if(void 0!==e.skipLike&&e.skipLike.test(n))return t;if("0"===t)return 0;if(e.hex&&j.test(n))return function(t){if(parseInt)return parseInt(t,16);if(Number.parseInt)return Number.parseInt(t,16);if(window&&window.parseInt)return window.parseInt(t,16);throw new Error("parseInt, Number.parseInt, window.parseInt are not supported")}(n);if(-1!==n.search(/.+[eE].+/))return function(t,e,n){if(!n.eNotation)return t;const i=e.match(M);if(i){let s=i[1]||"";const r=-1===i[3].indexOf("e")?"E":"e",o=i[2],a=s?t[o.length+1]===r:t[o.length]===r;return o.length>1&&a?t:1!==o.length||!i[3].startsWith(`.${r}`)&&i[3][0]!==r?n.leadingZeros&&!a?(e=(i[1]||"")+i[3],Number(e)):t:Number(e)}return t}(t,n,e);{const s=D.exec(n);if(s){const r=s[1]||"",o=s[2];let a=(i=s[3])&&-1!==i.indexOf(".")?("."===(i=i.replace(/0+$/,""))?i="0":"."===i[0]?i="0"+i:"."===i[i.length-1]&&(i=i.substring(0,i.length-1)),i):i;const l=r?"."===t[o.length+1]:"."===t[o.length];if(!e.leadingZeros&&(o.length>1||1===o.length&&!l))return t;{const i=Number(n),s=String(i);if(0===i||-0===i)return i;if(-1!==s.search(/[eE]/))return e.eNotation?i:t;if(-1!==n.indexOf("."))return"0"===s||s===a||s===`${r}${a}`?i:t;let l=o?a:n;return o?l===s||r+l===s?i:t:l===s||l===r+s?i:t}}return t}var i}(t,n)}return void 0!==t?t:""}const K=T.getMetaDataSymbol();function Q(t,e){return tt(t,e)}function tt(t,e,n){let i;const s={};for(let r=0;r<t.length;r++){const o=t[r],a=et(o);let l="";if(l=void 0===n?a:n+"."+a,a===e.textNodeName)void 0===i?i=o[a]:i+=""+o[a];else{if(void 0===a)continue;if(o[a]){let t=tt(o[a],e,l);const n=it(t,e);void 0!==o[K]&&(t[K]=o[K]),o[":@"]?nt(t,o[":@"],l,e):1!==Object.keys(t).length||void 0===t[e.textNodeName]||e.alwaysCreateTextNode?0===Object.keys(t).length&&(e.alwaysCreateTextNode?t[e.textNodeName]="":t=""):t=t[e.textNodeName],void 0!==s[a]&&s.hasOwnProperty(a)?(Array.isArray(s[a])||(s[a]=[s[a]]),s[a].push(t)):e.isArray(a,l,n)?s[a]=[t]:s[a]=t}}}return"string"==typeof i?i.length>0&&(s[e.textNodeName]=i):void 0!==i&&(s[e.textNodeName]=i),s}function et(t){const e=Object.keys(t);for(let t=0;t<e.length;t++){const n=e[t];if(":@"!==n)return n}}function nt(t,e,n,i){if(e){const s=Object.keys(e),r=s.length;for(let o=0;o<r;o++){const r=s[o];i.isArray(r,n+"."+r,!0,!0)?t[r]=[e[r]]:t[r]=e[r]}}}function it(t,e){const{textNodeName:n}=e,i=Object.keys(t).length;return 0===i||!(1!==i||!t[n]&&"boolean"!=typeof t[n]&&0!==t[n])}class st{constructor(t){this.externalEntities={},this.options=function(t){return Object.assign({},v,t)}(t)}parse(t,e){if("string"==typeof t);else{if(!t.toString)throw new Error("XML data is accepted in String or Bytes[] form.");t=t.toString()}if(e){!0===e&&(e={});const n=a(t,e);if(!0!==n)throw Error(`${n.err.msg}:${n.err.line}:${n.err.col}`)}const n=new k(this.options);n.addExternalEntities(this.externalEntities);const i=n.parseXml(t);return this.options.preserveOrder||void 0===i?i:Q(i,this.options)}addEntity(t,e){if(-1!==e.indexOf("&"))throw new Error("Entity value can't have '&'");if(-1!==t.indexOf("&")||-1!==t.indexOf(";"))throw new Error("An entity must be set without '&' and ';'. Eg. use '#xD' for '&#xD;'");if("&"===e)throw new Error("An entity with value '&' is not permitted");this.externalEntities[t]=e}static getMetaDataSymbol(){return T.getMetaDataSymbol()}}function rt(t,e){let n="";return e.format&&e.indentBy.length>0&&(n="\n"),ot(t,e,"",n)}function ot(t,e,n,i){let s="",r=!1;for(let o=0;o<t.length;o++){const a=t[o],l=at(a);if(void 0===l)continue;let u="";if(u=0===n.length?l:`${n}.${l}`,l===e.textNodeName){let t=a[l];ut(u,e)||(t=e.tagValueProcessor(l,t),t=ht(t,e)),r&&(s+=i),s+=t,r=!1;continue}if(l===e.cdataPropName){r&&(s+=i),s+=`<![CDATA[${a[l][0][e.textNodeName]}]]>`,r=!1;continue}if(l===e.commentPropName){s+=i+`\x3c!--${a[l][0][e.textNodeName]}--\x3e`,r=!0;continue}if("?"===l[0]){const t=lt(a[":@"],e),n="?xml"===l?"":i;let o=a[l][0][e.textNodeName];o=0!==o.length?" "+o:"",s+=n+`<${l}${o}${t}?>`,r=!0;continue}let h=i;""!==h&&(h+=e.indentBy);const d=i+`<${l}${lt(a[":@"],e)}`,f=ot(a[l],e,u,h);-1!==e.unpairedTags.indexOf(l)?e.suppressUnpairedNode?s+=d+">":s+=d+"/>":f&&0!==f.length||!e.suppressEmptyNode?f&&f.endsWith(">")?s+=d+`>${f}${i}</${l}>`:(s+=d+">",f&&""!==i&&(f.includes("/>")||f.includes("</"))?s+=i+e.indentBy+f+i:s+=f,s+=`</${l}>`):s+=d+"/>",r=!0}return s}function at(t){const e=Object.keys(t);for(let n=0;n<e.length;n++){const i=e[n];if(t.hasOwnProperty(i)&&":@"!==i)return i}}function lt(t,e){let n="";if(t&&!e.ignoreAttributes)for(let i in t){if(!t.hasOwnProperty(i))continue;let s=e.attributeValueProcessor(i,t[i]);s=ht(s,e),!0===s&&e.suppressBooleanAttributes?n+=` ${i.substr(e.attributeNamePrefix.length)}`:n+=` ${i.substr(e.attributeNamePrefix.length)}="${s}"`}return n}function ut(t,e){let n=(t=t.substr(0,t.length-e.textNodeName.length-1)).substr(t.lastIndexOf(".")+1);for(let i in e.stopNodes)if(e.stopNodes[i]===t||e.stopNodes[i]==="*."+n)return!0;return!1}function ht(t,e){if(t&&t.length>0&&e.processEntities)for(let n=0;n<e.entities.length;n++){const i=e.entities[n];t=t.replace(i.regex,i.val)}return t}const dt={attributeNamePrefix:"@_",attributesGroupName:!1,textNodeName:"#text",ignoreAttributes:!0,cdataPropName:!1,format:!1,indentBy:"  ",suppressEmptyNode:!1,suppressUnpairedNode:!0,suppressBooleanAttributes:!0,tagValueProcessor:function(t,e){return e},attributeValueProcessor:function(t,e){return e},preserveOrder:!1,commentPropName:!1,unpairedTags:[],entities:[{regex:new RegExp("&","g"),val:"&amp;"},{regex:new RegExp(">","g"),val:"&gt;"},{regex:new RegExp("<","g"),val:"&lt;"},{regex:new RegExp("'","g"),val:"&apos;"},{regex:new RegExp('"',"g"),val:"&quot;"}],processEntities:!0,stopNodes:[],oneListGroup:!1};function ft(t){this.options=Object.assign({},dt,t),!0===this.options.ignoreAttributes||this.options.attributesGroupName?this.isAttribute=function(){return!1}:(this.ignoreAttributesFn=_(this.options.ignoreAttributes),this.attrPrefixLen=this.options.attributeNamePrefix.length,this.isAttribute=gt),this.processTextOrObjNode=ct,this.options.format?(this.indentate=pt,this.tagEndChar=">\n",this.newLine="\n"):(this.indentate=function(){return""},this.tagEndChar=">",this.newLine="")}function ct(t,e,n,i){const s=this.j2x(t,n+1,i.concat(e));return void 0!==t[this.options.textNodeName]&&1===Object.keys(t).length?this.buildTextValNode(t[this.options.textNodeName],e,s.attrStr,n):this.buildObjectNode(s.val,e,s.attrStr,n)}function pt(t){return this.options.indentBy.repeat(t)}function gt(t){return!(!t.startsWith(this.options.attributeNamePrefix)||t===this.options.textNodeName)&&t.substr(this.attrPrefixLen)}ft.prototype.build=function(t){return this.options.preserveOrder?rt(t,this.options):(Array.isArray(t)&&this.options.arrayNodeName&&this.options.arrayNodeName.length>1&&(t={[this.options.arrayNodeName]:t}),this.j2x(t,0,[]).val)},ft.prototype.j2x=function(t,e,n){let i="",s="";const r=n.join(".");for(let o in t)if(Object.prototype.hasOwnProperty.call(t,o))if(void 0===t[o])this.isAttribute(o)&&(s+="");else if(null===t[o])this.isAttribute(o)||o===this.options.cdataPropName?s+="":"?"===o[0]?s+=this.indentate(e)+"<"+o+"?"+this.tagEndChar:s+=this.indentate(e)+"<"+o+"/"+this.tagEndChar;else if(t[o]instanceof Date)s+=this.buildTextValNode(t[o],o,"",e);else if("object"!=typeof t[o]){const n=this.isAttribute(o);if(n&&!this.ignoreAttributesFn(n,r))i+=this.buildAttrPairStr(n,""+t[o]);else if(!n)if(o===this.options.textNodeName){let e=this.options.tagValueProcessor(o,""+t[o]);s+=this.replaceEntitiesValue(e)}else s+=this.buildTextValNode(t[o],o,"",e)}else if(Array.isArray(t[o])){const i=t[o].length;let r="",a="";for(let l=0;l<i;l++){const i=t[o][l];if(void 0===i);else if(null===i)"?"===o[0]?s+=this.indentate(e)+"<"+o+"?"+this.tagEndChar:s+=this.indentate(e)+"<"+o+"/"+this.tagEndChar;else if("object"==typeof i)if(this.options.oneListGroup){const t=this.j2x(i,e+1,n.concat(o));r+=t.val,this.options.attributesGroupName&&i.hasOwnProperty(this.options.attributesGroupName)&&(a+=t.attrStr)}else r+=this.processTextOrObjNode(i,o,e,n);else if(this.options.oneListGroup){let t=this.options.tagValueProcessor(o,i);t=this.replaceEntitiesValue(t),r+=t}else r+=this.buildTextValNode(i,o,"",e)}this.options.oneListGroup&&(r=this.buildObjectNode(r,o,a,e)),s+=r}else if(this.options.attributesGroupName&&o===this.options.attributesGroupName){const e=Object.keys(t[o]),n=e.length;for(let s=0;s<n;s++)i+=this.buildAttrPairStr(e[s],""+t[o][e[s]])}else s+=this.processTextOrObjNode(t[o],o,e,n);return{attrStr:i,val:s}},ft.prototype.buildAttrPairStr=function(t,e){return e=this.options.attributeValueProcessor(t,""+e),e=this.replaceEntitiesValue(e),this.options.suppressBooleanAttributes&&"true"===e?" "+t:" "+t+'="'+e+'"'},ft.prototype.buildObjectNode=function(t,e,n,i){if(""===t)return"?"===e[0]?this.indentate(i)+"<"+e+n+"?"+this.tagEndChar:this.indentate(i)+"<"+e+n+this.closeTag(e)+this.tagEndChar;{let s="</"+e+this.tagEndChar,r="";return"?"===e[0]&&(r="?",s=""),!n&&""!==n||-1!==t.indexOf("<")?!1!==this.options.commentPropName&&e===this.options.commentPropName&&0===r.length?this.indentate(i)+`\x3c!--${t}--\x3e`+this.newLine:this.indentate(i)+"<"+e+n+r+this.tagEndChar+t+this.indentate(i)+s:this.indentate(i)+"<"+e+n+r+">"+t+s}},ft.prototype.closeTag=function(t){let e="";return-1!==this.options.unpairedTags.indexOf(t)?this.options.suppressUnpairedNode||(e="/"):e=this.options.suppressEmptyNode?"/":`></${t}`,e},ft.prototype.buildTextValNode=function(t,e,n,i){if(!1!==this.options.cdataPropName&&e===this.options.cdataPropName)return this.indentate(i)+`<![CDATA[${t}]]>`+this.newLine;if(!1!==this.options.commentPropName&&e===this.options.commentPropName)return this.indentate(i)+`\x3c!--${t}--\x3e`+this.newLine;if("?"===e[0])return this.indentate(i)+"<"+e+n+"?"+this.tagEndChar;{let s=this.options.tagValueProcessor(e,t);return s=this.replaceEntitiesValue(s),""===s?this.indentate(i)+"<"+e+n+this.closeTag(e)+this.tagEndChar:this.indentate(i)+"<"+e+n+">"+s+"</"+e+this.tagEndChar}},ft.prototype.replaceEntitiesValue=function(t){if(t&&t.length>0&&this.options.processEntities)for(let e=0;e<this.options.entities.length;e++){const n=this.options.entities[e];t=t.replace(n.regex,n.val)}return t};const mt={validate:a};module.exports=e})();
 
 /***/ }),
 
@@ -86161,8 +86415,8 @@ async function getStreamAsBuffer(stream, options) {
 
 const arrayBufferToNodeBuffer = arrayBuffer => globalThis.Buffer.from(arrayBuffer);
 
-// EXTERNAL MODULE: ./node_modules/.pnpm/http-cache-semantics@4.1.1/node_modules/http-cache-semantics/index.js
-var http_cache_semantics = __nccwpck_require__(9038);
+// EXTERNAL MODULE: ./node_modules/.pnpm/http-cache-semantics@4.2.0/node_modules/http-cache-semantics/index.js
+var http_cache_semantics = __nccwpck_require__(6644);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/lowercase-keys@3.0.0/node_modules/lowercase-keys/index.js
 function lowercaseKeys(object) {
 	return Object.fromEntries(Object.entries(object).map(([key, value]) => [key.toLowerCase(), value]));
@@ -90834,7 +91088,7 @@ const external_node_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequ
 var cache = __nccwpck_require__(7389);
 ;// CONCATENATED MODULE: external "node:child_process"
 const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@87c69ec3d48cb353229e74cc2ba8abdef2eb2590_fc3tqjkz4wt2f7f5d767kufdsu/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@e0a5f196fd4e17f2ba1d6ad03300fe532717f7e8_sb5v4gvkmo2pzjqdnfk3yomlyu/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
