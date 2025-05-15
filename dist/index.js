@@ -36148,7 +36148,7 @@ var reflection_create_1 = __nccwpck_require__(489);
 Object.defineProperty(exports, "reflectionCreate", ({ enumerable: true, get: function () { return reflection_create_1.reflectionCreate; } }));
 var reflection_scalar_default_1 = __nccwpck_require__(2353);
 Object.defineProperty(exports, "reflectionScalarDefault", ({ enumerable: true, get: function () { return reflection_scalar_default_1.reflectionScalarDefault; } }));
-var reflection_merge_partial_1 = __nccwpck_require__(90);
+var reflection_merge_partial_1 = __nccwpck_require__(7709);
 Object.defineProperty(exports, "reflectionMergePartial", ({ enumerable: true, get: function () { return reflection_merge_partial_1.reflectionMergePartial; } }));
 var reflection_equals_1 = __nccwpck_require__(7156);
 Object.defineProperty(exports, "reflectionEquals", ({ enumerable: true, get: function () { return reflection_equals_1.reflectionEquals; } }));
@@ -36336,7 +36336,7 @@ const reflection_json_writer_1 = __nccwpck_require__(2891);
 const reflection_binary_reader_1 = __nccwpck_require__(2838);
 const reflection_binary_writer_1 = __nccwpck_require__(1830);
 const reflection_create_1 = __nccwpck_require__(489);
-const reflection_merge_partial_1 = __nccwpck_require__(90);
+const reflection_merge_partial_1 = __nccwpck_require__(7709);
 const json_typings_1 = __nccwpck_require__(6718);
 const json_format_contract_1 = __nccwpck_require__(1422);
 const reflection_equals_1 = __nccwpck_require__(7156);
@@ -38299,7 +38299,7 @@ exports.reflectionLongConvert = reflectionLongConvert;
 
 /***/ }),
 
-/***/ 90:
+/***/ 7709:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -39232,7 +39232,7 @@ var isArray = Array.isArray || function (xs) {
 
 /***/ }),
 
-/***/ 4885:
+/***/ 4468:
 /***/ ((module, exports, __nccwpck_require__) => {
 
 /* eslint-env browser */
@@ -39456,7 +39456,7 @@ function save(namespaces) {
 function load() {
 	let r;
 	try {
-		r = exports.storage.getItem('debug');
+		r = exports.storage.getItem('debug') || exports.storage.getItem('DEBUG') ;
 	} catch (error) {
 		// Swallow
 		// XXX (@Qix-) should we be logging these?
@@ -39492,7 +39492,7 @@ function localstorage() {
 	}
 }
 
-module.exports = __nccwpck_require__(8228)(exports);
+module.exports = __nccwpck_require__(1163)(exports);
 
 const {formatters} = module.exports;
 
@@ -39511,7 +39511,7 @@ formatters.j = function (v) {
 
 /***/ }),
 
-/***/ 8228:
+/***/ 1163:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 
@@ -39684,7 +39684,7 @@ function setup(env) {
 
 		const split = (typeof namespaces === 'string' ? namespaces : '')
 			.trim()
-			.replace(' ', ',')
+			.replace(/\s+/g, ',')
 			.split(',')
 			.filter(Boolean);
 
@@ -39810,7 +39810,7 @@ module.exports = setup;
 
 /***/ }),
 
-/***/ 1541:
+/***/ 9592:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /**
@@ -39819,15 +39819,15 @@ module.exports = setup;
  */
 
 if (typeof process === 'undefined' || process.type === 'renderer' || process.browser === true || process.__nwjs) {
-	module.exports = __nccwpck_require__(4885);
+	module.exports = __nccwpck_require__(4468);
 } else {
-	module.exports = __nccwpck_require__(7709);
+	module.exports = __nccwpck_require__(3606);
 }
 
 
 /***/ }),
 
-/***/ 7709:
+/***/ 3606:
 /***/ ((module, exports, __nccwpck_require__) => {
 
 /**
@@ -40069,7 +40069,7 @@ function init(debug) {
 	}
 }
 
-module.exports = __nccwpck_require__(8228)(exports);
+module.exports = __nccwpck_require__(1163)(exports);
 
 const {formatters} = module.exports;
 
@@ -41200,7 +41200,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.HttpProxyAgent = void 0;
 const net = __importStar(__nccwpck_require__(9278));
 const tls = __importStar(__nccwpck_require__(4756));
-const debug_1 = __importDefault(__nccwpck_require__(1541));
+const debug_1 = __importDefault(__nccwpck_require__(9592));
 const events_1 = __nccwpck_require__(4434);
 const agent_base_1 = __nccwpck_require__(3690);
 const url_1 = __nccwpck_require__(7016);
@@ -43766,7 +43766,7 @@ exports.HttpsProxyAgent = void 0;
 const net = __importStar(__nccwpck_require__(9278));
 const tls = __importStar(__nccwpck_require__(4756));
 const assert_1 = __importDefault(__nccwpck_require__(2613));
-const debug_1 = __importDefault(__nccwpck_require__(1541));
+const debug_1 = __importDefault(__nccwpck_require__(9592));
 const agent_base_1 = __nccwpck_require__(3690);
 const url_1 = __nccwpck_require__(7016);
 const parse_proxy_response_1 = __nccwpck_require__(4832);
@@ -43926,7 +43926,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseProxyResponse = void 0;
-const debug_1 = __importDefault(__nccwpck_require__(1541));
+const debug_1 = __importDefault(__nccwpck_require__(9592));
 const debug = (0, debug_1.default)('https-proxy-agent:parse-proxy-response');
 function parseProxyResponse(socket) {
     return new Promise((resolve, reject) => {
@@ -91088,7 +91088,7 @@ const external_node_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequ
 var cache = __nccwpck_require__(7389);
 ;// CONCATENATED MODULE: external "node:child_process"
 const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@e0a5f196fd4e17f2ba1d6ad03300fe532717f7e8_sb5v4gvkmo2pzjqdnfk3yomlyu/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@74999c82de35e73feb13af2c0e0c3ebb92a17c66_6v3v2emj5t5xk63nkebjruw4tm/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -92589,7 +92589,7 @@ var DetSysAction = class {
         core.setFailed(
           [
             "This action can only be used when Nix is installed.",
-            "Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow."
+            "Add `- uses: DeterminateSystems/determinate-nix-action@v3` earlier in your workflow."
           ].join(" ")
         );
         break;
@@ -92597,7 +92597,7 @@ var DetSysAction = class {
         core.warning(
           [
             "This action is in no-op mode because Nix is not installed.",
-            "Add `- uses: DeterminateSystems/nix-installer-action@main` earlier in your workflow."
+            "Add `- uses: DeterminateSystems/determinate-nix-action@v3` earlier in your workflow."
           ].join(" ")
         );
         break;
