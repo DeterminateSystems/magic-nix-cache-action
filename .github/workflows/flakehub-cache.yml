@@ -24,9 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/determinate-nix-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          use-flakehub: true
+      - uses: DeterminateSystems/flakehub-cache-action@main
       - name: Build dev shell for ${{ matrix.systems.nix-system }} on ${{ matrix.systems.runner }}
         run: |
           nix build .#devShells.${{ matrix.systems.nix-system }}.default
