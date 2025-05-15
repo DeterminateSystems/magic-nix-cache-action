@@ -13,12 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/determinate-nix-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Check shell scripts
         run: |
           nix develop --command shellcheck ./.github/workflows/cache-test.sh
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/determinate-nix-action@main
       - name: Install pnpm dependencies
         run: nix develop --command pnpm install
       - name: Check formatting
@@ -60,9 +60,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/determinate-nix-action@main
         with:
-          flakehub: true
           extra-conf: |
             narinfo-cache-negative-ttl = 0
             trusted-users = root
