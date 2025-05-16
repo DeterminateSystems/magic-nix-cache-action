@@ -13,7 +13,7 @@ Use Magic Nix Cache, a totally free and zero-configuration binary cache for Nix 
 Add our [GitHub Action][action] after installing Nix, in your workflow, like this:
 
 ```yaml
-- uses: DeterminateSystems/magic-nix-cache-action@main
+- uses: DeterminateSystems/flakehub-cache-action@main
 ```
 
 See [Usage](#usage) for a detailed example.
@@ -53,8 +53,8 @@ jobs:
       contents: "read"
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - uses: DeterminateSystems/flakehub-cache-action@main
       - uses: DeterminateSystems/flake-checker-action@main
       - name: Run `nix build`
         run: nix build .
@@ -87,7 +87,7 @@ When you configure an upstream cache for the Magic Nix Cache, any store paths fe
 The default is `https://cache.nixos.org` but you can set a different upstream:
 
 ```yaml
-- uses: DeterminateSystems/magic-nix-cache-action@main
+- uses: DeterminateSystems/flakehub-cache-action@main
   with:
     upstream-cache: https://my-binary-cache.com
 ```
