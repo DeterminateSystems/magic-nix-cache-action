@@ -5979,7 +5979,7 @@ exports.SearchState = SearchState;
 
 /***/ }),
 
-/***/ 8505:
+/***/ 886:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -36163,7 +36163,7 @@ Object.defineProperty(exports, "ReflectionJsonWriter", ({ enumerable: true, get:
 var reflection_contains_message_type_1 = __nccwpck_require__(2532);
 Object.defineProperty(exports, "containsMessageType", ({ enumerable: true, get: function () { return reflection_contains_message_type_1.containsMessageType; } }));
 // Oneof helpers
-var oneof_1 = __nccwpck_require__(886);
+var oneof_1 = __nccwpck_require__(8505);
 Object.defineProperty(exports, "isOneofGroup", ({ enumerable: true, get: function () { return oneof_1.isOneofGroup; } }));
 Object.defineProperty(exports, "setOneofValue", ({ enumerable: true, get: function () { return oneof_1.setOneofValue; } }));
 Object.defineProperty(exports, "getOneofValue", ({ enumerable: true, get: function () { return oneof_1.getOneofValue; } }));
@@ -36504,7 +36504,7 @@ exports.MessageType = MessageType;
 
 /***/ }),
 
-/***/ 886:
+/***/ 8505:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -38447,7 +38447,7 @@ exports.reflectionScalarDefault = reflectionScalarDefault;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ReflectionTypeCheck = void 0;
 const reflection_info_1 = __nccwpck_require__(4576);
-const oneof_1 = __nccwpck_require__(886);
+const oneof_1 = __nccwpck_require__(8505);
 // noinspection JSMethodCanBeStatic
 class ReflectionTypeCheck {
     constructor(info) {
@@ -83969,20 +83969,22 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"4.
 /************************************************************************/
 var __webpack_exports__ = {};
 
-// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+core@1.11.1/node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(9999);
-;// CONCATENATED MODULE: external "fs/promises"
-const promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("fs/promises");
-// EXTERNAL MODULE: external "os"
-var external_os_ = __nccwpck_require__(857);
-// EXTERNAL MODULE: external "path"
-var external_path_ = __nccwpck_require__(6928);
-// EXTERNAL MODULE: ./node_modules/.pnpm/tail@2.2.6/node_modules/tail/lib/tail.js
-var tail = __nccwpck_require__(5408);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+glob@0.5.0/node_modules/@actions/glob/lib/glob.js
-var glob = __nccwpck_require__(8505);
+// EXTERNAL MODULE: external "http"
+var external_http_ = __nccwpck_require__(8611);
+// EXTERNAL MODULE: external "child_process"
+var external_child_process_ = __nccwpck_require__(5317);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(9896);
+;// CONCATENATED MODULE: external "fs/promises"
+const promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("fs/promises");
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(6928);
+;// CONCATENATED MODULE: external "timers/promises"
+const external_timers_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("timers/promises");
+// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+core@1.11.1/node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(9999);
+// EXTERNAL MODULE: external "os"
+var external_os_ = __nccwpck_require__(857);
 // EXTERNAL MODULE: external "util"
 var external_util_ = __nccwpck_require__(9023);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+exec@1.1.1/node_modules/@actions/exec/lib/exec.js
@@ -91088,9 +91090,7 @@ const got = source_create(defaults);
 const external_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("dns/promises");
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@4.0.3/node_modules/@actions/cache/lib/cache.js
 var cache = __nccwpck_require__(7389);
-// EXTERNAL MODULE: external "child_process"
-var external_child_process_ = __nccwpck_require__(5317);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@4bf247b1cb6b057abe94721ea1bfa131618e2b7f_qygv7jy5hm2oenc72q37xutlhi/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/detsys-ts@https+++codeload.github.com+DeterminateSystems+detsys-ts+tar.gz+4bf247b1cb6b0_899dee36fab1a7a5a0a73b5c7f54c4f3/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -92711,11 +92711,22 @@ function makeOptionsConfident(actionOptions) {
  * Copyright (c) 2018-2020 [Samuel Carreira]
  */
 //# sourceMappingURL=index.js.map
-// EXTERNAL MODULE: external "http"
-var external_http_ = __nccwpck_require__(8611);
-;// CONCATENATED MODULE: external "timers/promises"
-const external_timers_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("timers/promises");
+// EXTERNAL MODULE: ./node_modules/.pnpm/tail@2.2.6/node_modules/tail/lib/tail.js
+var tail = __nccwpck_require__(5408);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+glob@0.5.0/node_modules/@actions/glob/lib/glob.js
+var glob = __nccwpck_require__(886);
 ;// CONCATENATED MODULE: ./dist/index.js
+// src/index.ts
+
+
+
+
+
+
+
+
+
+
 // src/helpers.ts
 
 
@@ -92848,15 +92859,6 @@ async function warnOnMnc() {
 }
 
 // src/index.ts
-
-
-
-
-
-
-
-
-
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_SENT_SIGTERM = "sent_sigterm";

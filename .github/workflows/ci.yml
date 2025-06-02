@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
@@ -35,7 +35,7 @@ jobs:
   test-no-nix:
     needs: build
     name: "Test: Nix not installed"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       id-token: "write"
       contents: "read"

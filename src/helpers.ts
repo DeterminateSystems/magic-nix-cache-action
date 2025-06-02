@@ -1,7 +1,7 @@
-import * as actionsCore from "@actions/core";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import path from "node:path";
+import * as actionsCore from "@actions/core";
 import { Tail } from "tail";
 
 export function getTrinaryInput(
