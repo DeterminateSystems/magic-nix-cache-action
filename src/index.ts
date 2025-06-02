@@ -274,11 +274,9 @@ class MagicNixCacheAction extends DetSysAction {
 
     await new Promise<void>((resolve) => {
       notifyPromise
-        // eslint-disable-next-line github/no-then
         .then((_value) => {
           resolve();
         })
-        // eslint-disable-next-line github/no-then
         .catch((e: unknown) => {
           this.exitMain(`Error in notifyPromise: ${stringifyError(e)}`);
         });
