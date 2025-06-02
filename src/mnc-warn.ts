@@ -1,7 +1,7 @@
+import * as fs from "node:fs/promises";
 import actionsCore from "@actions/core";
 import glob from "@actions/glob";
 import { stringifyError } from "detsys-ts";
-import * as fs from "node:fs/promises";
 
 export async function warnOnMnc(): Promise<void> {
   const cwd = process.cwd();

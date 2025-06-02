@@ -7,9 +7,9 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
-    "format": "prettier --write .",
-    "check-fmt": "prettier --check .",
-    "lint": "eslint src/**/*.ts",
+    "format": "biome format --write",
+    "check-fmt": "biome format",
+    "lint": "biome lint",
     "package": "ncc build",
     "all": "pnpm run format && pnpm run lint && pnpm run build && pnpm run package"
   },

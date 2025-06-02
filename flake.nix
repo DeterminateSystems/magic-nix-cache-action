@@ -2,16 +2,15 @@
   description = "Magic Nix Cache";
 
   inputs = {
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
-
-    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1";
   };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs = inputs:
     let
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
-      forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f {
-        pkgs = import nixpkgs { inherit system; };
+      forAllSystems = f: inputs.nixpkgs.lib.genAttrs supportedSystems (system: f {
+        pkgs = import inputs.nixpkgs { inherit system; };
       });
     in
     {
@@ -20,10 +19,10 @@
           packages = with pkgs; [
             jq
             shellcheck
-            nodejs_latest
             nixpkgs-fmt
+            nodejs-slim
             nodePackages_latest.pnpm
-            nodePackages_latest.typescript-language-server
+            biome
           ];
         };
       });
