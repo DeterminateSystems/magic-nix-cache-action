@@ -10,17 +10,17 @@ jobs:
       ACTIONS_STEP_DEBUG: true
     runs-on: ${{ matrix.systems.runner }}
     permissions:
-      id-token: "write"
-      contents: "read"
+      id-token: write
+      contents: read
     strategy:
       matrix:
         systems:
-          - nix-system: "aarch64-darwin"
-            runner: "macos-latest-xlarge"
-          - nix-system: "x86_64-darwin"
-            runner: "macos-13"
-          - nix-system: "x86_64-linux"
-            runner: "ubuntu-22.04"
+          - nix-system: aarch64-darwin
+            runner: macos-latest-xlarge
+          - nix-system: x86_64-darwin
+            runner: macos-latest-xlarge
+          - nix-system: x86_64-linux
+            runner: UbuntuLatest32Cores128G
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/determinate-nix-action@main
