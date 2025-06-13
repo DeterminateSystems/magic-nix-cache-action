@@ -20,13 +20,13 @@ See [Usage](#usage) for a detailed example.
 
 Magic Nix Cache uses the GitHub Actions [built-in cache][gha-cache] to share builds between workflow runs, and has many advantages over alternatives.
 
-1. Totally free: backed by GitHub Actions' cache, there is no additional service to pay for.
-1. Zero configuration: add our action to your workflow.
+1. **Totally free**. Backed by GitHub Actions' cache, there is no additional service to pay for.
+1. **Zero configuration**. Add our Action to your workflow.
    That's it.
    Everything built in your workflow is cached.
-2. No secrets: Forks and pull requests benefit from the cache, too.
-3. Secure: Magic Nix Cache follows the [same semantics as the GitHub Actions cache][semantics], and malicious pull requests cannot pollute your project.
-4. Private: The cache is stored in the GitHub Actions cache, not with an additional third party.
+1. **No secrets**. Forks and pull requests benefit from the cache, too.
+1. **Secure**. Magic Nix Cache follows the [same semantics as the GitHub Actions cache][semantics] and malicious pull requests cannot pollute your project.
+1. **Private**. The cache is stored in the GitHub Actions cache, not with an additional third party.
 
 > [!NOTE]
 >
