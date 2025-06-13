@@ -1,38 +1,38 @@
 # Magic Nix Cache
 
-> [!WARNING]
-> The [Magic Nix Cache will will stop working](https://determinate.systems/posts/magic-nix-cache-free-tier-eol) on **February 1st, 2025** unless you're on [GitHub Enterprise Server](https://github.com/enterprise).
->
-> You can upgrade to [FlakeHub Cache](https://flakehub.com/cache) and get **one month free** using the coupon code **`FHC`**.
->
-> For more information, read [this blog post](https://determinate.systems/posts/magic-nix-cache-free-tier-eol/).
-
 Save 30-50%+ of CI time without any effort or cost.
 Use Magic Nix Cache, a totally free and zero-configuration binary cache for Nix on GitHub Actions.
 
-Add our [GitHub Action][action] after installing Nix, in your workflow, like this:
+In your workflow, add our [GitHub Action][action] after installing Nix, like this:
 
 ```yaml
+- uses: DeterminateSystems/determinate-nix-action@main
 - uses: DeterminateSystems/flakehub-cache-action@main
 ```
 
 See [Usage](#usage) for a detailed example.
 
+> [!NOTE]
+>
+> You can upgrade to [FlakeHub Cache][flakehub-cache] and get **one month free** using the coupon code **`FHC`**.
+
 ## Why use the Magic Nix Cache?
 
-Magic Nix Cache uses the GitHub Actions [built-in cache][ghacache] to share builds between Workflow runs, and has many advantages over alternatives.
+Magic Nix Cache uses the GitHub Actions [built-in cache][gha-cache] to share builds between workflow runs, and has many advantages over alternatives.
 
 1. Totally free: backed by GitHub Actions' cache, there is no additional service to pay for.
 1. Zero configuration: add our action to your workflow.
    That's it.
-   Everything built in your workflow will be cached.
-1. No secrets: Forks and pull requests benefit from the cache, too.
-1. Secure: Magic Nix Cache follows the [same semantics as the GitHub Actions cache][semantics], and malicious pull requests cannot pollute your project.
-1. Private: The cache is stored in the GitHub Actions cache, not with an additional third party.
+   Everything built in your workflow is cached.
+2. No secrets: Forks and pull requests benefit from the cache, too.
+3. Secure: Magic Nix Cache follows the [same semantics as the GitHub Actions cache][semantics], and malicious pull requests cannot pollute your project.
+4. Private: The cache is stored in the GitHub Actions cache, not with an additional third party.
 
-> **Note:** the Magic Nix Cache doesn't offer a publicly available cache.
+> [!NOTE]
+>
+> The Magic Nix Cache doesn't offer a publicly available cache.
 > This means the cache is only usable in CI.
-> [Zero to Nix][z2n] has an article on binary caching if you want to [share Nix builds][z2ncache] with users outside of CI.
+> Use [FlakeHub Cache][cache] if you want to [share Nix builds][z2ncache] with users outside of CI.
 
 ## Usage
 
@@ -61,7 +61,7 @@ jobs:
 ```
 
 That's it.
-Everything built in your workflow will be cached.
+Everything built in your workflow is cached.
 
 ## Usage Notes
 
@@ -77,7 +77,7 @@ error: unable to download 'http://127.0.0.1:37515/<...>': HTTP error 418
 
 The caching daemon and Nix both handle this gracefully, and won't cause your CI to fail.
 When the rate limit is exceeded while pulling dependencies, your workflow may perform more builds than usual.
-When the rate limit is exceeded while uploading to the cache, the remainder of those store paths will be uploaded on the next run of the workflow.
+When the rate limit is exceeded while uploading to the cache, the remainder of those store paths is uploaded on the next run of the workflow.
 
 ## Concepts
 
@@ -104,7 +104,7 @@ cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Requir
 | `diff-store`                | Whether or not to diff the store before and after Magic Nix Cache runs.                                         |          | `false`                                                  |
 | `flakehub-api-server`       | The FlakeHub API server.                                                                                        |          | https://api.flakehub.com                                 |
 | `flakehub-cache-server`     | The FlakeHub binary cache server.                                                                               |          | https://cache.flakehub.com                               |
-| `flakehub-flake-name`       | The name of your flake on FlakeHub. The empty string will autodetect your FlakeHub flake.                       |          | `""`                                                     |
+| `flakehub-flake-name`       | The name of your flake on FlakeHub. The empty string autodetects your FlakeHub flake.                           |          | `""`                                                     |
 | `listen`                    | The host and port to listen on.                                                                                 |          | 127.0.0.1:37515                                          |
 | `source-binary`             | Run a version of the cache binary from somewhere already on disk. Conflicts with all other `source-*` options.  |          |                                                          |
 | `source-branch`             | The branch of `magic-nix-cache` to use. Conflicts with all other `source-*` options.                            |          | main                                                     |
@@ -113,20 +113,20 @@ cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Requir
 | `source-tag`                | The tag of `magic-nix-cache` to use. Conflicts with all other `source-*` options.                               |          |                                                          |
 | `source-url`                | A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options.                           |          |                                                          |
 | `startup-notification-port` | The port magic-nix-cache uses for daemon startup notification.                                                  |          | 41239                                                    |
-| `upstream-cache`            | Your preferred upstream cache. Store paths in this store will not be cached in GitHub Actions' cache.           |          | https://cache.nixos.org                                  |
+| `upstream-cache`            | Your preferred upstream cache. Store paths in this store aren't cached in GitHub Actions' cache.                |          | https://cache.nixos.org                                  |
 | `use-flakehub`              | Whether to upload build results to FlakeHub Cache (private beta).                                               |          | true                                                     |
 | `use-gha-cache`             | Whether to upload build results to the GitHub Actions cache.                                                    |          | true                                                     |
 
-[gha-cache]: https://docs.github.com/en/rest/actions/cache
-[detsys]: https://determinate.systems/
-[action]: https://github.com/DeterminateSystems/magic-nix-cache-action/
-[installer]: https://github.com/DeterminateSystems/nix-installer/
-[ghacache]: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows
-[privacy]: https://determinate.systems/policies/privacy
-[telemetry]: https://github.com/DeterminateSystems/magic-nix-cache/blob/main/magic-nix-cache/src/telemetry.rs
-[semantics]: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache
-[z2ncache]: https://zero-to-nix.com/concepts/caching#binary-caches
-[zhaofeng]: https://github.com/zhaofengli/
+[action]: https://github.com/DeterminateSystems/magic-nix-cache-action
 [attic]: https://github.com/zhaofengli/attic
 [colmena]: https://github.com/zhaofengli/colmena
+[detsys]: https://determinate.systems
+[flakehub-cache]: https://flakehub.com/cache
+[gha-cache]: https://docs.github.com/en/rest/actions/cache
+[installer]: https://github.com/DeterminateSystems/nix-installer/
+[privacy]: https://determinate.systems/policies/privacy
+[semantics]: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache
+[telemetry]: https://github.com/DeterminateSystems/magic-nix-cache/blob/main/magic-nix-cache/src/telemetry.rs
 [z2n]: https://zero-to-nix.com
+[z2ncache]: https://zero-to-nix.com/concepts/caching#binary-caches
+[zhaofeng]: https://github.com/zhaofengli
