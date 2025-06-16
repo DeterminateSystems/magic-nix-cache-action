@@ -1,3 +1,8 @@
+/**
+ * Now that Magic Nix Cache Action support has been restored, the code in this file
+ * is now unused, although we should keep it around in case GitHub once again
+ * makes a major change.
+ */
 import actionsCore from "@actions/core";
 import glob from "@actions/glob";
 import { stringifyError } from "detsys-ts";

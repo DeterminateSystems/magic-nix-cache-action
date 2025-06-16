@@ -1,5 +1,5 @@
 import { getTrinaryInput, netrcPath, tailLog } from "./helpers.js";
-import { warnOnMnc } from "./mnc-warn.js";
+//import { warnOnMnc } from "./mnc-warn.js";
 import * as actionsCore from "@actions/core";
 import * as actionsGithub from "@actions/github";
 import { DetSysAction, inputs, stringifyError } from "detsys-ts";
@@ -101,9 +101,17 @@ class MagicNixCacheAction extends DetSysAction {
       return;
     }
 
+    /**
+     * Now that Magic Nix Cache Action support has been restored, we no longer need to
+     * throw this warning but we'll make this a comment in case we need to change its
+     * status again
+     */
+
+    /*
     if (this.getFeature("warn-magic-nix-cache-eol")?.variant === true) {
       await warnOnMnc();
     }
+    */
 
     if (this.nixStoreTrust === "untrusted") {
       actionsCore.warning(TEXT_TRUST_UNTRUSTED);
