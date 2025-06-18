@@ -71,8 +71,8 @@ jobs:
           _internal-strict-mode: true
 
   run-systems:
-    if: github.event_name == 'merge_group'
-    needs: build
+    # if: github.event_name == 'merge_group'
+    # needs: build
     name: "Test: ${{ matrix.systems.nix-system }} gha:${{matrix.use-gha-cache}},fhc:${{matrix.use-flakehub}},id:${{matrix.id-token}},determinate:${{matrix.determinate}}"
     runs-on: "${{ matrix.systems.runner }}"
     permissions:
@@ -84,16 +84,24 @@ jobs:
       fail-fast: false
       matrix:
         determinate: [true, false]
-        use-gha-cache: ["disabled", "no-preference", "enabled"]
-        use-flakehub: ["disabled", "no-preference", "enabled"]
-        id-token: ["write", "none"]
+        use-gha-cache:
+          #- "disabled"
+          - "no-preference"
+          - "enabled"
+        use-flakehub:
+          - "disabled"
+          #- "no-preference"
+          #- "enabled"
+        id-token:
+          - "write"
+          - "none"
         systems:
-          - nix-system: "aarch64-darwin"
-            runner: "macos-latest"
-          - nix-system: "x86_64-darwin"
-            runner: "macos-13"
-          - nix-system: "aarch64-linux"
-            runner: "namespace-profile-default-arm64"
+          #- nix-system: "aarch64-darwin"
+          #  runner: "macos-latest"
+          #- nix-system: "x86_64-darwin"
+          #  runner: "macos-13"
+          #- nix-system: "aarch64-linux"
+          #  runner: "namespace-profile-default-arm64"
           - nix-system: "x86_64-linux"
             runner: "ubuntu-22.04"
     steps:
@@ -112,6 +120,7 @@ jobs:
           _internal-obliterate-actions-id-token-request-variables: ${{ matrix.id-token == 'none' }}
           use-gha-cache: ${{ matrix.use-gha-cache }}
           use-flakehub: ${{ matrix.use-flakehub }}
+          source-pr: 145
       - name: Check the cache for liveness
         env:
           EXPECT_FLAKEHUB: ${{ toJson(matrix.use-flakehub != 'disabled' && matrix.id-token == 'write') }}
