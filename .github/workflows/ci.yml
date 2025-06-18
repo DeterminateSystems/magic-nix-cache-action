@@ -83,15 +83,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        againandagain:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
         determinate: [true, false]
-        use-gha-cache: ["disabled", "no-preference", "enabled"]
-        use-flakehub: ["disabled", "no-preference", "enabled"]
-        id-token: ["write", "none"]
+        use-gha-cache:
+          #- "disabled"
+          - "no-preference"
+          - "enabled"
+        use-flakehub:
+          - "disabled"
+          #- "no-preference"
+          #- "enabled"
+        id-token:
+          - "write"
+          - "none"
         systems:
-          - nix-system: "aarch64-darwin"
-            runner: "macos-latest"
-          - nix-system: "x86_64-darwin"
-            runner: "macos-13"
+          #- nix-system: "aarch64-darwin"
+          #  runner: "macos-latest"
+          #- nix-system: "x86_64-darwin"
+          #  runner: "macos-13"
           - nix-system: "aarch64-linux"
             runner: "namespace-profile-default-arm64"
           - nix-system: "x86_64-linux"
