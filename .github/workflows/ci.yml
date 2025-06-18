@@ -112,6 +112,7 @@ jobs:
           _internal-obliterate-actions-id-token-request-variables: ${{ matrix.id-token == 'none' }}
           use-gha-cache: ${{ matrix.use-gha-cache }}
           use-flakehub: ${{ matrix.use-flakehub }}
+          source-pr: 145
       - name: Check the cache for liveness
         env:
           EXPECT_FLAKEHUB: ${{ toJson(matrix.use-flakehub != 'disabled' && matrix.id-token == 'write') }}
