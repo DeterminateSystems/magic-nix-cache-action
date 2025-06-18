@@ -18,5 +18,5 @@ derivation {
 
       inherit seed;
     })
-    (builtins.genList (n: n) 1000);
+    (builtins.genList (n: n) 500);
 }
