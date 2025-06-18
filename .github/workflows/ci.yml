@@ -72,7 +72,7 @@ jobs:
 
   run-systems:
     # if: github.event_name == 'merge_group'
-    needs: build
+    # needs: build
     name: "Test: ${{ matrix.systems.nix-system }} gha:${{matrix.use-gha-cache}},fhc:${{matrix.use-flakehub}},id:${{matrix.id-token}},determinate:${{matrix.determinate}}"
     runs-on: "${{ matrix.systems.runner }}"
     permissions:
@@ -83,17 +83,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        againandagain:
-          - 0
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
         determinate: [true, false]
         use-gha-cache:
           #- "disabled"
