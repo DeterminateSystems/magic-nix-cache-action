@@ -75,7 +75,10 @@ fi
 
 if [ "$EXPECT_GITHUB_CACHE" == "true" ] && ! is_gh_throttled; then
   # Check the GitHub binary cache to see if the path is really there.
-  nix path-info --store "${gha_binary_cache}" "${outpath}"
+  nix path-info --store "${gha_binary_cache}" "${outpath}" \
+    || (sleep 1; nix path-info --store "${gha_binary_cache}" "${outpath}") \
+    || (sleep 3; nix path-info --store "${gha_binary_cache}" "${outpath}") \
+    || (sleep 5; nix path-info --store "${gha_binary_cache}" "${outpath}")
 fi
 
 rm ./result
