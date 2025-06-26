@@ -119,6 +119,7 @@ cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Requir
 
 [action]: https://github.com/DeterminateSystems/magic-nix-cache-action
 [attic]: https://github.com/zhaofengli/attic
+[cache]: https://flakehub.com/cache
 [colmena]: https://github.com/zhaofengli/colmena
 [detsys]: https://determinate.systems
 [flakehub-cache]: https://flakehub.com/cache
