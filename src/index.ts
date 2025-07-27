@@ -158,6 +158,12 @@ class MagicNixCacheAction extends DetSysAction {
 
     let anyMissing = false;
     for (const n of requiredEnv) {
+      const override = `OVERRIDE_${n}`;
+      const overrideDesc = Object.getOwnPropertyDescriptor(process.env, override);
+      if (overrideDesc) {
+        actionsCore.debug(`Overriding env ${n}=${process.env[n]} with ${override}=${process.env[override]}`);
+        Object.defineProperty(process.env, n, overrideDesc);
+      }
       if (!process.env.hasOwnProperty(n)) {
         anyMissing = true;
         actionsCore.warning(
