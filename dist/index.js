@@ -1,7 +1,7 @@
 import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
 /******/ var __webpack_modules__ = ({
 
-/***/ 7389:
+/***/ 95291:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -41,12 +41,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.saveCache = exports.restoreCache = exports.isFeatureAvailable = exports.ReserveCacheError = exports.ValidationError = void 0;
 const core = __importStar(__nccwpck_require__(59999));
 const path = __importStar(__nccwpck_require__(16928));
-const utils = __importStar(__nccwpck_require__(77246));
-const cacheHttpClient = __importStar(__nccwpck_require__(1868));
-const cacheTwirpClient = __importStar(__nccwpck_require__(19188));
-const config_1 = __nccwpck_require__(6643);
-const tar_1 = __nccwpck_require__(73866);
-const constants_1 = __nccwpck_require__(5896);
+const utils = __importStar(__nccwpck_require__(37056));
+const cacheHttpClient = __importStar(__nccwpck_require__(83558));
+const cacheTwirpClient = __importStar(__nccwpck_require__(90146));
+const config_1 = __nccwpck_require__(60421);
+const tar_1 = __nccwpck_require__(35512);
+const constants_1 = __nccwpck_require__(43538);
+const http_client_1 = __nccwpck_require__(80787);
 class ValidationError extends Error {
     constructor(message) {
         super(message);
@@ -83,7 +84,17 @@ function checkKey(key) {
  * @returns boolean return true if Actions cache service feature is available, otherwise false
  */
 function isFeatureAvailable() {
-    return !!process.env['ACTIONS_CACHE_URL'];
+    const cacheServiceVersion = (0, config_1.getCacheServiceVersion)();
+    // Check availability based on cache service version
+    switch (cacheServiceVersion) {
+        case 'v2':
+            // For v2, we need ACTIONS_RESULTS_URL
+            return !!process.env['ACTIONS_RESULTS_URL'];
+        case 'v1':
+        default:
+            // For v1, we only need ACTIONS_CACHE_URL
+            return !!process.env['ACTIONS_CACHE_URL'];
+    }
 }
 exports.isFeatureAvailable = isFeatureAvailable;
 /**
@@ -168,8 +179,16 @@ function restoreCacheV1(paths, primaryKey, restoreKeys, options, enableCrossOsAr
                 throw error;
             }
             else {
-                // Supress all non-validation cache related errors because caching should be optional
-                core.warning(`Failed to restore: ${error.message}`);
+                // warn on cache restore failure and continue build
+                // Log server errors (5xx) as errors, all other errors as warnings
+                if (typedError instanceof http_client_1.HttpClientError &&
+                    typeof typedError.statusCode === 'number' &&
+                    typedError.statusCode >= 500) {
+                    core.error(`Failed to restore: ${error.message}`);
+                }
+                else {
+                    core.warning(`Failed to restore: ${error.message}`);
+                }
             }
         }
         finally {
@@ -222,7 +241,13 @@ function restoreCacheV2(paths, primaryKey, restoreKeys, options, enableCrossOsAr
                 core.debug(`Cache not found for version ${request.version} of keys: ${keys.join(', ')}`);
                 return undefined;
             }
-            core.info(`Cache hit for: ${request.key}`);
+            const isRestoreKeyMatch = request.key !== response.matchedKey;
+            if (isRestoreKeyMatch) {
+                core.info(`Cache hit for restore-key: ${response.matchedKey}`);
+            }
+            else {
+                core.info(`Cache hit for: ${response.matchedKey}`);
+            }
             if (options === null || options === void 0 ? void 0 : options.lookupOnly) {
                 core.info('Lookup only - skipping download');
                 return response.matchedKey;
@@ -247,7 +272,15 @@ function restoreCacheV2(paths, primaryKey, restoreKeys, options, enableCrossOsAr
             }
             else {
                 // Supress all non-validation cache related errors because caching should be optional
-                core.warning(`Failed to restore: ${error.message}`);
+                // Log server errors (5xx) as errors, all other errors as warnings
+                if (typedError instanceof http_client_1.HttpClientError &&
+                    typeof typedError.statusCode === 'number' &&
+                    typedError.statusCode >= 500) {
+                    core.error(`Failed to restore: ${error.message}`);
+                }
+                else {
+                    core.warning(`Failed to restore: ${error.message}`);
+                }
             }
         }
         finally {
@@ -350,7 +383,15 @@ function saveCacheV1(paths, key, options, enableCrossOsArchive = false) {
                 core.info(`Failed to save: ${typedError.message}`);
             }
             else {
-                core.warning(`Failed to save: ${typedError.message}`);
+                // Log server errors (5xx) as errors, all other errors as warnings
+                if (typedError instanceof http_client_1.HttpClientError &&
+                    typeof typedError.statusCode === 'number' &&
+                    typedError.statusCode >= 500) {
+                    core.error(`Failed to save: ${typedError.message}`);
+                }
+                else {
+                    core.warning(`Failed to save: ${typedError.message}`);
+                }
             }
         }
         finally {
@@ -446,7 +487,15 @@ function saveCacheV2(paths, key, options, enableCrossOsArchive = false) {
                 core.info(`Failed to save: ${typedError.message}`);
             }
             else {
-                core.warning(`Failed to save: ${typedError.message}`);
+                // Log server errors (5xx) as errors, all other errors as warnings
+                if (typedError instanceof http_client_1.HttpClientError &&
+                    typeof typedError.statusCode === 'number' &&
+                    typedError.statusCode >= 500) {
+                    core.error(`Failed to save: ${typedError.message}`);
+                }
+                else {
+                    core.warning(`Failed to save: ${typedError.message}`);
+                }
             }
         }
         finally {
@@ -465,7 +514,7 @@ function saveCacheV2(paths, key, options, enableCrossOsArchive = false) {
 
 /***/ }),
 
-/***/ 70823:
+/***/ 78173:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -480,7 +529,7 @@ const runtime_2 = __nccwpck_require__(66765);
 const runtime_3 = __nccwpck_require__(66765);
 const runtime_4 = __nccwpck_require__(66765);
 const runtime_5 = __nccwpck_require__(66765);
-const cachemetadata_1 = __nccwpck_require__(3954);
+const cachemetadata_1 = __nccwpck_require__(69511);
 // @generated message type with reflection information, may provide speed optimized methods
 class CreateCacheEntryRequest$Type extends runtime_5.MessageType {
     constructor() {
@@ -859,13 +908,13 @@ exports.CacheService = new runtime_rpc_1.ServiceType("github.actions.results.api
 
 /***/ }),
 
-/***/ 13231:
+/***/ 44045:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CacheServiceClientProtobuf = exports.CacheServiceClientJSON = void 0;
-const cache_1 = __nccwpck_require__(70823);
+const cache_1 = __nccwpck_require__(78173);
 class CacheServiceClientJSON {
     constructor(rpc) {
         this.rpc = rpc;
@@ -933,7 +982,7 @@ exports.CacheServiceClientProtobuf = CacheServiceClientProtobuf;
 
 /***/ }),
 
-/***/ 3954:
+/***/ 69511:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -944,7 +993,7 @@ const runtime_2 = __nccwpck_require__(66765);
 const runtime_3 = __nccwpck_require__(66765);
 const runtime_4 = __nccwpck_require__(66765);
 const runtime_5 = __nccwpck_require__(66765);
-const cachescope_1 = __nccwpck_require__(47182);
+const cachescope_1 = __nccwpck_require__(35096);
 // @generated message type with reflection information, may provide speed optimized methods
 class CacheMetadata$Type extends runtime_5.MessageType {
     constructor() {
@@ -1003,7 +1052,7 @@ exports.CacheMetadata = new CacheMetadata$Type();
 
 /***/ }),
 
-/***/ 47182:
+/***/ 35096:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -1072,7 +1121,7 @@ exports.CacheScope = new CacheScope$Type();
 
 /***/ }),
 
-/***/ 1868:
+/***/ 83558:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -1115,13 +1164,13 @@ const http_client_1 = __nccwpck_require__(80787);
 const auth_1 = __nccwpck_require__(63673);
 const fs = __importStar(__nccwpck_require__(79896));
 const url_1 = __nccwpck_require__(87016);
-const utils = __importStar(__nccwpck_require__(77246));
-const uploadUtils_1 = __nccwpck_require__(67471);
-const downloadUtils_1 = __nccwpck_require__(42148);
-const options_1 = __nccwpck_require__(17633);
-const requestUtils_1 = __nccwpck_require__(91151);
-const config_1 = __nccwpck_require__(6643);
-const user_agent_1 = __nccwpck_require__(30444);
+const utils = __importStar(__nccwpck_require__(37056));
+const uploadUtils_1 = __nccwpck_require__(73129);
+const downloadUtils_1 = __nccwpck_require__(30458);
+const options_1 = __nccwpck_require__(78815);
+const requestUtils_1 = __nccwpck_require__(93273);
+const config_1 = __nccwpck_require__(60421);
+const user_agent_1 = __nccwpck_require__(89810);
 function getCacheApiUrl(resource) {
     const baseUrl = (0, config_1.getCacheServiceURL)();
     if (!baseUrl) {
@@ -1334,7 +1383,7 @@ exports.saveCache = saveCache;
 
 /***/ }),
 
-/***/ 77246:
+/***/ 37056:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -1388,7 +1437,7 @@ const fs = __importStar(__nccwpck_require__(79896));
 const path = __importStar(__nccwpck_require__(16928));
 const semver = __importStar(__nccwpck_require__(88804));
 const util = __importStar(__nccwpck_require__(39023));
-const constants_1 = __nccwpck_require__(5896);
+const constants_1 = __nccwpck_require__(43538);
 const versionSalt = '1.0';
 // From https://github.com/actions/toolkit/blob/main/packages/tool-cache/src/tool-cache.ts#L23
 function createTempDirectory() {
@@ -1556,7 +1605,7 @@ exports.getRuntimeToken = getRuntimeToken;
 
 /***/ }),
 
-/***/ 6643:
+/***/ 60421:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1599,7 +1648,7 @@ exports.getCacheServiceURL = getCacheServiceURL;
 
 /***/ }),
 
-/***/ 5896:
+/***/ 43538:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1642,7 +1691,7 @@ exports.CacheFileSizeLimit = 10 * Math.pow(1024, 3); // 10GiB per repository
 
 /***/ }),
 
-/***/ 42148:
+/***/ 30458:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -1687,9 +1736,9 @@ const buffer = __importStar(__nccwpck_require__(20181));
 const fs = __importStar(__nccwpck_require__(79896));
 const stream = __importStar(__nccwpck_require__(2203));
 const util = __importStar(__nccwpck_require__(39023));
-const utils = __importStar(__nccwpck_require__(77246));
-const constants_1 = __nccwpck_require__(5896);
-const requestUtils_1 = __nccwpck_require__(91151);
+const utils = __importStar(__nccwpck_require__(37056));
+const constants_1 = __nccwpck_require__(43538);
+const requestUtils_1 = __nccwpck_require__(93273);
 const abort_controller_1 = __nccwpck_require__(80349);
 /**
  * Pipes the body of a HTTP response to a stream
@@ -2026,7 +2075,7 @@ const promiseWithTimeout = (timeoutMs, promise) => __awaiter(void 0, void 0, voi
 
 /***/ }),
 
-/***/ 91151:
+/***/ 93273:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -2066,7 +2115,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.retryHttpClientResponse = exports.retryTypedResponse = exports.retry = exports.isRetryableStatusCode = exports.isServerErrorStatusCode = exports.isSuccessStatusCode = void 0;
 const core = __importStar(__nccwpck_require__(59999));
 const http_client_1 = __nccwpck_require__(80787);
-const constants_1 = __nccwpck_require__(5896);
+const constants_1 = __nccwpck_require__(43538);
 function isSuccessStatusCode(statusCode) {
     if (!statusCode) {
         return false;
@@ -2169,7 +2218,7 @@ exports.retryHttpClientResponse = retryHttpClientResponse;
 
 /***/ }),
 
-/***/ 19188:
+/***/ 90146:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -2185,14 +2234,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.internalCacheTwirpClient = void 0;
 const core_1 = __nccwpck_require__(59999);
-const user_agent_1 = __nccwpck_require__(30444);
-const errors_1 = __nccwpck_require__(58676);
-const config_1 = __nccwpck_require__(6643);
-const cacheUtils_1 = __nccwpck_require__(77246);
+const user_agent_1 = __nccwpck_require__(89810);
+const errors_1 = __nccwpck_require__(59054);
+const config_1 = __nccwpck_require__(60421);
+const cacheUtils_1 = __nccwpck_require__(37056);
 const auth_1 = __nccwpck_require__(63673);
 const http_client_1 = __nccwpck_require__(80787);
-const cache_twirp_client_1 = __nccwpck_require__(13231);
-const util_1 = __nccwpck_require__(92163);
+const cache_twirp_client_1 = __nccwpck_require__(44045);
+const util_1 = __nccwpck_require__(12177);
 /**
  * This class is a wrapper around the CacheServiceClientJSON class generated by Twirp.
  *
@@ -2337,7 +2386,7 @@ exports.internalCacheTwirpClient = internalCacheTwirpClient;
 
 /***/ }),
 
-/***/ 58676:
+/***/ 59054:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -2413,14 +2462,14 @@ UsageError.isUsageErrorMessage = (msg) => {
 
 /***/ }),
 
-/***/ 30444:
+/***/ 89810:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getUserAgentString = void 0;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-const packageJson = __nccwpck_require__(9027);
+const packageJson = __nccwpck_require__(93965);
 /**
  * Ensure that this User Agent String is used in all HTTP calls so that we can monitor telemetry between different versions of this package
  */
@@ -2432,7 +2481,7 @@ exports.getUserAgentString = getUserAgentString;
 
 /***/ }),
 
-/***/ 92163:
+/***/ 12177:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -2512,7 +2561,7 @@ exports.maskSecretUrls = maskSecretUrls;
 
 /***/ }),
 
-/***/ 73866:
+/***/ 35512:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -2554,8 +2603,8 @@ const exec_1 = __nccwpck_require__(58872);
 const io = __importStar(__nccwpck_require__(73357));
 const fs_1 = __nccwpck_require__(79896);
 const path = __importStar(__nccwpck_require__(16928));
-const utils = __importStar(__nccwpck_require__(77246));
-const constants_1 = __nccwpck_require__(5896);
+const utils = __importStar(__nccwpck_require__(37056));
+const constants_1 = __nccwpck_require__(43538);
 const IS_WINDOWS = process.platform === 'win32';
 // Returns tar path and type: BSD or GNU
 function getTarPath() {
@@ -2790,7 +2839,7 @@ exports.createTar = createTar;
 
 /***/ }),
 
-/***/ 67471:
+/***/ 73129:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -2830,7 +2879,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.uploadCacheArchiveSDK = exports.UploadProgress = void 0;
 const core = __importStar(__nccwpck_require__(59999));
 const storage_blob_1 = __nccwpck_require__(34228);
-const errors_1 = __nccwpck_require__(58676);
+const errors_1 = __nccwpck_require__(59054);
 /**
  * Class for tracking the upload state and displaying stats.
  */
@@ -2963,7 +3012,7 @@ exports.uploadCacheArchiveSDK = uploadCacheArchiveSDK;
 
 /***/ }),
 
-/***/ 17633:
+/***/ 78815:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -91035,10 +91084,10 @@ function randomUUID() {
 
 /***/ }),
 
-/***/ 9027:
+/***/ 93965:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"4.0.3","preview":true,"description":"Actions cache lib","keywords":["github","actions","cache"],"homepage":"https://github.com/actions/toolkit/tree/main/packages/cache","license":"MIT","main":"lib/cache.js","types":"lib/cache.d.ts","directories":{"lib":"lib","test":"__tests__"},"files":["lib","!.DS_Store"],"publishConfig":{"access":"public"},"repository":{"type":"git","url":"git+https://github.com/actions/toolkit.git","directory":"packages/cache"},"scripts":{"audit-moderate":"npm install && npm audit --json --audit-level=moderate > audit.json","test":"echo \\"Error: run tests from root\\" && exit 1","tsc":"tsc"},"bugs":{"url":"https://github.com/actions/toolkit/issues"},"dependencies":{"@actions/core":"^1.11.1","@actions/exec":"^1.0.1","@actions/glob":"^0.1.0","@actions/http-client":"^2.1.1","@actions/io":"^1.0.1","@azure/abort-controller":"^1.1.0","@azure/ms-rest-js":"^2.6.0","@azure/storage-blob":"^12.13.0","@protobuf-ts/plugin":"^2.9.4","semver":"^6.3.1"},"devDependencies":{"@types/node":"^22.13.9","@types/semver":"^6.0.0","typescript":"^5.2.2"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"4.0.5","preview":true,"description":"Actions cache lib","keywords":["github","actions","cache"],"homepage":"https://github.com/actions/toolkit/tree/main/packages/cache","license":"MIT","main":"lib/cache.js","types":"lib/cache.d.ts","directories":{"lib":"lib","test":"__tests__"},"files":["lib","!.DS_Store"],"publishConfig":{"access":"public"},"repository":{"type":"git","url":"git+https://github.com/actions/toolkit.git","directory":"packages/cache"},"scripts":{"audit-moderate":"npm install && npm audit --json --audit-level=moderate > audit.json","test":"echo \\"Error: run tests from root\\" && exit 1","tsc":"tsc"},"bugs":{"url":"https://github.com/actions/toolkit/issues"},"dependencies":{"@actions/core":"^1.11.1","@actions/exec":"^1.0.1","@actions/glob":"^0.1.0","@protobuf-ts/runtime-rpc":"^2.11.1","@actions/http-client":"^2.1.1","@actions/io":"^1.0.1","@azure/abort-controller":"^1.1.0","@azure/ms-rest-js":"^2.6.0","@azure/storage-blob":"^12.13.0","semver":"^6.3.1"},"devDependencies":{"@types/node":"^22.13.9","@types/semver":"^6.0.0","@protobuf-ts/plugin":"^2.9.4","typescript":"^5.2.2"}}');
 
 /***/ })
 
@@ -98183,11 +98232,11 @@ const got = source_create(defaults);
 
 ;// CONCATENATED MODULE: external "dns/promises"
 const external_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("dns/promises");
-// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@4.0.3/node_modules/@actions/cache/lib/cache.js
-var cache = __nccwpck_require__(7389);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@4.0.5/node_modules/@actions/cache/lib/cache.js
+var cache = __nccwpck_require__(95291);
 // EXTERNAL MODULE: external "child_process"
 var external_child_process_ = __nccwpck_require__(35317);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@6d3f1c5a5781e58b3cd8060cfb578c0c95eeb51e_bvn77zcfgaq354qwk77dpm6bpe/node_modules/detsys-ts/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@e439a01995ac029e7481a75c4661a7f60eeb8b19_ovvguaiuokhouttr6wpxipob7m/node_modules/detsys-ts/dist/index.js
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
