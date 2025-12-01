@@ -30,12 +30,12 @@
     "@actions/github": "^6.0.1",
     "@actions/glob": "^0.5.0",
     "detsys-ts": "github:DeterminateSystems/detsys-ts",
-    "got": "^14.6.2",
+    "got": "^14.6.5",
     "tail": "^2.2.6"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/node": "^20.19.24",
+    "@types/node": "^20.19.25",
     "@types/tail": "^2.2.3",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
@@ -45,8 +45,8 @@
     "eslint-plugin-github": "^4.10.2",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
-    "prettier": "^3.6.2",
-    "tsup": "^8.5.0",
+    "prettier": "^3.7.3",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   }
 }
