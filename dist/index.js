@@ -101705,25 +101705,36 @@ var MagicNixCacheAction = class extends DetSysAction {
         ...extraEnv
       };
     }
-    const notifyPort = inputs_exports.getString("startup-notification-port");
-    const notifyPromise = new Promise((resolveListening) => {
-      const promise = new Promise(async (resolveQuit) => {
-        const notifyServer = external_http_.createServer((req, res) => {
-          if (req.method === "POST" && req.url === "/") {
-            core.debug(`Notify server shutting down.`);
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end("{}");
-            notifyServer.close(() => {
-              resolveQuit();
-            });
-          }
+    const notifyPromise = new Promise(
+      (resolveListening, rejectListening) => {
+        const promise = new Promise((resolveQuit) => {
+          const notifyServer = external_http_.createServer((req, res) => {
+            if (req.method === "POST" && req.url === "/") {
+              core.debug(`Notify server shutting down.`);
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end("{}");
+              notifyServer.close(() => {
+                resolveQuit();
+              });
+            }
+          });
+          notifyServer.listen(
+            inputs_exports.getString("startup-notification-port"),
+            () => {
+              core.debug(`Notify server running.`);
+              const addr = notifyServer.address();
+              if (typeof addr === "string") {
+                resolveListening([promise, addr]);
+              } else if (addr !== null) {
+                resolveListening([promise, `http://127.0.0.1:${addr.port}`]);
+              } else {
+                rejectListening(new Error("Server failed to start correctly"));
+              }
+            }
+          );
         });
-        notifyServer.listen(notifyPort, () => {
-          core.debug(`Notify server running.`);
-          resolveListening(promise);
-        });
-      });
-    });
+      }
+    );
     const outputPath = `${this.daemonDir}/daemon.log`;
     const output = (0,external_fs_.openSync)(outputPath, "a");
     const log = tailLog(this.daemonDir);
@@ -101735,65 +101746,65 @@ var MagicNixCacheAction = class extends DetSysAction {
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
     const useGhaCache = getTrinaryInput("use-gha-cache");
-    const daemonCliFlags = [
-      "--startup-notification-url",
-      `http://127.0.0.1:${notifyPort}`,
-      "--listen",
-      this.hostAndPort,
-      "--upstream",
-      upstreamCache,
-      "--diagnostic-endpoint",
-      (await this.getDiagnosticsUrl())?.toString() ?? "",
-      "--nix-conf",
-      nixConfPath,
-      "--use-gha-cache",
-      useGhaCache,
-      "--use-flakehub",
-      useFlakeHub
-    ].concat(this.diffStore ? ["--diff-store"] : []).concat(
-      useFlakeHub !== "disabled" ? [
-        "--flakehub-cache-server",
-        flakeHubCacheServer,
-        "--flakehub-api-server",
-        flakeHubApiServer,
-        "--flakehub-api-server-netrc",
-        netrc,
-        "--flakehub-flake-name",
-        flakeHubFlakeName
-      ] : []
-    );
-    const opts = {
-      stdio: ["ignore", output, output],
-      env: runEnv,
-      detached: true
-    };
-    core.debug("Full daemon start command:");
-    core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
-    const daemon = (0,external_child_process_.spawn)(daemonBin, daemonCliFlags, opts);
-    this.daemonStarted = true;
-    core.saveState(STATE_STARTED, STARTED_HINT);
-    const pidFile = external_path_.join(this.daemonDir, "daemon.pid");
-    await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
-    core.info("Waiting for magic-nix-cache to start...");
     await new Promise((resolve) => {
-      notifyPromise.then((_value) => {
+      notifyPromise.then(async (promiseResult) => {
+        const daemonCliFlags = [
+          "--startup-notification-url",
+          promiseResult[1],
+          "--listen",
+          this.hostAndPort,
+          "--upstream",
+          upstreamCache,
+          "--diagnostic-endpoint",
+          (await this.getDiagnosticsUrl())?.toString() ?? "",
+          "--nix-conf",
+          nixConfPath,
+          "--use-gha-cache",
+          useGhaCache,
+          "--use-flakehub",
+          useFlakeHub
+        ].concat(this.diffStore ? ["--diff-store"] : []).concat(
+          useFlakeHub !== "disabled" ? [
+            "--flakehub-cache-server",
+            flakeHubCacheServer,
+            "--flakehub-api-server",
+            flakeHubApiServer,
+            "--flakehub-api-server-netrc",
+            netrc,
+            "--flakehub-flake-name",
+            flakeHubFlakeName
+          ] : []
+        );
+        const opts = {
+          stdio: ["ignore", output, output],
+          env: runEnv,
+          detached: true
+        };
+        core.debug("Full daemon start command:");
+        core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
+        const daemon = (0,external_child_process_.spawn)(daemonBin, daemonCliFlags, opts);
+        this.daemonStarted = true;
+        core.saveState(STATE_STARTED, STARTED_HINT);
+        const pidFile = external_path_.join(this.daemonDir, "daemon.pid");
+        await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
+        core.info("Waiting for magic-nix-cache to start...");
         resolve();
+        daemon.on("exit", (code, signal) => {
+          let msg;
+          if (signal) {
+            msg = `Daemon was killed by signal ${signal}`;
+          } else if (code) {
+            msg = `Daemon exited with code ${code}`;
+          } else {
+            msg = "Daemon unexpectedly exited";
+          }
+          this.exitMain(msg);
+        });
+        daemon.unref();
       }).catch((e) => {
         this.exitMain(`Error in notifyPromise: ${stringifyError(e)}`);
       });
-      daemon.on("exit", async (code, signal) => {
-        let msg;
-        if (signal) {
-          msg = `Daemon was killed by signal ${signal}`;
-        } else if (code) {
-          msg = `Daemon exited with code ${code}`;
-        } else {
-          msg = "Daemon unexpectedly exited";
-        }
-        this.exitMain(msg);
-      });
     });
-    daemon.unref();
     core.info("Launched Magic Nix Cache");
     log.unwatch();
   }
