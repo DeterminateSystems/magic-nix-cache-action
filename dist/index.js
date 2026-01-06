@@ -105281,6 +105281,7 @@ async function flakeHubLogin(netrc) {
 
 
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var ENV_ADDR = "MAGIC_NIX_CACHE_ADDRESS";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_SENT_SIGTERM = "sent_sigterm";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
@@ -105334,6 +105335,10 @@ var MagicNixCacheAction = class extends DetSysAction {
       this.alreadyRunning = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
     this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
+    if (process.env[ENV_ADDR] !== void 0) {
+      this.hostAndPort = process.env[ENV_ADDR];
+      core.exportVariable(ENV_ADDR, this.hostAndPort);
+    }
     this.stapleFile("daemon.log", external_path_.join(this.daemonDir, "daemon.log"));
   }
   async main() {
@@ -105347,7 +105352,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     } else if (this.nixStoreTrust === "unknown") {
       core.info(TEXT_TRUST_UNKNOWN);
     }
-    this.hostAndPort = await this.setUpAutoCache() ?? this.hostAndPort;
+    await this.setUpAutoCache();
     await this.notifyAutoCache();
   }
   async post() {
@@ -105386,11 +105391,11 @@ var MagicNixCacheAction = class extends DetSysAction {
     }
     this.addFact(FACT_ENV_VARS_PRESENT, !anyMissing);
     if (anyMissing) {
-      return null;
+      return;
     }
     if (this.daemonStarted) {
       core.debug("Already started.");
-      return null;
+      return;
     }
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
@@ -105415,7 +105420,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     }
     const notifyPromise = new Promise(
       (resolveListening, rejectListening) => {
-        const promise = new Promise((resolveQuit) => {
+        const promise = new Promise((resolveQuit, rejectQuit) => {
           const notifyServer = external_http_.createServer((req, res) => {
             if (req.method === "POST" && req.url === "/") {
               const data = [];
@@ -105423,13 +105428,17 @@ var MagicNixCacheAction = class extends DetSysAction {
                 data.push(chunk);
               });
               req.on("end", () => {
-                const body = JSON.parse(Buffer.concat(data).toString());
-                core.debug(`Notify server shutting down.`);
-                res.writeHead(200, { "Content-Type": "application/json" });
-                res.end("{}");
-                notifyServer.close(() => {
-                  resolveQuit(body.address);
-                });
+                try {
+                  const body = JSON.parse(Buffer.concat(data).toString());
+                  core.debug(`Notify server shutting down.`);
+                  res.writeHead(200, { "Content-Type": "application/json" });
+                  res.end("{}");
+                  notifyServer.close(() => {
+                    resolveQuit(body.address);
+                  });
+                } catch (e) {
+                  rejectQuit(e);
+                }
               });
             }
           });
@@ -105461,7 +105470,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
     const useGhaCache = getTrinaryInput("use-gha-cache");
-    const daemonAddr = await new Promise((resolve) => {
+    await new Promise((resolve) => {
       notifyPromise.then(async (promiseResult) => {
         const daemonCliFlags = [
           "--startup-notification-url",
@@ -105503,7 +105512,9 @@ var MagicNixCacheAction = class extends DetSysAction {
         const pidFile = external_path_.join(this.daemonDir, "daemon.pid");
         await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
         core.info("Waiting for magic-nix-cache to start...");
-        resolve(await promiseResult[0]);
+        this.hostAndPort = await promiseResult[0];
+        core.exportVariable(ENV_ADDR, this.hostAndPort);
+        resolve();
         daemon.on("exit", (code, signal) => {
           let msg;
           if (signal) {
@@ -105522,7 +105533,6 @@ var MagicNixCacheAction = class extends DetSysAction {
     });
     core.info("Launched Magic Nix Cache");
     log.unwatch();
-    return daemonAddr;
   }
   async notifyAutoCache() {
     if (!this.daemonStarted) {

@@ -16,6 +16,8 @@ import { setTimeout } from "node:timers/promises";
 // twice.
 const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
+const ENV_ADDR = "MAGIC_NIX_CACHE_ADDRESS";
+
 const FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 const FACT_SENT_SIGTERM = "sent_sigterm";
 const FACT_DIFF_STORE_ENABLED = "diff_store";
@@ -92,6 +94,11 @@ class MagicNixCacheAction extends DetSysAction {
     }
     this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
 
+    if (process.env[ENV_ADDR] !== undefined) {
+      this.hostAndPort = process.env[ENV_ADDR];
+      actionsCore.exportVariable(ENV_ADDR, this.hostAndPort);
+    }
+
     this.stapleFile("daemon.log", path.join(this.daemonDir, "daemon.log"));
   }
 
@@ -120,7 +127,7 @@ class MagicNixCacheAction extends DetSysAction {
       actionsCore.info(TEXT_TRUST_UNKNOWN);
     }
 
-    this.hostAndPort = (await this.setUpAutoCache()) ?? this.hostAndPort;
+    await this.setUpAutoCache();
     await this.notifyAutoCache();
   }
 
@@ -149,7 +156,7 @@ class MagicNixCacheAction extends DetSysAction {
     await this.tearDownAutoCache();
   }
 
-  async setUpAutoCache(): Promise<string | null> {
+  async setUpAutoCache(): Promise<void> {
     const requiredEnv = [
       "ACTIONS_CACHE_URL",
       "ACTIONS_RUNTIME_URL",
@@ -168,12 +175,12 @@ class MagicNixCacheAction extends DetSysAction {
 
     this.addFact(FACT_ENV_VARS_PRESENT, !anyMissing);
     if (anyMissing) {
-      return null;
+      return;
     }
 
     if (this.daemonStarted) {
       actionsCore.debug("Already started.");
-      return null;
+      return;
     }
 
     actionsCore.debug(
@@ -202,7 +209,7 @@ class MagicNixCacheAction extends DetSysAction {
 
     const notifyPromise = new Promise<[Promise<string>, string]>(
       (resolveListening, rejectListening) => {
-        const promise = new Promise<string>((resolveQuit) => {
+        const promise = new Promise<string>((resolveQuit, rejectQuit) => {
           const notifyServer = http.createServer((req, res) => {
             if (req.method === "POST" && req.url === "/") {
               const data: Buffer[] = [];
@@ -211,18 +218,22 @@ class MagicNixCacheAction extends DetSysAction {
               });
 
               req.on("end", () => {
-                const body = JSON.parse(Buffer.concat(data).toString()) as {
-                  address: string;
-                };
+                try {
+                  const body = JSON.parse(Buffer.concat(data).toString()) as {
+                    address: string;
+                  };
 
-                actionsCore.debug(`Notify server shutting down.`);
+                  actionsCore.debug(`Notify server shutting down.`);
 
-                res.writeHead(200, { "Content-Type": "application/json" });
-                res.end("{}");
+                  res.writeHead(200, { "Content-Type": "application/json" });
+                  res.end("{}");
 
-                notifyServer.close(() => {
-                  resolveQuit(body.address);
-                });
+                  notifyServer.close(() => {
+                    resolveQuit(body.address);
+                  });
+                } catch (e) {
+                  rejectQuit(e);
+                }
               });
             }
           });
@@ -258,7 +269,7 @@ class MagicNixCacheAction extends DetSysAction {
     const flakeHubFlakeName = inputs.getString("flakehub-flake-name");
     const useGhaCache = getTrinaryInput("use-gha-cache");
 
-    const daemonAddr = await new Promise<string>((resolve) => {
+    await new Promise<void>((resolve) => {
       notifyPromise
         // eslint-disable-next-line github/no-then
         .then(async (promiseResult) => {
@@ -314,7 +325,10 @@ class MagicNixCacheAction extends DetSysAction {
           await fs.writeFile(pidFile, `${daemon.pid}`);
 
           actionsCore.info("Waiting for magic-nix-cache to start...");
-          resolve(await promiseResult[0]);
+
+          this.hostAndPort = await promiseResult[0];
+          actionsCore.exportVariable(ENV_ADDR, this.hostAndPort);
+          resolve();
 
           daemon.on("exit", (code, signal) => {
             let msg: string;
@@ -340,8 +354,6 @@ class MagicNixCacheAction extends DetSysAction {
     actionsCore.info("Launched Magic Nix Cache");
 
     log.unwatch();
-
-    return daemonAddr;
   }
 
   private async notifyAutoCache(): Promise<void> {
