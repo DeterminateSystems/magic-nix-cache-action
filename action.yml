@@ -14,7 +14,7 @@ inputs:
     required: false
   listen:
     description: The host and port to listen on.
-    default: 127.0.0.1:37515
+    default: 127.0.0.1:0
   upstream-cache:
     description: Your preferred upstream cache. Store paths in this store will not be cached in GitHub Actions' cache.
     default: https://cache.nixos.org
@@ -41,7 +41,7 @@ inputs:
     required: false
   startup-notification-port:
     description: "The port magic-nix-cache uses for daemon startup notification."
-    default: 41239
+    default: 0
   diff-store:
     description: "Whether or not to diff the store before and after Magic Nix Cache runs"
     default: false
