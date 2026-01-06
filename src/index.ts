@@ -120,7 +120,7 @@ class MagicNixCacheAction extends DetSysAction {
       actionsCore.info(TEXT_TRUST_UNKNOWN);
     }
 
-    await this.setUpAutoCache();
+    this.hostAndPort = (await this.setUpAutoCache()) ?? this.hostAndPort;
     await this.notifyAutoCache();
   }
 
@@ -149,7 +149,7 @@ class MagicNixCacheAction extends DetSysAction {
     await this.tearDownAutoCache();
   }
 
-  async setUpAutoCache(): Promise<void> {
+  async setUpAutoCache(): Promise<string | null> {
     const requiredEnv = [
       "ACTIONS_CACHE_URL",
       "ACTIONS_RUNTIME_URL",
@@ -168,12 +168,12 @@ class MagicNixCacheAction extends DetSysAction {
 
     this.addFact(FACT_ENV_VARS_PRESENT, !anyMissing);
     if (anyMissing) {
-      return;
+      return null;
     }
 
     if (this.daemonStarted) {
       actionsCore.debug("Already started.");
-      return;
+      return null;
     }
 
     actionsCore.debug(
@@ -200,16 +200,29 @@ class MagicNixCacheAction extends DetSysAction {
       };
     }
 
-    const notifyPromise = new Promise<[Promise<void>, string]>(
+    const notifyPromise = new Promise<[Promise<string>, string]>(
       (resolveListening, rejectListening) => {
-        const promise = new Promise<void>((resolveQuit) => {
+        const promise = new Promise<string>((resolveQuit) => {
           const notifyServer = http.createServer((req, res) => {
             if (req.method === "POST" && req.url === "/") {
-              actionsCore.debug(`Notify server shutting down.`);
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end("{}");
-              notifyServer.close(() => {
-                resolveQuit();
+              const data: Buffer[] = [];
+              req.on("data", (chunk) => {
+                data.push(chunk);
+              });
+
+              req.on("end", () => {
+                const body = JSON.parse(Buffer.concat(data).toString()) as {
+                  address: string;
+                };
+
+                actionsCore.debug(`Notify server shutting down.`);
+
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end("{}");
+
+                notifyServer.close(() => {
+                  resolveQuit(body.address);
+                });
               });
             }
           });
@@ -245,7 +258,7 @@ class MagicNixCacheAction extends DetSysAction {
     const flakeHubFlakeName = inputs.getString("flakehub-flake-name");
     const useGhaCache = getTrinaryInput("use-gha-cache");
 
-    await new Promise<void>((resolve) => {
+    const daemonAddr = await new Promise<string>((resolve) => {
       notifyPromise
         // eslint-disable-next-line github/no-then
         .then(async (promiseResult) => {
@@ -301,7 +314,7 @@ class MagicNixCacheAction extends DetSysAction {
           await fs.writeFile(pidFile, `${daemon.pid}`);
 
           actionsCore.info("Waiting for magic-nix-cache to start...");
-          resolve();
+          resolve(await promiseResult[0]);
 
           daemon.on("exit", (code, signal) => {
             let msg: string;
@@ -327,6 +340,8 @@ class MagicNixCacheAction extends DetSysAction {
     actionsCore.info("Launched Magic Nix Cache");
 
     log.unwatch();
+
+    return daemonAddr;
   }
 
   private async notifyAutoCache(): Promise<void> {
