@@ -105347,7 +105347,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     } else if (this.nixStoreTrust === "unknown") {
       core.info(TEXT_TRUST_UNKNOWN);
     }
-    await this.setUpAutoCache();
+    this.hostAndPort = await this.setUpAutoCache() ?? this.hostAndPort;
     await this.notifyAutoCache();
   }
   async post() {
@@ -105386,11 +105386,11 @@ var MagicNixCacheAction = class extends DetSysAction {
     }
     this.addFact(FACT_ENV_VARS_PRESENT, !anyMissing);
     if (anyMissing) {
-      return;
+      return null;
     }
     if (this.daemonStarted) {
       core.debug("Already started.");
-      return;
+      return null;
     }
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
@@ -105418,11 +105418,18 @@ var MagicNixCacheAction = class extends DetSysAction {
         const promise = new Promise((resolveQuit) => {
           const notifyServer = external_http_.createServer((req, res) => {
             if (req.method === "POST" && req.url === "/") {
-              core.debug(`Notify server shutting down.`);
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end("{}");
-              notifyServer.close(() => {
-                resolveQuit();
+              const data = [];
+              req.on("data", (chunk) => {
+                data.push(chunk);
+              });
+              req.on("end", () => {
+                const body = JSON.parse(Buffer.concat(data).toString());
+                core.debug(`Notify server shutting down.`);
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end("{}");
+                notifyServer.close(() => {
+                  resolveQuit(body.address);
+                });
               });
             }
           });
@@ -105454,7 +105461,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
     const useGhaCache = getTrinaryInput("use-gha-cache");
-    await new Promise((resolve) => {
+    const daemonAddr = await new Promise((resolve) => {
       notifyPromise.then(async (promiseResult) => {
         const daemonCliFlags = [
           "--startup-notification-url",
@@ -105496,7 +105503,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         const pidFile = external_path_.join(this.daemonDir, "daemon.pid");
         await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
         core.info("Waiting for magic-nix-cache to start...");
-        resolve();
+        resolve(await promiseResult[0]);
         daemon.on("exit", (code, signal) => {
           let msg;
           if (signal) {
@@ -105515,6 +105522,7 @@ var MagicNixCacheAction = class extends DetSysAction {
     });
     core.info("Launched Magic Nix Cache");
     log.unwatch();
+    return daemonAddr;
   }
   async notifyAutoCache() {
     if (!this.daemonStarted) {
