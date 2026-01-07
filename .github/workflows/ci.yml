@@ -91,7 +91,7 @@ jobs:
           - nix-system: "aarch64-darwin"
             runner: "macos-latest"
           - nix-system: "x86_64-darwin"
-            runner: "macos-13"
+            runner: "macos-15-intel"
           - nix-system: "aarch64-linux"
             runner: "namespace-profile-default-arm64"
           - nix-system: "x86_64-linux"
