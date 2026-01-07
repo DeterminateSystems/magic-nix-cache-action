@@ -5,6 +5,7 @@ import * as actionsGithub from "@actions/github";
 import { DetSysAction, inputs, stringifyError } from "detsys-ts";
 import got, { Got, Response } from "got";
 import * as http from "http";
+import * as net from "net";
 import { SpawnOptions, spawn } from "node:child_process";
 import { mkdirSync, openSync, readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
@@ -200,7 +201,14 @@ class MagicNixCacheAction extends DetSysAction {
       };
     }
 
-    const notifyPort = inputs.getString("startup-notification-port");
+    const socket = net.createServer();
+    socket.listen(inputs.getString("startup-notification-port"));
+
+    const notifyPort = socket.address()?.toString().split(":").pop();
+    actionsCore.debug(`Notify listener: ${socket.address()}`);
+    if (!notifyPort) {
+      throw new Error("Could not determine notify port");
+    }
 
     const notifyPromise = new Promise<Promise<void>>((resolveListening) => {
       const promise = new Promise<void>(async (resolveQuit) => {
@@ -215,7 +223,7 @@ class MagicNixCacheAction extends DetSysAction {
           }
         });
 
-        notifyServer.listen(notifyPort, () => {
+        notifyServer.listen(socket, () => {
           actionsCore.debug(`Notify server running.`);
           resolveListening(promise);
         });

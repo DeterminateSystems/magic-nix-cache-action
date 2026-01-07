@@ -101480,6 +101480,8 @@ function makeOptionsConfident(actionOptions) {
 //# sourceMappingURL=index.mjs.map
 // EXTERNAL MODULE: external "http"
 var external_http_ = __nccwpck_require__(58611);
+// EXTERNAL MODULE: external "net"
+var external_net_ = __nccwpck_require__(69278);
 // EXTERNAL MODULE: external "child_process"
 var external_child_process_ = __nccwpck_require__(35317);
 // EXTERNAL MODULE: external "fs"
@@ -101562,6 +101564,7 @@ async function flakeHubLogin(netrc) {
 }
 
 // src/index.ts
+
 
 
 
@@ -101705,7 +101708,13 @@ var MagicNixCacheAction = class extends DetSysAction {
         ...extraEnv
       };
     }
-    const notifyPort = inputs_exports.getString("startup-notification-port");
+    const socket = external_net_.createServer();
+    socket.listen(inputs_exports.getString("startup-notification-port"));
+    const notifyPort = socket.address()?.toString().split(":").pop();
+    core.debug(`Notify listener: ${socket.address()}`);
+    if (!notifyPort) {
+      throw new Error("Could not determine notify port");
+    }
     const notifyPromise = new Promise((resolveListening) => {
       const promise = new Promise(async (resolveQuit) => {
         const notifyServer = external_http_.createServer((req, res) => {
@@ -101718,7 +101727,7 @@ var MagicNixCacheAction = class extends DetSysAction {
             });
           }
         });
-        notifyServer.listen(notifyPort, () => {
+        notifyServer.listen(socket, () => {
           core.debug(`Notify server running.`);
           resolveListening(promise);
         });
