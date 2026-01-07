@@ -41,7 +41,7 @@ inputs:
     required: false
   startup-notification-port:
     description: "The port magic-nix-cache uses for daemon startup notification."
-    default: 41239
+    default: 0
   diff-store:
     description: "Whether or not to diff the store before and after Magic Nix Cache runs"
     default: false
