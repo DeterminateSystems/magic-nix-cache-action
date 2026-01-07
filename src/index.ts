@@ -180,7 +180,23 @@ class MagicNixCacheAction extends DetSysAction {
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`,
     );
 
-    const daemonBin = await this.unpackClosure("magic-nix-cache");
+    let daemonBin;
+    try {
+      daemonBin = await this.unpackClosure("magic-nix-cache");
+    } catch (e: unknown) {
+      if (this.nixStoreTrust === "unknown") {
+        actionsCore.warning(
+          `Could not unpack magic-nix-cache closure; this may be due to the Nix daemon not trusting the user running this workflow. ${stringifyError(
+            e,
+          )}`,
+        );
+        return;
+      } else {
+        // Something is funky: we are trusted but still can't load the closure.
+        // Fail the job.
+        throw e;
+      }
+    }
 
     const extraEnv = {
       GITHUB_CONTEXT: JSON.stringify(actionsGithub.context),
