@@ -101690,7 +101690,21 @@ var MagicNixCacheAction = class extends DetSysAction {
     core.debug(
       `GitHub Action Cache URL: ${process.env["ACTIONS_CACHE_URL"]}`
     );
-    const daemonBin = await this.unpackClosure("magic-nix-cache");
+    let daemonBin;
+    try {
+      daemonBin = await this.unpackClosure("magic-nix-cache");
+    } catch (e) {
+      if (this.nixStoreTrust === "unknown") {
+        core.warning(
+          `Could not unpack magic-nix-cache closure; this may be due to the Nix daemon not trusting the user running this workflow. ${stringifyError(
+            e
+          )}`
+        );
+        return;
+      } else {
+        throw e;
+      }
+    }
     const extraEnv = {
       GITHUB_CONTEXT: JSON.stringify(github.context)
     };
