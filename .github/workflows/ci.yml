@@ -71,7 +71,7 @@ jobs:
           _internal-strict-mode: true
 
   run-systems:
-    if: github.event_name == 'merge_group'
+    # if: github.event_name == 'merge_group'
     needs: build
     name: "Test: ${{ matrix.systems.nix-system }} gha:${{matrix.use-gha-cache}},fhc:${{matrix.use-flakehub}},id:${{matrix.id-token}},determinate:${{matrix.determinate}}"
     runs-on: "${{ matrix.systems.runner }}"
