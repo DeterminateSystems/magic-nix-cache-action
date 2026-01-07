@@ -8,7 +8,7 @@ seed="$(date)-$RANDOM"
 log="${MAGIC_NIX_CACHE_DAEMONDIR}/daemon.log"
 
 flakehub_binary_cache=https://cache.flakehub.com
-gha_binary_cache=http://127.0.0.1:37515
+gha_binary_cache=http://$MAGIC_NIX_CACHE_ADDRESS
 
 is_gh_throttled() {
   grep 'GitHub Actions Cache throttled Magic Nix Cache' "${log}"
