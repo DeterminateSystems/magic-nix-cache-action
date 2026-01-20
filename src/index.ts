@@ -16,7 +16,7 @@ import { setTimeout } from "node:timers/promises";
 // twice.
 const ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
 
-const ENV_ADDR = "MAGIC_NIX_CACHE_ADDRESS";
+const ENV_MNC_ADDR = "MAGIC_NIX_CACHE_ADDRESS";
 
 const FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 const FACT_SENT_SIGTERM = "sent_sigterm";
@@ -94,9 +94,9 @@ class MagicNixCacheAction extends DetSysAction {
     }
     this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
 
-    if (process.env[ENV_ADDR] !== undefined) {
-      this.hostAndPort = process.env[ENV_ADDR];
-      actionsCore.exportVariable(ENV_ADDR, this.hostAndPort);
+    if (process.env[ENV_MNC_ADDR] !== undefined) {
+      this.hostAndPort = process.env[ENV_MNC_ADDR];
+      actionsCore.exportVariable(ENV_MNC_ADDR, this.hostAndPort);
     }
 
     this.stapleFile("daemon.log", path.join(this.daemonDir, "daemon.log"));
@@ -327,7 +327,7 @@ class MagicNixCacheAction extends DetSysAction {
           actionsCore.info("Waiting for magic-nix-cache to start...");
 
           this.hostAndPort = await promiseResult[0];
-          actionsCore.exportVariable(ENV_ADDR, this.hostAndPort);
+          actionsCore.exportVariable(ENV_MNC_ADDR, this.hostAndPort);
           resolve();
 
           daemon.on("exit", (code, signal) => {

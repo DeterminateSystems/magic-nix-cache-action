@@ -105281,7 +105281,7 @@ async function flakeHubLogin(netrc) {
 
 
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
-var ENV_ADDR = "MAGIC_NIX_CACHE_ADDRESS";
+var ENV_MNC_ADDR = "MAGIC_NIX_CACHE_ADDRESS";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_SENT_SIGTERM = "sent_sigterm";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
@@ -105335,9 +105335,9 @@ var MagicNixCacheAction = class extends DetSysAction {
       this.alreadyRunning = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
     this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
-    if (process.env[ENV_ADDR] !== void 0) {
-      this.hostAndPort = process.env[ENV_ADDR];
-      core.exportVariable(ENV_ADDR, this.hostAndPort);
+    if (process.env[ENV_MNC_ADDR] !== void 0) {
+      this.hostAndPort = process.env[ENV_MNC_ADDR];
+      core.exportVariable(ENV_MNC_ADDR, this.hostAndPort);
     }
     this.stapleFile("daemon.log", external_path_.join(this.daemonDir, "daemon.log"));
   }
@@ -105513,7 +105513,7 @@ var MagicNixCacheAction = class extends DetSysAction {
         await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
         core.info("Waiting for magic-nix-cache to start...");
         this.hostAndPort = await promiseResult[0];
-        core.exportVariable(ENV_ADDR, this.hostAndPort);
+        core.exportVariable(ENV_MNC_ADDR, this.hostAndPort);
         resolve();
         daemon.on("exit", (code, signal) => {
           let msg;
