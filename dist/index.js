@@ -1,7 +1,7 @@
 import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
 /******/ var __webpack_modules__ = ({
 
-/***/ 31760:
+/***/ 73171:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -54,11 +54,11 @@ exports.restoreCache = restoreCache;
 exports.saveCache = saveCache;
 const core = __importStar(__nccwpck_require__(59550));
 const path = __importStar(__nccwpck_require__(16928));
-const utils = __importStar(__nccwpck_require__(58375));
-const cacheHttpClient = __importStar(__nccwpck_require__(34271));
-const cacheTwirpClient = __importStar(__nccwpck_require__(77431));
-const config_1 = __nccwpck_require__(26018);
-const tar_1 = __nccwpck_require__(47109);
+const utils = __importStar(__nccwpck_require__(85096));
+const cacheHttpClient = __importStar(__nccwpck_require__(21566));
+const cacheTwirpClient = __importStar(__nccwpck_require__(76826));
+const config_1 = __nccwpck_require__(21133);
+const tar_1 = __nccwpck_require__(84480);
 const http_client_1 = __nccwpck_require__(80897);
 class ValidationError extends Error {
     constructor(message) {
@@ -536,7 +536,7 @@ function saveCacheV2(paths_1, key_1, options_1) {
 
 /***/ }),
 
-/***/ 17760:
+/***/ 21173:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -551,7 +551,7 @@ const runtime_2 = __nccwpck_require__(68140);
 const runtime_3 = __nccwpck_require__(68140);
 const runtime_4 = __nccwpck_require__(68140);
 const runtime_5 = __nccwpck_require__(68140);
-const cachemetadata_1 = __nccwpck_require__(1944);
+const cachemetadata_1 = __nccwpck_require__(4191);
 // @generated message type with reflection information, may provide speed optimized methods
 class CreateCacheEntryRequest$Type extends runtime_5.MessageType {
     constructor() {
@@ -944,13 +944,13 @@ exports.CacheService = new runtime_rpc_1.ServiceType("github.actions.results.api
 
 /***/ }),
 
-/***/ 99490:
+/***/ 75765:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CacheServiceClientProtobuf = exports.CacheServiceClientJSON = void 0;
-const cache_1 = __nccwpck_require__(17760);
+const cache_1 = __nccwpck_require__(21173);
 class CacheServiceClientJSON {
     constructor(rpc) {
         this.rpc = rpc;
@@ -1018,7 +1018,7 @@ exports.CacheServiceClientProtobuf = CacheServiceClientProtobuf;
 
 /***/ }),
 
-/***/ 1944:
+/***/ 4191:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -1029,7 +1029,7 @@ const runtime_2 = __nccwpck_require__(68140);
 const runtime_3 = __nccwpck_require__(68140);
 const runtime_4 = __nccwpck_require__(68140);
 const runtime_5 = __nccwpck_require__(68140);
-const cachescope_1 = __nccwpck_require__(81397);
+const cachescope_1 = __nccwpck_require__(44192);
 // @generated message type with reflection information, may provide speed optimized methods
 class CacheMetadata$Type extends runtime_5.MessageType {
     constructor() {
@@ -1088,7 +1088,7 @@ exports.CacheMetadata = new CacheMetadata$Type();
 
 /***/ }),
 
-/***/ 81397:
+/***/ 44192:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -1157,7 +1157,7 @@ exports.CacheScope = new CacheScope$Type();
 
 /***/ }),
 
-/***/ 34271:
+/***/ 21566:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -1213,13 +1213,13 @@ const http_client_1 = __nccwpck_require__(80897);
 const auth_1 = __nccwpck_require__(54935);
 const fs = __importStar(__nccwpck_require__(79896));
 const url_1 = __nccwpck_require__(87016);
-const utils = __importStar(__nccwpck_require__(58375));
-const uploadUtils_1 = __nccwpck_require__(58432);
-const downloadUtils_1 = __nccwpck_require__(53199);
-const options_1 = __nccwpck_require__(28368);
-const requestUtils_1 = __nccwpck_require__(50082);
-const config_1 = __nccwpck_require__(26018);
-const user_agent_1 = __nccwpck_require__(78863);
+const utils = __importStar(__nccwpck_require__(85096));
+const uploadUtils_1 = __nccwpck_require__(24337);
+const downloadUtils_1 = __nccwpck_require__(91298);
+const options_1 = __nccwpck_require__(18791);
+const requestUtils_1 = __nccwpck_require__(44241);
+const config_1 = __nccwpck_require__(21133);
+const user_agent_1 = __nccwpck_require__(2234);
 function getCacheApiUrl(resource) {
     const baseUrl = (0, config_1.getCacheServiceURL)();
     if (!baseUrl) {
@@ -1428,7 +1428,7 @@ function saveCache(cacheId, archivePath, signedUploadURL, options) {
 
 /***/ }),
 
-/***/ 58375:
+/***/ 85096:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -1501,7 +1501,7 @@ const fs = __importStar(__nccwpck_require__(79896));
 const path = __importStar(__nccwpck_require__(16928));
 const semver = __importStar(__nccwpck_require__(92131));
 const util = __importStar(__nccwpck_require__(39023));
-const constants_1 = __nccwpck_require__(39963);
+const constants_1 = __nccwpck_require__(62058);
 const versionSalt = '1.0';
 // From https://github.com/actions/toolkit/blob/main/packages/tool-cache/src/tool-cache.ts#L23
 function createTempDirectory() {
@@ -1659,7 +1659,7 @@ function getRuntimeToken() {
 
 /***/ }),
 
-/***/ 26018:
+/***/ 21133:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1701,7 +1701,7 @@ function getCacheServiceURL() {
 
 /***/ }),
 
-/***/ 39963:
+/***/ 62058:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1744,7 +1744,7 @@ exports.CacheFileSizeLimit = 10 * Math.pow(1024, 3); // 10GiB per repository
 
 /***/ }),
 
-/***/ 53199:
+/***/ 91298:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -1797,14 +1797,14 @@ exports.downloadCacheHttpClientConcurrent = downloadCacheHttpClientConcurrent;
 exports.downloadCacheStorageSDK = downloadCacheStorageSDK;
 const core = __importStar(__nccwpck_require__(59550));
 const http_client_1 = __nccwpck_require__(80897);
-const storage_blob_1 = __nccwpck_require__(32917);
+const storage_blob_1 = __nccwpck_require__(50506);
 const buffer = __importStar(__nccwpck_require__(20181));
 const fs = __importStar(__nccwpck_require__(79896));
 const stream = __importStar(__nccwpck_require__(2203));
 const util = __importStar(__nccwpck_require__(39023));
-const utils = __importStar(__nccwpck_require__(58375));
-const constants_1 = __nccwpck_require__(39963);
-const requestUtils_1 = __nccwpck_require__(50082);
+const utils = __importStar(__nccwpck_require__(85096));
+const constants_1 = __nccwpck_require__(62058);
+const requestUtils_1 = __nccwpck_require__(44241);
 const abort_controller_1 = __nccwpck_require__(4334);
 /**
  * Pipes the body of a HTTP response to a stream
@@ -2138,7 +2138,7 @@ const promiseWithTimeout = (timeoutMs, promise) => __awaiter(void 0, void 0, voi
 
 /***/ }),
 
-/***/ 50082:
+/***/ 44241:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -2193,7 +2193,7 @@ exports.retryTypedResponse = retryTypedResponse;
 exports.retryHttpClientResponse = retryHttpClientResponse;
 const core = __importStar(__nccwpck_require__(59550));
 const http_client_1 = __nccwpck_require__(80897);
-const constants_1 = __nccwpck_require__(39963);
+const constants_1 = __nccwpck_require__(62058);
 function isSuccessStatusCode(statusCode) {
     if (!statusCode) {
         return false;
@@ -2290,7 +2290,7 @@ function retryHttpClientResponse(name_1, method_1) {
 
 /***/ }),
 
-/***/ 77431:
+/***/ 76826:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -2306,14 +2306,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.internalCacheTwirpClient = internalCacheTwirpClient;
 const core_1 = __nccwpck_require__(59550);
-const user_agent_1 = __nccwpck_require__(78863);
-const errors_1 = __nccwpck_require__(85763);
-const config_1 = __nccwpck_require__(26018);
-const cacheUtils_1 = __nccwpck_require__(58375);
+const user_agent_1 = __nccwpck_require__(2234);
+const errors_1 = __nccwpck_require__(64614);
+const config_1 = __nccwpck_require__(21133);
+const cacheUtils_1 = __nccwpck_require__(85096);
 const auth_1 = __nccwpck_require__(54935);
 const http_client_1 = __nccwpck_require__(80897);
-const cache_twirp_client_1 = __nccwpck_require__(99490);
-const util_1 = __nccwpck_require__(30640);
+const cache_twirp_client_1 = __nccwpck_require__(75765);
+const util_1 = __nccwpck_require__(65337);
 /**
  * This class is a wrapper around the CacheServiceClientJSON class generated by Twirp.
  *
@@ -2386,12 +2386,27 @@ class CacheServiceClient {
                         }
                         errorMessage = `${errorMessage}: ${body.msg}`;
                     }
+                    // Handle rate limiting - don't retry, just warn and exit
+                    // For more info, see https://docs.github.com/en/actions/reference/limits
+                    if (statusCode === http_client_1.HttpCodes.TooManyRequests) {
+                        const retryAfterHeader = response.message.headers['retry-after'];
+                        if (retryAfterHeader) {
+                            const parsedSeconds = parseInt(retryAfterHeader, 10);
+                            if (!isNaN(parsedSeconds) && parsedSeconds > 0) {
+                                (0, core_1.warning)(`You've hit a rate limit, your rate limit will reset in ${parsedSeconds} seconds`);
+                            }
+                        }
+                        throw new errors_1.RateLimitError(`Rate limited: ${errorMessage}`);
+                    }
                 }
                 catch (error) {
                     if (error instanceof SyntaxError) {
                         (0, core_1.debug)(`Raw Body: ${rawBody}`);
                     }
                     if (error instanceof errors_1.UsageError) {
+                        throw error;
+                    }
+                    if (error instanceof errors_1.RateLimitError) {
                         throw error;
                     }
                     if (errors_1.NetworkError.isNetworkErrorCode(error === null || error === void 0 ? void 0 : error.code)) {
@@ -2426,8 +2441,7 @@ class CacheServiceClient {
             http_client_1.HttpCodes.BadGateway,
             http_client_1.HttpCodes.GatewayTimeout,
             http_client_1.HttpCodes.InternalServerError,
-            http_client_1.HttpCodes.ServiceUnavailable,
-            http_client_1.HttpCodes.TooManyRequests
+            http_client_1.HttpCodes.ServiceUnavailable
         ];
         return retryableStatusCodes.includes(statusCode);
     }
@@ -2457,12 +2471,12 @@ function internalCacheTwirpClient(options) {
 
 /***/ }),
 
-/***/ 85763:
+/***/ 64614:
 /***/ ((__unused_webpack_module, exports) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UsageError = exports.NetworkError = exports.GHESNotSupportedError = exports.CacheNotFoundError = exports.InvalidResponseError = exports.FilesNotFoundError = void 0;
+exports.RateLimitError = exports.UsageError = exports.NetworkError = exports.GHESNotSupportedError = exports.CacheNotFoundError = exports.InvalidResponseError = exports.FilesNotFoundError = void 0;
 class FilesNotFoundError extends Error {
     constructor(files = []) {
         let message = 'No files were found to upload';
@@ -2529,18 +2543,25 @@ UsageError.isUsageErrorMessage = (msg) => {
         return false;
     return msg.includes('insufficient usage');
 };
+class RateLimitError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'RateLimitError';
+    }
+}
+exports.RateLimitError = RateLimitError;
 //# sourceMappingURL=errors.js.map
 
 /***/ }),
 
-/***/ 78863:
+/***/ 2234:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getUserAgentString = getUserAgentString;
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-const packageJson = __nccwpck_require__(22947);
+const packageJson = __nccwpck_require__(87720);
 /**
  * Ensure that this User Agent String is used in all HTTP calls so that we can monitor telemetry between different versions of this package
  */
@@ -2551,7 +2572,7 @@ function getUserAgentString() {
 
 /***/ }),
 
-/***/ 30640:
+/***/ 65337:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -2630,7 +2651,7 @@ function maskSecretUrls(body) {
 
 /***/ }),
 
-/***/ 47109:
+/***/ 84480:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -2684,8 +2705,8 @@ const exec_1 = __nccwpck_require__(24154);
 const io = __importStar(__nccwpck_require__(46893));
 const fs_1 = __nccwpck_require__(79896);
 const path = __importStar(__nccwpck_require__(16928));
-const utils = __importStar(__nccwpck_require__(58375));
-const constants_1 = __nccwpck_require__(39963);
+const utils = __importStar(__nccwpck_require__(85096));
+const constants_1 = __nccwpck_require__(62058);
 const IS_WINDOWS = process.platform === 'win32';
 // Returns tar path and type: BSD or GNU
 function getTarPath() {
@@ -2917,7 +2938,7 @@ function createTar(archiveFolder, sourceDirectories, compressionMethod) {
 
 /***/ }),
 
-/***/ 58432:
+/***/ 24337:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -2967,8 +2988,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UploadProgress = void 0;
 exports.uploadCacheArchiveSDK = uploadCacheArchiveSDK;
 const core = __importStar(__nccwpck_require__(59550));
-const storage_blob_1 = __nccwpck_require__(32917);
-const errors_1 = __nccwpck_require__(85763);
+const storage_blob_1 = __nccwpck_require__(50506);
+const errors_1 = __nccwpck_require__(64614);
 /**
  * Class for tracking the upload state and displaying stats.
  */
@@ -3100,7 +3121,7 @@ function uploadCacheArchiveSDK(signedUploadURL, archivePath, options) {
 
 /***/ }),
 
-/***/ 28368:
+/***/ 18791:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -59432,7 +59453,7 @@ function createClientLogger(namespace) {
 
 /***/ }),
 
-/***/ 4766:
+/***/ 14753:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -59443,7 +59464,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 20285:
+/***/ 10226:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -59453,9 +59474,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BatchResponseParser = void 0;
 const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_http_compat_1 = __nccwpck_require__(80976);
-const constants_js_1 = __nccwpck_require__(9386);
-const BatchUtils_js_1 = __nccwpck_require__(66948);
-const log_js_1 = __nccwpck_require__(32763);
+const constants_js_1 = __nccwpck_require__(25097);
+const BatchUtils_js_1 = __nccwpck_require__(43985);
+const log_js_1 = __nccwpck_require__(11872);
 const HTTP_HEADER_DELIMITER = ": ";
 const SPACE_DELIMITER = " ";
 const NOT_FOUND = -1;
@@ -59595,7 +59616,7 @@ exports.BatchResponseParser = BatchResponseParser;
 
 /***/ }),
 
-/***/ 66948:
+/***/ 43985:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -59604,8 +59625,8 @@ exports.BatchResponseParser = BatchResponseParser;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getBodyAsText = getBodyAsText;
 exports.utf8ByteLength = utf8ByteLength;
-const utils_js_1 = __nccwpck_require__(73170);
-const constants_js_1 = __nccwpck_require__(9386);
+const utils_js_1 = __nccwpck_require__(63725);
+const constants_js_1 = __nccwpck_require__(25097);
 async function getBodyAsText(batchResponse) {
     let buffer = Buffer.alloc(constants_js_1.BATCH_MAX_PAYLOAD_IN_BYTES);
     const responseLength = await (0, utils_js_1.streamToBuffer2)(batchResponse.readableStreamBody, buffer);
@@ -59620,7 +59641,7 @@ function utf8ByteLength(str) {
 
 /***/ }),
 
-/***/ 27776:
+/***/ 17107:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -59632,17 +59653,15 @@ const core_util_1 = __nccwpck_require__(33000);
 const core_auth_1 = __nccwpck_require__(38401);
 const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_util_2 = __nccwpck_require__(33000);
-const AnonymousCredential_js_1 = __nccwpck_require__(13360);
-const Clients_js_1 = __nccwpck_require__(59813);
-const Mutex_js_1 = __nccwpck_require__(39948);
-const Pipeline_js_1 = __nccwpck_require__(33543);
-const utils_common_js_1 = __nccwpck_require__(98915);
+const storage_common_1 = __nccwpck_require__(55637);
+const Clients_js_1 = __nccwpck_require__(86198);
+const Mutex_js_1 = __nccwpck_require__(91903);
+const Pipeline_js_1 = __nccwpck_require__(55830);
+const utils_common_js_1 = __nccwpck_require__(43542);
 const core_xml_1 = __nccwpck_require__(64928);
-const constants_js_1 = __nccwpck_require__(9386);
-const StorageSharedKeyCredential_js_1 = __nccwpck_require__(64220);
-const tracing_js_1 = __nccwpck_require__(67985);
+const constants_js_1 = __nccwpck_require__(25097);
+const tracing_js_1 = __nccwpck_require__(74342);
 const core_client_1 = __nccwpck_require__(99307);
-const StorageSharedKeyCredentialPolicyV2_js_1 = __nccwpck_require__(61154);
 /**
  * A BlobBatch represents an aggregated set of operations on blobs.
  * Currently, only `delete` and `setAccessTier` are supported.
@@ -59697,8 +59716,8 @@ class BlobBatch {
         let url;
         let credential;
         if (typeof urlOrBlobClient === "string" &&
-            ((core_util_2.isNodeLike && credentialOrOptions instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) ||
-                credentialOrOptions instanceof AnonymousCredential_js_1.AnonymousCredential ||
+            ((core_util_2.isNodeLike && credentialOrOptions instanceof storage_common_1.StorageSharedKeyCredential) ||
+                credentialOrOptions instanceof storage_common_1.AnonymousCredential ||
                 (0, core_auth_1.isTokenCredential)(credentialOrOptions))) {
             // First overload
             url = urlOrBlobClient;
@@ -59731,8 +59750,8 @@ class BlobBatch {
         let credential;
         let tier;
         if (typeof urlOrBlobClient === "string" &&
-            ((core_util_2.isNodeLike && credentialOrTier instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) ||
-                credentialOrTier instanceof AnonymousCredential_js_1.AnonymousCredential ||
+            ((core_util_2.isNodeLike && credentialOrTier instanceof storage_common_1.StorageSharedKeyCredential) ||
+                credentialOrTier instanceof storage_common_1.AnonymousCredential ||
                 (0, core_auth_1.isTokenCredential)(credentialOrTier))) {
             // First overload
             url = urlOrBlobClient;
@@ -59820,8 +59839,8 @@ class InnerBatchRequest {
                 challengeCallbacks: { authorizeRequestOnChallenge: core_client_1.authorizeRequestOnTenantChallenge },
             }), { phase: "Sign" });
         }
-        else if (credential instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) {
-            corePipeline.addPolicy((0, StorageSharedKeyCredentialPolicyV2_js_1.storageSharedKeyCredentialPolicy)({
+        else if (credential instanceof storage_common_1.StorageSharedKeyCredential) {
+            corePipeline.addPolicy((0, storage_common_1.storageSharedKeyCredentialPolicy)({
                 accountName: credential.accountName,
                 accountKey: credential.accountKey,
             }), { phase: "Sign" });
@@ -59906,7 +59925,7 @@ function batchHeaderFilterPolicy() {
 
 /***/ }),
 
-/***/ 37683:
+/***/ 99808:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -59914,14 +59933,14 @@ function batchHeaderFilterPolicy() {
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BlobBatchClient = void 0;
-const BatchResponseParser_js_1 = __nccwpck_require__(20285);
-const BatchUtils_js_1 = __nccwpck_require__(66948);
-const BlobBatch_js_1 = __nccwpck_require__(27776);
-const tracing_js_1 = __nccwpck_require__(67985);
-const AnonymousCredential_js_1 = __nccwpck_require__(13360);
-const StorageContextClient_js_1 = __nccwpck_require__(64754);
-const Pipeline_js_1 = __nccwpck_require__(33543);
-const utils_common_js_1 = __nccwpck_require__(98915);
+const BatchResponseParser_js_1 = __nccwpck_require__(10226);
+const BatchUtils_js_1 = __nccwpck_require__(43985);
+const BlobBatch_js_1 = __nccwpck_require__(17107);
+const tracing_js_1 = __nccwpck_require__(74342);
+const storage_common_1 = __nccwpck_require__(55637);
+const StorageContextClient_js_1 = __nccwpck_require__(93275);
+const Pipeline_js_1 = __nccwpck_require__(55830);
+const utils_common_js_1 = __nccwpck_require__(43542);
 /**
  * A BlobBatchClient allows you to make batched requests to the Azure Storage Blob service.
  *
@@ -59939,7 +59958,7 @@ class BlobBatchClient {
         }
         else if (!credentialOrPipeline) {
             // no credential provided
-            pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+            pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
         }
         else {
             pipeline = (0, Pipeline_js_1.newPipeline)(credentialOrPipeline, options);
@@ -60088,7 +60107,7 @@ exports.BlobBatchClient = BlobBatchClient;
 
 /***/ }),
 
-/***/ 83341:
+/***/ 42808:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -60097,7 +60116,7 @@ exports.BlobDownloadResponse = void 0;
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 const core_util_1 = __nccwpck_require__(33000);
-const RetriableReadableStream_js_1 = __nccwpck_require__(81473);
+const RetriableReadableStream_js_1 = __nccwpck_require__(62910);
 /**
  * ONLY AVAILABLE IN NODE.JS RUNTIME.
  *
@@ -60563,7 +60582,7 @@ exports.BlobDownloadResponse = BlobDownloadResponse;
 
 /***/ }),
 
-/***/ 51029:
+/***/ 45050:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -60572,9 +60591,9 @@ exports.BlobDownloadResponse = BlobDownloadResponse;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BlobLeaseClient = void 0;
 const core_util_1 = __nccwpck_require__(33000);
-const constants_js_1 = __nccwpck_require__(9386);
-const tracing_js_1 = __nccwpck_require__(67985);
-const utils_common_js_1 = __nccwpck_require__(98915);
+const constants_js_1 = __nccwpck_require__(25097);
+const tracing_js_1 = __nccwpck_require__(74342);
+const utils_common_js_1 = __nccwpck_require__(43542);
 /**
  * A client that manages leases for a {@link ContainerClient} or a {@link BlobClient}.
  */
@@ -60774,7 +60793,7 @@ exports.BlobLeaseClient = BlobLeaseClient;
 
 /***/ }),
 
-/***/ 54183:
+/***/ 31940:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -60783,7 +60802,7 @@ exports.BlobLeaseClient = BlobLeaseClient;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BlobQueryResponse = void 0;
 const core_util_1 = __nccwpck_require__(33000);
-const BlobQuickQueryStream_js_1 = __nccwpck_require__(17097);
+const BlobQuickQueryStream_js_1 = __nccwpck_require__(55980);
 /**
  * ONLY AVAILABLE IN NODE.JS RUNTIME.
  *
@@ -61153,7 +61172,7 @@ exports.BlobQueryResponse = BlobQueryResponse;
 
 /***/ }),
 
-/***/ 91352:
+/***/ 19671:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -61162,18 +61181,17 @@ exports.BlobServiceClient = void 0;
 const core_auth_1 = __nccwpck_require__(38401);
 const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_util_1 = __nccwpck_require__(33000);
-const Pipeline_js_1 = __nccwpck_require__(33543);
-const ContainerClient_js_1 = __nccwpck_require__(83745);
-const utils_common_js_1 = __nccwpck_require__(98915);
-const StorageSharedKeyCredential_js_1 = __nccwpck_require__(64220);
-const AnonymousCredential_js_1 = __nccwpck_require__(13360);
-const utils_common_js_2 = __nccwpck_require__(98915);
-const tracing_js_1 = __nccwpck_require__(67985);
-const BlobBatchClient_js_1 = __nccwpck_require__(37683);
-const StorageClient_js_1 = __nccwpck_require__(84827);
-const AccountSASPermissions_js_1 = __nccwpck_require__(56139);
-const AccountSASSignatureValues_js_1 = __nccwpck_require__(10319);
-const AccountSASServices_js_1 = __nccwpck_require__(89159);
+const Pipeline_js_1 = __nccwpck_require__(55830);
+const ContainerClient_js_1 = __nccwpck_require__(11798);
+const utils_common_js_1 = __nccwpck_require__(43542);
+const storage_common_1 = __nccwpck_require__(55637);
+const utils_common_js_2 = __nccwpck_require__(43542);
+const tracing_js_1 = __nccwpck_require__(74342);
+const BlobBatchClient_js_1 = __nccwpck_require__(99808);
+const StorageClient_js_1 = __nccwpck_require__(17676);
+const AccountSASPermissions_js_1 = __nccwpck_require__(78008);
+const AccountSASSignatureValues_js_1 = __nccwpck_require__(10928);
+const AccountSASServices_js_1 = __nccwpck_require__(63638);
 /**
  * A BlobServiceClient represents a Client to the Azure Storage Blob service allowing you
  * to manipulate blob containers.
@@ -61203,7 +61221,7 @@ class BlobServiceClient extends StorageClient_js_1.StorageClient {
         const extractedCreds = (0, utils_common_js_1.extractConnectionStringParts)(connectionString);
         if (extractedCreds.kind === "AccountConnString") {
             if (core_util_1.isNodeLike) {
-                const sharedKeyCredential = new StorageSharedKeyCredential_js_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
+                const sharedKeyCredential = new storage_common_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                 if (!options.proxyOptions) {
                     options.proxyOptions = (0, core_rest_pipeline_1.getDefaultProxySettings)(extractedCreds.proxyUri);
                 }
@@ -61215,7 +61233,7 @@ class BlobServiceClient extends StorageClient_js_1.StorageClient {
             }
         }
         else if (extractedCreds.kind === "SASConnString") {
-            const pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+            const pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
             return new BlobServiceClient(extractedCreds.url + "?" + extractedCreds.accountSas, pipeline);
         }
         else {
@@ -61230,14 +61248,14 @@ class BlobServiceClient extends StorageClient_js_1.StorageClient {
         if ((0, Pipeline_js_1.isPipelineLike)(credentialOrPipeline)) {
             pipeline = credentialOrPipeline;
         }
-        else if ((core_util_1.isNodeLike && credentialOrPipeline instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) ||
-            credentialOrPipeline instanceof AnonymousCredential_js_1.AnonymousCredential ||
+        else if ((core_util_1.isNodeLike && credentialOrPipeline instanceof storage_common_1.StorageSharedKeyCredential) ||
+            credentialOrPipeline instanceof storage_common_1.AnonymousCredential ||
             (0, core_auth_1.isTokenCredential)(credentialOrPipeline)) {
             pipeline = (0, Pipeline_js_1.newPipeline)(credentialOrPipeline, options);
         }
         else {
             // The second parameter is undefined. Use anonymous credential
-            pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+            pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
         }
         super(url, pipeline);
         this.serviceContext = this.storageClientContext.service;
@@ -61814,7 +61832,7 @@ class BlobServiceClient extends StorageClient_js_1.StorageClient {
      * @returns An account SAS URI consisting of the URI to the resource represented by this client, followed by the generated SAS token.
      */
     generateAccountSasUrl(expiresOn, permissions = AccountSASPermissions_js_1.AccountSASPermissions.parse("r"), resourceTypes = "sco", options = {}) {
-        if (!(this.credential instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential)) {
+        if (!(this.credential instanceof storage_common_1.StorageSharedKeyCredential)) {
             throw RangeError("Can only generate the account SAS when the client is initialized with a shared key credential");
         }
         if (expiresOn === undefined) {
@@ -61845,7 +61863,7 @@ class BlobServiceClient extends StorageClient_js_1.StorageClient {
      * @returns An account SAS URI consisting of the URI to the resource represented by this client, followed by the generated SAS token.
      */
     generateSasStringToSign(expiresOn, permissions = AccountSASPermissions_js_1.AccountSASPermissions.parse("r"), resourceTypes = "sco", options = {}) {
-        if (!(this.credential instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential)) {
+        if (!(this.credential instanceof storage_common_1.StorageSharedKeyCredential)) {
             throw RangeError("Can only generate the account SAS when the client is initialized with a shared key credential");
         }
         if (expiresOn === undefined) {
@@ -61866,7 +61884,7 @@ exports.BlobServiceClient = BlobServiceClient;
 
 /***/ }),
 
-/***/ 59813:
+/***/ 86198:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -61878,24 +61896,23 @@ const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_auth_1 = __nccwpck_require__(38401);
 const core_util_1 = __nccwpck_require__(33000);
 const core_util_2 = __nccwpck_require__(33000);
-const BlobDownloadResponse_js_1 = __nccwpck_require__(83341);
-const BlobQueryResponse_js_1 = __nccwpck_require__(54183);
-const AnonymousCredential_js_1 = __nccwpck_require__(13360);
-const StorageSharedKeyCredential_js_1 = __nccwpck_require__(64220);
-const models_js_1 = __nccwpck_require__(37647);
-const PageBlobRangeResponse_js_1 = __nccwpck_require__(50507);
-const Pipeline_js_1 = __nccwpck_require__(33543);
-const BlobStartCopyFromUrlPoller_js_1 = __nccwpck_require__(22958);
-const Range_js_1 = __nccwpck_require__(19456);
-const StorageClient_js_1 = __nccwpck_require__(84827);
-const Batch_js_1 = __nccwpck_require__(14539);
-const storage_common_1 = __nccwpck_require__(13507);
-const constants_js_1 = __nccwpck_require__(9386);
-const tracing_js_1 = __nccwpck_require__(67985);
-const utils_common_js_1 = __nccwpck_require__(98915);
-const utils_js_1 = __nccwpck_require__(73170);
-const BlobSASSignatureValues_js_1 = __nccwpck_require__(38147);
-const BlobLeaseClient_js_1 = __nccwpck_require__(51029);
+const BlobDownloadResponse_js_1 = __nccwpck_require__(42808);
+const BlobQueryResponse_js_1 = __nccwpck_require__(31940);
+const storage_common_1 = __nccwpck_require__(55637);
+const models_js_1 = __nccwpck_require__(82834);
+const PageBlobRangeResponse_js_1 = __nccwpck_require__(19652);
+const Pipeline_js_1 = __nccwpck_require__(55830);
+const BlobStartCopyFromUrlPoller_js_1 = __nccwpck_require__(28159);
+const Range_js_1 = __nccwpck_require__(62495);
+const StorageClient_js_1 = __nccwpck_require__(17676);
+const Batch_js_1 = __nccwpck_require__(19988);
+const storage_common_2 = __nccwpck_require__(55637);
+const constants_js_1 = __nccwpck_require__(25097);
+const tracing_js_1 = __nccwpck_require__(74342);
+const utils_common_js_1 = __nccwpck_require__(43542);
+const utils_js_1 = __nccwpck_require__(63725);
+const BlobSASSignatureValues_js_1 = __nccwpck_require__(22794);
+const BlobLeaseClient_js_1 = __nccwpck_require__(45050);
 /**
  * A BlobClient represents a URL to an Azure Storage blob; the blob may be a block blob,
  * append blob, or page blob.
@@ -61933,8 +61950,8 @@ class BlobClient extends StorageClient_js_1.StorageClient {
             url = urlOrConnectionString;
             pipeline = credentialOrPipelineOrContainerName;
         }
-        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) ||
-            credentialOrPipelineOrContainerName instanceof AnonymousCredential_js_1.AnonymousCredential ||
+        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof storage_common_1.StorageSharedKeyCredential) ||
+            credentialOrPipelineOrContainerName instanceof storage_common_1.AnonymousCredential ||
             (0, core_auth_1.isTokenCredential)(credentialOrPipelineOrContainerName)) {
             // (url: string, credential?: StorageSharedKeyCredential | AnonymousCredential | TokenCredential, options?: StoragePipelineOptions)
             url = urlOrConnectionString;
@@ -61949,7 +61966,7 @@ class BlobClient extends StorageClient_js_1.StorageClient {
             if (blobNameOrOptions && typeof blobNameOrOptions !== "string") {
                 options = blobNameOrOptions;
             }
-            pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+            pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
         }
         else if (credentialOrPipelineOrContainerName &&
             typeof credentialOrPipelineOrContainerName === "string" &&
@@ -61961,7 +61978,7 @@ class BlobClient extends StorageClient_js_1.StorageClient {
             const extractedCreds = (0, utils_common_js_1.extractConnectionStringParts)(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
                 if (core_util_1.isNodeLike) {
-                    const sharedKeyCredential = new StorageSharedKeyCredential_js_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
+                    const sharedKeyCredential = new storage_common_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = (0, utils_common_js_1.appendToURLPath)((0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName));
                     if (!options.proxyOptions) {
                         options.proxyOptions = (0, core_rest_pipeline_1.getDefaultProxySettings)(extractedCreds.proxyUri);
@@ -61977,7 +61994,7 @@ class BlobClient extends StorageClient_js_1.StorageClient {
                     (0, utils_common_js_1.appendToURLPath)((0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName)) +
                         "?" +
                         extractedCreds.accountSas;
-                pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+                pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
             }
             else {
                 throw new Error("Connection string must be either an Account connection string or a SAS connection string");
@@ -62417,6 +62434,7 @@ class BlobClient extends StorageClient_js_1.StorageClient {
                     ...options.conditions,
                     ifTags: options.conditions?.tagConditions,
                 },
+                blobModifiedAccessConditions: options.conditions,
                 tracingOptions: updatedOptions.tracingOptions,
                 tags: (0, utils_common_js_1.toBlobTags)(tags),
             }));
@@ -62436,6 +62454,7 @@ class BlobClient extends StorageClient_js_1.StorageClient {
                     ...options.conditions,
                     ifTags: options.conditions?.tagConditions,
                 },
+                blobModifiedAccessConditions: options.conditions,
                 tracingOptions: updatedOptions.tracingOptions,
             }));
             const wrappedResponse = {
@@ -62874,7 +62893,7 @@ class BlobClient extends StorageClient_js_1.StorageClient {
      */
     generateSasUrl(options) {
         return new Promise((resolve) => {
-            if (!(this.credential instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential)) {
+            if (!(this.credential instanceof storage_common_1.StorageSharedKeyCredential)) {
                 throw new RangeError("Can only generate the SAS when the client is initialized with a shared key credential");
             }
             const sas = (0, BlobSASSignatureValues_js_1.generateBlobSASQueryParameters)({
@@ -62900,7 +62919,7 @@ class BlobClient extends StorageClient_js_1.StorageClient {
      */
     /* eslint-disable-next-line @azure/azure-sdk/ts-naming-options*/
     generateSasStringToSign(options) {
-        if (!(this.credential instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential)) {
+        if (!(this.credential instanceof storage_common_1.StorageSharedKeyCredential)) {
             throw new RangeError("Can only generate the SAS when the client is initialized with a shared key credential");
         }
         return (0, BlobSASSignatureValues_js_1.generateBlobSASQueryParametersInternal)({
@@ -63035,8 +63054,8 @@ class AppendBlobClient extends BlobClient {
             url = urlOrConnectionString;
             pipeline = credentialOrPipelineOrContainerName;
         }
-        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) ||
-            credentialOrPipelineOrContainerName instanceof AnonymousCredential_js_1.AnonymousCredential ||
+        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof storage_common_1.StorageSharedKeyCredential) ||
+            credentialOrPipelineOrContainerName instanceof storage_common_1.AnonymousCredential ||
             (0, core_auth_1.isTokenCredential)(credentialOrPipelineOrContainerName)) {
             // (url: string, credential?: StorageSharedKeyCredential | AnonymousCredential | TokenCredential, options?: StoragePipelineOptions)      url = urlOrConnectionString;
             url = urlOrConnectionString;
@@ -63048,7 +63067,7 @@ class AppendBlobClient extends BlobClient {
             // (url: string, credential?: StorageSharedKeyCredential | AnonymousCredential | TokenCredential, options?: StoragePipelineOptions)
             url = urlOrConnectionString;
             // The second parameter is undefined. Use anonymous credential.
-            pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+            pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
         }
         else if (credentialOrPipelineOrContainerName &&
             typeof credentialOrPipelineOrContainerName === "string" &&
@@ -63060,7 +63079,7 @@ class AppendBlobClient extends BlobClient {
             const extractedCreds = (0, utils_common_js_1.extractConnectionStringParts)(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
                 if (core_util_1.isNodeLike) {
-                    const sharedKeyCredential = new StorageSharedKeyCredential_js_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
+                    const sharedKeyCredential = new storage_common_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = (0, utils_common_js_1.appendToURLPath)((0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName));
                     if (!options.proxyOptions) {
                         options.proxyOptions = (0, core_rest_pipeline_1.getDefaultProxySettings)(extractedCreds.proxyUri);
@@ -63076,7 +63095,7 @@ class AppendBlobClient extends BlobClient {
                     (0, utils_common_js_1.appendToURLPath)((0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName)) +
                         "?" +
                         extractedCreds.accountSas;
-                pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+                pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
             }
             else {
                 throw new Error("Connection string must be either an Account connection string or a SAS connection string");
@@ -63337,8 +63356,8 @@ class BlockBlobClient extends BlobClient {
             url = urlOrConnectionString;
             pipeline = credentialOrPipelineOrContainerName;
         }
-        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) ||
-            credentialOrPipelineOrContainerName instanceof AnonymousCredential_js_1.AnonymousCredential ||
+        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof storage_common_1.StorageSharedKeyCredential) ||
+            credentialOrPipelineOrContainerName instanceof storage_common_1.AnonymousCredential ||
             (0, core_auth_1.isTokenCredential)(credentialOrPipelineOrContainerName)) {
             // (url: string, credential?: StorageSharedKeyCredential | AnonymousCredential | TokenCredential, options?: StoragePipelineOptions)
             url = urlOrConnectionString;
@@ -63353,7 +63372,7 @@ class BlockBlobClient extends BlobClient {
             if (blobNameOrOptions && typeof blobNameOrOptions !== "string") {
                 options = blobNameOrOptions;
             }
-            pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+            pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
         }
         else if (credentialOrPipelineOrContainerName &&
             typeof credentialOrPipelineOrContainerName === "string" &&
@@ -63365,7 +63384,7 @@ class BlockBlobClient extends BlobClient {
             const extractedCreds = (0, utils_common_js_1.extractConnectionStringParts)(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
                 if (core_util_1.isNodeLike) {
-                    const sharedKeyCredential = new StorageSharedKeyCredential_js_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
+                    const sharedKeyCredential = new storage_common_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = (0, utils_common_js_1.appendToURLPath)((0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName));
                     if (!options.proxyOptions) {
                         options.proxyOptions = (0, core_rest_pipeline_1.getDefaultProxySettings)(extractedCreds.proxyUri);
@@ -63381,7 +63400,7 @@ class BlockBlobClient extends BlobClient {
                     (0, utils_common_js_1.appendToURLPath)((0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName)) +
                         "?" +
                         extractedCreds.accountSas;
-                pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+                pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
             }
             else {
                 throw new Error("Connection string must be either an Account connection string or a SAS connection string");
@@ -63928,7 +63947,7 @@ class BlockBlobClient extends BlobClient {
             const blockIDPrefix = (0, core_util_2.randomUUID)();
             let transferProgress = 0;
             const blockList = [];
-            const scheduler = new storage_common_1.BufferScheduler(stream, bufferSize, maxConcurrency, async (body, length) => {
+            const scheduler = new storage_common_2.BufferScheduler(stream, bufferSize, maxConcurrency, async (body, length) => {
                 const blockID = (0, utils_common_js_1.generateBlockID)(blockIDPrefix, blockNum);
                 blockList.push(blockID);
                 blockNum++;
@@ -63980,8 +63999,8 @@ class PageBlobClient extends BlobClient {
             url = urlOrConnectionString;
             pipeline = credentialOrPipelineOrContainerName;
         }
-        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) ||
-            credentialOrPipelineOrContainerName instanceof AnonymousCredential_js_1.AnonymousCredential ||
+        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof storage_common_1.StorageSharedKeyCredential) ||
+            credentialOrPipelineOrContainerName instanceof storage_common_1.AnonymousCredential ||
             (0, core_auth_1.isTokenCredential)(credentialOrPipelineOrContainerName)) {
             // (url: string, credential?: StorageSharedKeyCredential | AnonymousCredential | TokenCredential, options?: StoragePipelineOptions)
             url = urlOrConnectionString;
@@ -63993,7 +64012,7 @@ class PageBlobClient extends BlobClient {
             // (url: string, credential?: StorageSharedKeyCredential | AnonymousCredential | TokenCredential, options?: StoragePipelineOptions)
             // The second parameter is undefined. Use anonymous credential.
             url = urlOrConnectionString;
-            pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+            pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
         }
         else if (credentialOrPipelineOrContainerName &&
             typeof credentialOrPipelineOrContainerName === "string" &&
@@ -64005,7 +64024,7 @@ class PageBlobClient extends BlobClient {
             const extractedCreds = (0, utils_common_js_1.extractConnectionStringParts)(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
                 if (core_util_1.isNodeLike) {
-                    const sharedKeyCredential = new StorageSharedKeyCredential_js_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
+                    const sharedKeyCredential = new storage_common_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = (0, utils_common_js_1.appendToURLPath)((0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName));
                     if (!options.proxyOptions) {
                         options.proxyOptions = (0, core_rest_pipeline_1.getDefaultProxySettings)(extractedCreds.proxyUri);
@@ -64021,7 +64040,7 @@ class PageBlobClient extends BlobClient {
                     (0, utils_common_js_1.appendToURLPath)((0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName)) +
                         "?" +
                         extractedCreds.accountSas;
-                pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+                pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
             }
             else {
                 throw new Error("Connection string must be either an Account connection string or a SAS connection string");
@@ -64723,7 +64742,7 @@ exports.PageBlobClient = PageBlobClient;
 
 /***/ }),
 
-/***/ 83745:
+/***/ 11798:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -64732,16 +64751,15 @@ exports.ContainerClient = void 0;
 const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_util_1 = __nccwpck_require__(33000);
 const core_auth_1 = __nccwpck_require__(38401);
-const AnonymousCredential_js_1 = __nccwpck_require__(13360);
-const StorageSharedKeyCredential_js_1 = __nccwpck_require__(64220);
-const Pipeline_js_1 = __nccwpck_require__(33543);
-const StorageClient_js_1 = __nccwpck_require__(84827);
-const tracing_js_1 = __nccwpck_require__(67985);
-const utils_common_js_1 = __nccwpck_require__(98915);
-const BlobSASSignatureValues_js_1 = __nccwpck_require__(38147);
-const BlobLeaseClient_js_1 = __nccwpck_require__(51029);
-const Clients_js_1 = __nccwpck_require__(59813);
-const BlobBatchClient_js_1 = __nccwpck_require__(37683);
+const storage_common_1 = __nccwpck_require__(55637);
+const Pipeline_js_1 = __nccwpck_require__(55830);
+const StorageClient_js_1 = __nccwpck_require__(17676);
+const tracing_js_1 = __nccwpck_require__(74342);
+const utils_common_js_1 = __nccwpck_require__(43542);
+const BlobSASSignatureValues_js_1 = __nccwpck_require__(22794);
+const BlobLeaseClient_js_1 = __nccwpck_require__(45050);
+const Clients_js_1 = __nccwpck_require__(86198);
+const BlobBatchClient_js_1 = __nccwpck_require__(99808);
 /**
  * A ContainerClient represents a URL to the Azure Storage container allowing you to manipulate its blobs.
  */
@@ -64769,8 +64787,8 @@ class ContainerClient extends StorageClient_js_1.StorageClient {
             url = urlOrConnectionString;
             pipeline = credentialOrPipelineOrContainerName;
         }
-        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) ||
-            credentialOrPipelineOrContainerName instanceof AnonymousCredential_js_1.AnonymousCredential ||
+        else if ((core_util_1.isNodeLike && credentialOrPipelineOrContainerName instanceof storage_common_1.StorageSharedKeyCredential) ||
+            credentialOrPipelineOrContainerName instanceof storage_common_1.AnonymousCredential ||
             (0, core_auth_1.isTokenCredential)(credentialOrPipelineOrContainerName)) {
             // (url: string, credential?: StorageSharedKeyCredential | AnonymousCredential | TokenCredential, options?: StoragePipelineOptions)
             url = urlOrConnectionString;
@@ -64781,7 +64799,7 @@ class ContainerClient extends StorageClient_js_1.StorageClient {
             // (url: string, credential?: StorageSharedKeyCredential | AnonymousCredential | TokenCredential, options?: StoragePipelineOptions)
             // The second parameter is undefined. Use anonymous credential.
             url = urlOrConnectionString;
-            pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+            pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
         }
         else if (credentialOrPipelineOrContainerName &&
             typeof credentialOrPipelineOrContainerName === "string") {
@@ -64790,7 +64808,7 @@ class ContainerClient extends StorageClient_js_1.StorageClient {
             const extractedCreds = (0, utils_common_js_1.extractConnectionStringParts)(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
                 if (core_util_1.isNodeLike) {
-                    const sharedKeyCredential = new StorageSharedKeyCredential_js_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
+                    const sharedKeyCredential = new storage_common_1.StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = (0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName));
                     if (!options.proxyOptions) {
                         options.proxyOptions = (0, core_rest_pipeline_1.getDefaultProxySettings)(extractedCreds.proxyUri);
@@ -64806,7 +64824,7 @@ class ContainerClient extends StorageClient_js_1.StorageClient {
                     (0, utils_common_js_1.appendToURLPath)(extractedCreds.url, encodeURIComponent(containerName)) +
                         "?" +
                         extractedCreds.accountSas;
-                pipeline = (0, Pipeline_js_1.newPipeline)(new AnonymousCredential_js_1.AnonymousCredential(), options);
+                pipeline = (0, Pipeline_js_1.newPipeline)(new storage_common_1.AnonymousCredential(), options);
             }
             else {
                 throw new Error("Connection string must be either an Account connection string or a SAS connection string");
@@ -65945,7 +65963,7 @@ class ContainerClient extends StorageClient_js_1.StorageClient {
      */
     generateSasUrl(options) {
         return new Promise((resolve) => {
-            if (!(this.credential instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential)) {
+            if (!(this.credential instanceof storage_common_1.StorageSharedKeyCredential)) {
                 throw new RangeError("Can only generate the SAS when the client is initialized with a shared key credential");
             }
             const sas = (0, BlobSASSignatureValues_js_1.generateBlobSASQueryParameters)({
@@ -65968,7 +65986,7 @@ class ContainerClient extends StorageClient_js_1.StorageClient {
      */
     /* eslint-disable-next-line @azure/azure-sdk/ts-naming-options*/
     generateSasStringToSign(options) {
-        if (!(this.credential instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential)) {
+        if (!(this.credential instanceof storage_common_1.StorageSharedKeyCredential)) {
             throw new RangeError("Can only generate the SAS when the client is initialized with a shared key credential");
         }
         return (0, BlobSASSignatureValues_js_1.generateBlobSASQueryParametersInternal)({
@@ -66027,7 +66045,7 @@ exports.ContainerClient = ContainerClient;
 
 /***/ }),
 
-/***/ 50507:
+/***/ 19652:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -66067,7 +66085,7 @@ function rangeResponseFromModel(response) {
 
 /***/ }),
 
-/***/ 33543:
+/***/ 55830:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -66084,18 +66102,10 @@ const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_client_1 = __nccwpck_require__(99307);
 const core_xml_1 = __nccwpck_require__(64928);
 const core_auth_1 = __nccwpck_require__(38401);
-const log_js_1 = __nccwpck_require__(32763);
-const StorageRetryPolicyFactory_js_1 = __nccwpck_require__(64574);
-const StorageSharedKeyCredential_js_1 = __nccwpck_require__(64220);
-const AnonymousCredential_js_1 = __nccwpck_require__(13360);
-const constants_js_1 = __nccwpck_require__(9386);
+const log_js_1 = __nccwpck_require__(11872);
+const storage_common_1 = __nccwpck_require__(55637);
+const constants_js_1 = __nccwpck_require__(25097);
 Object.defineProperty(exports, "StorageOAuthScopes", ({ enumerable: true, get: function () { return constants_js_1.StorageOAuthScopes; } }));
-const storage_common_1 = __nccwpck_require__(13507);
-const StorageBrowserPolicyV2_js_1 = __nccwpck_require__(12391);
-const StorageRetryPolicyV2_js_1 = __nccwpck_require__(46221);
-const StorageSharedKeyCredentialPolicyV2_js_1 = __nccwpck_require__(61154);
-const StorageBrowserPolicyFactory_js_1 = __nccwpck_require__(92156);
-const StorageCorrectContentLengthPolicy_js_1 = __nccwpck_require__(77348);
 /**
  * A helper to decide if a given argument satisfies the Pipeline contract
  * @param pipeline - An argument that may be a Pipeline
@@ -66160,7 +66170,7 @@ exports.Pipeline = Pipeline;
  */
 function newPipeline(credential, pipelineOptions = {}) {
     if (!credential) {
-        credential = new AnonymousCredential_js_1.AnonymousCredential();
+        credential = new storage_common_1.AnonymousCredential();
     }
     const pipeline = new Pipeline([], pipelineOptions);
     pipeline._credential = credential;
@@ -66237,10 +66247,10 @@ function getCoreClientOptions(pipeline) {
         });
         corePipeline.removePolicy({ phase: "Retry" });
         corePipeline.removePolicy({ name: core_rest_pipeline_1.decompressResponsePolicyName });
-        corePipeline.addPolicy((0, StorageCorrectContentLengthPolicy_js_1.storageCorrectContentLengthPolicy)());
-        corePipeline.addPolicy((0, StorageRetryPolicyV2_js_1.storageRetryPolicy)(restOptions.retryOptions), { phase: "Retry" });
+        corePipeline.addPolicy((0, storage_common_1.storageCorrectContentLengthPolicy)());
+        corePipeline.addPolicy((0, storage_common_1.storageRetryPolicy)(restOptions.retryOptions), { phase: "Retry" });
         corePipeline.addPolicy((0, storage_common_1.storageRequestFailureDetailsParserPolicy)());
-        corePipeline.addPolicy((0, StorageBrowserPolicyV2_js_1.storageBrowserPolicy)());
+        corePipeline.addPolicy((0, storage_common_1.storageBrowserPolicy)());
         const downlevelResults = processDownlevelPipeline(pipeline);
         if (downlevelResults) {
             corePipeline.addPolicy(downlevelResults.wrappedPolicies, downlevelResults.afterRetry ? { afterPhase: "Retry" } : undefined);
@@ -66253,8 +66263,8 @@ function getCoreClientOptions(pipeline) {
                 challengeCallbacks: { authorizeRequestOnChallenge: core_client_1.authorizeRequestOnTenantChallenge },
             }), { phase: "Sign" });
         }
-        else if (credential instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) {
-            corePipeline.addPolicy((0, StorageSharedKeyCredentialPolicyV2_js_1.storageSharedKeyCredentialPolicy)({
+        else if (credential instanceof storage_common_1.StorageSharedKeyCredential) {
+            corePipeline.addPolicy((0, storage_common_1.storageSharedKeyCredentialPolicy)({
                 accountName: credential.accountName,
                 accountKey: credential.accountKey,
             }), { phase: "Sign" });
@@ -66274,7 +66284,7 @@ function getCredentialFromPipeline(pipeline) {
         return pipeline._credential;
     }
     // if it came from another package, loop over the factories and look for one like before
-    let credential = new AnonymousCredential_js_1.AnonymousCredential();
+    let credential = new storage_common_1.AnonymousCredential();
     for (const factory of pipeline.factories) {
         if ((0, core_auth_1.isTokenCredential)(factory.credential)) {
             // Only works if the factory has been attached a "credential" property.
@@ -66288,13 +66298,13 @@ function getCredentialFromPipeline(pipeline) {
     return credential;
 }
 function isStorageSharedKeyCredential(factory) {
-    if (factory instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential) {
+    if (factory instanceof storage_common_1.StorageSharedKeyCredential) {
         return true;
     }
     return factory.constructor.name === "StorageSharedKeyCredential";
 }
 function isAnonymousCredential(factory) {
-    if (factory instanceof AnonymousCredential_js_1.AnonymousCredential) {
+    if (factory instanceof storage_common_1.AnonymousCredential) {
         return true;
     }
     return factory.constructor.name === "AnonymousCredential";
@@ -66303,13 +66313,13 @@ function isCoreHttpBearerTokenFactory(factory) {
     return (0, core_auth_1.isTokenCredential)(factory.credential);
 }
 function isStorageBrowserPolicyFactory(factory) {
-    if (factory instanceof StorageBrowserPolicyFactory_js_1.StorageBrowserPolicyFactory) {
+    if (factory instanceof storage_common_1.StorageBrowserPolicyFactory) {
         return true;
     }
     return factory.constructor.name === "StorageBrowserPolicyFactory";
 }
 function isStorageRetryPolicyFactory(factory) {
-    if (factory instanceof StorageRetryPolicyFactory_js_1.StorageRetryPolicyFactory) {
+    if (factory instanceof storage_common_1.StorageRetryPolicyFactory) {
         return true;
     }
     return factory.constructor.name === "StorageRetryPolicyFactory";
@@ -66358,7 +66368,7 @@ function isCoreHttpPolicyFactory(factory) {
 
 /***/ }),
 
-/***/ 19456:
+/***/ 62495:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -66388,36 +66398,7 @@ function rangeToString(iRange) {
 
 /***/ }),
 
-/***/ 92156:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.StorageBrowserPolicyFactory = exports.StorageBrowserPolicy = void 0;
-const StorageBrowserPolicy_js_1 = __nccwpck_require__(66687);
-Object.defineProperty(exports, "StorageBrowserPolicy", ({ enumerable: true, get: function () { return StorageBrowserPolicy_js_1.StorageBrowserPolicy; } }));
-/**
- * StorageBrowserPolicyFactory is a factory class helping generating StorageBrowserPolicy objects.
- */
-class StorageBrowserPolicyFactory {
-    /**
-     * Creates a StorageBrowserPolicyFactory object.
-     *
-     * @param nextPolicy -
-     * @param options -
-     */
-    create(nextPolicy, options) {
-        return new StorageBrowserPolicy_js_1.StorageBrowserPolicy(nextPolicy, options);
-    }
-}
-exports.StorageBrowserPolicyFactory = StorageBrowserPolicyFactory;
-//# sourceMappingURL=StorageBrowserPolicyFactory.js.map
-
-/***/ }),
-
-/***/ 84827:
+/***/ 17676:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -66425,9 +66406,9 @@ exports.StorageBrowserPolicyFactory = StorageBrowserPolicyFactory;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageClient = void 0;
-const StorageContextClient_js_1 = __nccwpck_require__(64754);
-const Pipeline_js_1 = __nccwpck_require__(33543);
-const utils_common_js_1 = __nccwpck_require__(98915);
+const StorageContextClient_js_1 = __nccwpck_require__(93275);
+const Pipeline_js_1 = __nccwpck_require__(55830);
+const utils_common_js_1 = __nccwpck_require__(43542);
 /**
  * A StorageClient represents a based URL class for {@link BlobServiceClient}, {@link ContainerClient}
  * and etc.
@@ -66479,7 +66460,7 @@ exports.StorageClient = StorageClient;
 
 /***/ }),
 
-/***/ 64754:
+/***/ 93275:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -66487,7 +66468,7 @@ exports.StorageClient = StorageClient;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageContextClient = void 0;
-const index_js_1 = __nccwpck_require__(76546);
+const index_js_1 = __nccwpck_require__(42785);
 /**
  * @internal
  */
@@ -66506,217 +66487,7 @@ exports.StorageContextClient = StorageContextClient;
 
 /***/ }),
 
-/***/ 64574:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.StorageRetryPolicyFactory = exports.StorageRetryPolicy = exports.StorageRetryPolicyType = void 0;
-const StorageRetryPolicy_js_1 = __nccwpck_require__(21613);
-Object.defineProperty(exports, "StorageRetryPolicy", ({ enumerable: true, get: function () { return StorageRetryPolicy_js_1.StorageRetryPolicy; } }));
-const StorageRetryPolicyType_js_1 = __nccwpck_require__(26941);
-Object.defineProperty(exports, "StorageRetryPolicyType", ({ enumerable: true, get: function () { return StorageRetryPolicyType_js_1.StorageRetryPolicyType; } }));
-/**
- * StorageRetryPolicyFactory is a factory class helping generating {@link StorageRetryPolicy} objects.
- */
-class StorageRetryPolicyFactory {
-    retryOptions;
-    /**
-     * Creates an instance of StorageRetryPolicyFactory.
-     * @param retryOptions -
-     */
-    constructor(retryOptions) {
-        this.retryOptions = retryOptions;
-    }
-    /**
-     * Creates a StorageRetryPolicy object.
-     *
-     * @param nextPolicy -
-     * @param options -
-     */
-    create(nextPolicy, options) {
-        return new StorageRetryPolicy_js_1.StorageRetryPolicy(nextPolicy, options, this.retryOptions);
-    }
-}
-exports.StorageRetryPolicyFactory = StorageRetryPolicyFactory;
-//# sourceMappingURL=StorageRetryPolicyFactory.js.map
-
-/***/ }),
-
-/***/ 13360:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AnonymousCredential = void 0;
-const AnonymousCredentialPolicy_js_1 = __nccwpck_require__(74090);
-const Credential_js_1 = __nccwpck_require__(44175);
-/**
- * AnonymousCredential provides a credentialPolicyCreator member used to create
- * AnonymousCredentialPolicy objects. AnonymousCredentialPolicy is used with
- * HTTP(S) requests that read public resources or for use with Shared Access
- * Signatures (SAS).
- */
-class AnonymousCredential extends Credential_js_1.Credential {
-    /**
-     * Creates an {@link AnonymousCredentialPolicy} object.
-     *
-     * @param nextPolicy -
-     * @param options -
-     */
-    create(nextPolicy, options) {
-        return new AnonymousCredentialPolicy_js_1.AnonymousCredentialPolicy(nextPolicy, options);
-    }
-}
-exports.AnonymousCredential = AnonymousCredential;
-//# sourceMappingURL=AnonymousCredential.js.map
-
-/***/ }),
-
-/***/ 44175:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Credential = void 0;
-/**
- * Credential is an abstract class for Azure Storage HTTP requests signing. This
- * class will host an credentialPolicyCreator factory which generates CredentialPolicy.
- */
-class Credential {
-    /**
-     * Creates a RequestPolicy object.
-     *
-     * @param _nextPolicy -
-     * @param _options -
-     */
-    create(_nextPolicy, _options) {
-        throw new Error("Method should be implemented in children classes.");
-    }
-}
-exports.Credential = Credential;
-//# sourceMappingURL=Credential.js.map
-
-/***/ }),
-
-/***/ 64220:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.StorageSharedKeyCredential = void 0;
-const node_crypto_1 = __nccwpck_require__(77598);
-const StorageSharedKeyCredentialPolicy_js_1 = __nccwpck_require__(47318);
-const Credential_js_1 = __nccwpck_require__(44175);
-/**
- * ONLY AVAILABLE IN NODE.JS RUNTIME.
- *
- * StorageSharedKeyCredential for account key authorization of Azure Storage service.
- */
-class StorageSharedKeyCredential extends Credential_js_1.Credential {
-    /**
-     * Azure Storage account name; readonly.
-     */
-    accountName;
-    /**
-     * Azure Storage account key; readonly.
-     */
-    accountKey;
-    /**
-     * Creates an instance of StorageSharedKeyCredential.
-     * @param accountName -
-     * @param accountKey -
-     */
-    constructor(accountName, accountKey) {
-        super();
-        this.accountName = accountName;
-        this.accountKey = Buffer.from(accountKey, "base64");
-    }
-    /**
-     * Creates a StorageSharedKeyCredentialPolicy object.
-     *
-     * @param nextPolicy -
-     * @param options -
-     */
-    create(nextPolicy, options) {
-        return new StorageSharedKeyCredentialPolicy_js_1.StorageSharedKeyCredentialPolicy(nextPolicy, options, this);
-    }
-    /**
-     * Generates a hash signature for an HTTP request or for a SAS.
-     *
-     * @param stringToSign -
-     */
-    computeHMACSHA256(stringToSign) {
-        return (0, node_crypto_1.createHmac)("sha256", this.accountKey).update(stringToSign, "utf8").digest("base64");
-    }
-}
-exports.StorageSharedKeyCredential = StorageSharedKeyCredential;
-//# sourceMappingURL=StorageSharedKeyCredential.js.map
-
-/***/ }),
-
-/***/ 20061:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UserDelegationKeyCredential = void 0;
-const node_crypto_1 = __nccwpck_require__(77598);
-/**
- * ONLY AVAILABLE IN NODE.JS RUNTIME.
- *
- * UserDelegationKeyCredential is only used for generation of user delegation SAS.
- * @see https://learn.microsoft.com/rest/api/storageservices/create-user-delegation-sas
- */
-class UserDelegationKeyCredential {
-    /**
-     * Azure Storage account name; readonly.
-     */
-    accountName;
-    /**
-     * Azure Storage user delegation key; readonly.
-     */
-    userDelegationKey;
-    /**
-     * Key value in Buffer type.
-     */
-    key;
-    /**
-     * Creates an instance of UserDelegationKeyCredential.
-     * @param accountName -
-     * @param userDelegationKey -
-     */
-    constructor(accountName, userDelegationKey) {
-        this.accountName = accountName;
-        this.userDelegationKey = userDelegationKey;
-        this.key = Buffer.from(userDelegationKey.value, "base64");
-    }
-    /**
-     * Generates a hash signature for an HTTP request or for a SAS.
-     *
-     * @param stringToSign -
-     */
-    computeHMACSHA256(stringToSign) {
-        // console.log(`stringToSign: ${JSON.stringify(stringToSign)}`);
-        return (0, node_crypto_1.createHmac)("sha256", this.key).update(stringToSign, "utf8").digest("base64");
-    }
-}
-exports.UserDelegationKeyCredential = UserDelegationKeyCredential;
-//# sourceMappingURL=UserDelegationKeyCredential.js.map
-
-/***/ }),
-
-/***/ 76546:
+/***/ 42785:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -66730,15 +66501,15 @@ exports.UserDelegationKeyCredential = UserDelegationKeyCredential;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageClient = void 0;
 const tslib_1 = __nccwpck_require__(67892);
-tslib_1.__exportStar(__nccwpck_require__(93433), exports);
-var storageClient_js_1 = __nccwpck_require__(36244);
+tslib_1.__exportStar(__nccwpck_require__(82716), exports);
+var storageClient_js_1 = __nccwpck_require__(54447);
 Object.defineProperty(exports, "StorageClient", ({ enumerable: true, get: function () { return storageClient_js_1.StorageClient; } }));
-tslib_1.__exportStar(__nccwpck_require__(52597), exports);
+tslib_1.__exportStar(__nccwpck_require__(71396), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
 
-/***/ 93433:
+/***/ 82716:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -67011,7 +66782,7 @@ var KnownStorageErrorCode;
 
 /***/ }),
 
-/***/ 41423:
+/***/ 76462:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -75353,7 +75124,7 @@ exports.BlockBlobGetBlockListExceptionHeaders = {
 
 /***/ }),
 
-/***/ 23469:
+/***/ 17902:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -75366,9 +75137,9 @@ exports.BlockBlobGetBlockListExceptionHeaders = {
  */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.action3 = exports.action2 = exports.leaseId1 = exports.action1 = exports.proposedLeaseId = exports.duration = exports.action = exports.comp10 = exports.sourceLeaseId = exports.sourceContainerName = exports.comp9 = exports.deletedContainerVersion = exports.deletedContainerName = exports.comp8 = exports.containerAcl = exports.comp7 = exports.comp6 = exports.ifUnmodifiedSince = exports.ifModifiedSince = exports.leaseId = exports.preventEncryptionScopeOverride = exports.defaultEncryptionScope = exports.access = exports.metadata = exports.restype2 = exports.where = exports.comp5 = exports.multipartContentType = exports.contentLength = exports.comp4 = exports.body = exports.restype1 = exports.comp3 = exports.keyInfo = exports.include = exports.maxPageSize = exports.marker = exports.prefix = exports.comp2 = exports.comp1 = exports.accept1 = exports.requestId = exports.version = exports.timeoutInSeconds = exports.comp = exports.restype = exports.url = exports.accept = exports.blobServiceProperties = exports.contentType = void 0;
-exports.fileRequestIntent = exports.copySourceTags = exports.copySourceAuthorization = exports.sourceContentMD5 = exports.xMsRequiresSync = exports.legalHold1 = exports.sealBlob = exports.blobTagsString = exports.copySource = exports.sourceIfTags = exports.sourceIfNoneMatch = exports.sourceIfMatch = exports.sourceIfUnmodifiedSince = exports.sourceIfModifiedSince = exports.rehydratePriority = exports.tier = exports.comp14 = exports.encryptionScope = exports.legalHold = exports.comp13 = exports.immutabilityPolicyMode = exports.immutabilityPolicyExpiry = exports.comp12 = exports.blobContentDisposition = exports.blobContentLanguage = exports.blobContentEncoding = exports.blobContentMD5 = exports.blobContentType = exports.blobCacheControl = exports.expiresOn = exports.expiryOptions = exports.comp11 = exports.blobDeleteType = exports.deleteSnapshots = exports.ifTags = exports.ifNoneMatch = exports.ifMatch = exports.encryptionAlgorithm = exports.encryptionKeySha256 = exports.encryptionKey = exports.rangeGetContentCRC64 = exports.rangeGetContentMD5 = exports.range = exports.versionId = exports.snapshot = exports.delimiter = exports.include1 = exports.proposedLeaseId1 = exports.action4 = exports.breakPeriod = void 0;
-exports.listType = exports.comp25 = exports.blocks = exports.blockId = exports.comp24 = exports.copySourceBlobProperties = exports.blobType2 = exports.comp23 = exports.sourceRange1 = exports.appendPosition = exports.maxSize = exports.comp22 = exports.blobType1 = exports.comp21 = exports.sequenceNumberAction = exports.prevSnapshotUrl = exports.prevsnapshot = exports.comp20 = exports.range1 = exports.sourceContentCrc64 = exports.sourceRange = exports.sourceUrl = exports.pageWrite1 = exports.ifSequenceNumberEqualTo = exports.ifSequenceNumberLessThan = exports.ifSequenceNumberLessThanOrEqualTo = exports.pageWrite = exports.comp19 = exports.accept2 = exports.body1 = exports.contentType1 = exports.blobSequenceNumber = exports.blobContentLength = exports.blobType = exports.transactionalContentCrc64 = exports.transactionalContentMD5 = exports.tags = exports.comp18 = exports.comp17 = exports.queryRequest = exports.tier1 = exports.comp16 = exports.copyId = exports.copyActionAbortConstant = exports.comp15 = void 0;
-const mappers_js_1 = __nccwpck_require__(41423);
+exports.copySourceTags = exports.copySourceAuthorization = exports.sourceContentMD5 = exports.xMsRequiresSync = exports.legalHold1 = exports.sealBlob = exports.blobTagsString = exports.copySource = exports.sourceIfTags = exports.sourceIfNoneMatch = exports.sourceIfMatch = exports.sourceIfUnmodifiedSince = exports.sourceIfModifiedSince = exports.rehydratePriority = exports.tier = exports.comp14 = exports.encryptionScope = exports.legalHold = exports.comp13 = exports.immutabilityPolicyMode = exports.immutabilityPolicyExpiry = exports.comp12 = exports.blobContentDisposition = exports.blobContentLanguage = exports.blobContentEncoding = exports.blobContentMD5 = exports.blobContentType = exports.blobCacheControl = exports.expiresOn = exports.expiryOptions = exports.comp11 = exports.blobDeleteType = exports.deleteSnapshots = exports.ifTags = exports.ifNoneMatch = exports.ifMatch = exports.encryptionAlgorithm = exports.encryptionKeySha256 = exports.encryptionKey = exports.rangeGetContentCRC64 = exports.rangeGetContentMD5 = exports.range = exports.versionId = exports.snapshot = exports.delimiter = exports.startFrom = exports.include1 = exports.proposedLeaseId1 = exports.action4 = exports.breakPeriod = void 0;
+exports.listType = exports.comp25 = exports.blocks = exports.blockId = exports.comp24 = exports.copySourceBlobProperties = exports.blobType2 = exports.comp23 = exports.sourceRange1 = exports.appendPosition = exports.maxSize = exports.comp22 = exports.blobType1 = exports.comp21 = exports.sequenceNumberAction = exports.prevSnapshotUrl = exports.prevsnapshot = exports.comp20 = exports.range1 = exports.sourceContentCrc64 = exports.sourceRange = exports.sourceUrl = exports.pageWrite1 = exports.ifSequenceNumberEqualTo = exports.ifSequenceNumberLessThan = exports.ifSequenceNumberLessThanOrEqualTo = exports.pageWrite = exports.comp19 = exports.accept2 = exports.body1 = exports.contentType1 = exports.blobSequenceNumber = exports.blobContentLength = exports.blobType = exports.transactionalContentCrc64 = exports.transactionalContentMD5 = exports.tags = exports.ifNoneMatch1 = exports.ifMatch1 = exports.ifUnmodifiedSince1 = exports.ifModifiedSince1 = exports.comp18 = exports.comp17 = exports.queryRequest = exports.tier1 = exports.comp16 = exports.copyId = exports.copyActionAbortConstant = exports.comp15 = exports.fileRequestIntent = void 0;
+const mappers_js_1 = __nccwpck_require__(76462);
 exports.contentType = {
     parameterPath: ["options", "contentType"],
     mapper: {
@@ -75445,7 +75216,7 @@ exports.timeoutInSeconds = {
 exports.version = {
     parameterPath: "version",
     mapper: {
-        defaultValue: "2025-11-05",
+        defaultValue: "2026-02-06",
         isConstant: true,
         serializedName: "x-ms-version",
         type: {
@@ -75979,6 +75750,16 @@ exports.include1 = {
         },
     },
     collectionFormat: "CSV",
+};
+exports.startFrom = {
+    parameterPath: ["options", "startFrom"],
+    mapper: {
+        serializedName: "startFrom",
+        xmlName: "startFrom",
+        type: {
+            name: "String",
+        },
+    },
 };
 exports.delimiter = {
     parameterPath: "delimiter",
@@ -76580,6 +76361,50 @@ exports.comp18 = {
         },
     },
 };
+exports.ifModifiedSince1 = {
+    parameterPath: ["options", "blobModifiedAccessConditions", "ifModifiedSince"],
+    mapper: {
+        serializedName: "x-ms-blob-if-modified-since",
+        xmlName: "x-ms-blob-if-modified-since",
+        type: {
+            name: "DateTimeRfc1123",
+        },
+    },
+};
+exports.ifUnmodifiedSince1 = {
+    parameterPath: [
+        "options",
+        "blobModifiedAccessConditions",
+        "ifUnmodifiedSince",
+    ],
+    mapper: {
+        serializedName: "x-ms-blob-if-unmodified-since",
+        xmlName: "x-ms-blob-if-unmodified-since",
+        type: {
+            name: "DateTimeRfc1123",
+        },
+    },
+};
+exports.ifMatch1 = {
+    parameterPath: ["options", "blobModifiedAccessConditions", "ifMatch"],
+    mapper: {
+        serializedName: "x-ms-blob-if-match",
+        xmlName: "x-ms-blob-if-match",
+        type: {
+            name: "String",
+        },
+    },
+};
+exports.ifNoneMatch1 = {
+    parameterPath: ["options", "blobModifiedAccessConditions", "ifNoneMatch"],
+    mapper: {
+        serializedName: "x-ms-blob-if-none-match",
+        xmlName: "x-ms-blob-if-none-match",
+        type: {
+            name: "String",
+        },
+    },
+};
 exports.tags = {
     parameterPath: ["options", "tags"],
     mapper: mappers_js_1.BlobTags,
@@ -76984,7 +76809,7 @@ exports.listType = {
 
 /***/ }),
 
-/***/ 74910:
+/***/ 44789:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -76999,8 +76824,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AppendBlobImpl = void 0;
 const tslib_1 = __nccwpck_require__(67892);
 const coreClient = tslib_1.__importStar(__nccwpck_require__(99307));
-const Mappers = tslib_1.__importStar(__nccwpck_require__(41423));
-const Parameters = tslib_1.__importStar(__nccwpck_require__(23469));
+const Mappers = tslib_1.__importStar(__nccwpck_require__(76462));
+const Parameters = tslib_1.__importStar(__nccwpck_require__(17902));
 /** Class containing AppendBlob operations. */
 class AppendBlobImpl {
     client;
@@ -77218,7 +77043,7 @@ const sealOperationSpec = {
 
 /***/ }),
 
-/***/ 83354:
+/***/ 24289:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -77233,8 +77058,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BlobImpl = void 0;
 const tslib_1 = __nccwpck_require__(67892);
 const coreClient = tslib_1.__importStar(__nccwpck_require__(99307));
-const Mappers = tslib_1.__importStar(__nccwpck_require__(41423));
-const Parameters = tslib_1.__importStar(__nccwpck_require__(23469));
+const Mappers = tslib_1.__importStar(__nccwpck_require__(76462));
+const Parameters = tslib_1.__importStar(__nccwpck_require__(17902));
 /** Class containing Blob operations. */
 class BlobImpl {
     client;
@@ -78209,6 +78034,10 @@ const getTagsOperationSpec = {
         Parameters.accept1,
         Parameters.leaseId,
         Parameters.ifTags,
+        Parameters.ifModifiedSince1,
+        Parameters.ifUnmodifiedSince1,
+        Parameters.ifMatch1,
+        Parameters.ifNoneMatch1,
     ],
     isXML: true,
     serializer: xmlSerializer,
@@ -78239,6 +78068,10 @@ const setTagsOperationSpec = {
         Parameters.requestId,
         Parameters.leaseId,
         Parameters.ifTags,
+        Parameters.ifModifiedSince1,
+        Parameters.ifUnmodifiedSince1,
+        Parameters.ifMatch1,
+        Parameters.ifNoneMatch1,
         Parameters.transactionalContentMD5,
         Parameters.transactionalContentCrc64,
     ],
@@ -78251,7 +78084,7 @@ const setTagsOperationSpec = {
 
 /***/ }),
 
-/***/ 99231:
+/***/ 84118:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -78266,8 +78099,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BlockBlobImpl = void 0;
 const tslib_1 = __nccwpck_require__(67892);
 const coreClient = tslib_1.__importStar(__nccwpck_require__(99307));
-const Mappers = tslib_1.__importStar(__nccwpck_require__(41423));
-const Parameters = tslib_1.__importStar(__nccwpck_require__(23469));
+const Mappers = tslib_1.__importStar(__nccwpck_require__(76462));
+const Parameters = tslib_1.__importStar(__nccwpck_require__(17902));
 /** Class containing BlockBlob operations. */
 class BlockBlobImpl {
     client;
@@ -78630,7 +78463,7 @@ const getBlockListOperationSpec = {
 
 /***/ }),
 
-/***/ 80402:
+/***/ 35819:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -78645,8 +78478,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ContainerImpl = void 0;
 const tslib_1 = __nccwpck_require__(67892);
 const coreClient = tslib_1.__importStar(__nccwpck_require__(99307));
-const Mappers = tslib_1.__importStar(__nccwpck_require__(41423));
-const Parameters = tslib_1.__importStar(__nccwpck_require__(23469));
+const Mappers = tslib_1.__importStar(__nccwpck_require__(76462));
+const Parameters = tslib_1.__importStar(__nccwpck_require__(17902));
 /** Class containing Container operations. */
 class ContainerImpl {
     client;
@@ -79283,6 +79116,7 @@ const listBlobFlatSegmentOperationSpec = {
         Parameters.maxPageSize,
         Parameters.restype2,
         Parameters.include1,
+        Parameters.startFrom,
     ],
     urlParameters: [Parameters.url],
     headerParameters: [
@@ -79314,6 +79148,7 @@ const listBlobHierarchySegmentOperationSpec = {
         Parameters.maxPageSize,
         Parameters.restype2,
         Parameters.include1,
+        Parameters.startFrom,
         Parameters.delimiter,
     ],
     urlParameters: [Parameters.url],
@@ -79355,7 +79190,7 @@ const getAccountInfoOperationSpec = {
 
 /***/ }),
 
-/***/ 21305:
+/***/ 45716:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -79368,17 +79203,17 @@ const getAccountInfoOperationSpec = {
  */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const tslib_1 = __nccwpck_require__(67892);
-tslib_1.__exportStar(__nccwpck_require__(94570), exports);
-tslib_1.__exportStar(__nccwpck_require__(80402), exports);
-tslib_1.__exportStar(__nccwpck_require__(83354), exports);
-tslib_1.__exportStar(__nccwpck_require__(2721), exports);
-tslib_1.__exportStar(__nccwpck_require__(74910), exports);
-tslib_1.__exportStar(__nccwpck_require__(99231), exports);
+tslib_1.__exportStar(__nccwpck_require__(83167), exports);
+tslib_1.__exportStar(__nccwpck_require__(35819), exports);
+tslib_1.__exportStar(__nccwpck_require__(24289), exports);
+tslib_1.__exportStar(__nccwpck_require__(73074), exports);
+tslib_1.__exportStar(__nccwpck_require__(44789), exports);
+tslib_1.__exportStar(__nccwpck_require__(84118), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
 
-/***/ 2721:
+/***/ 73074:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -79393,8 +79228,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PageBlobImpl = void 0;
 const tslib_1 = __nccwpck_require__(67892);
 const coreClient = tslib_1.__importStar(__nccwpck_require__(99307));
-const Mappers = tslib_1.__importStar(__nccwpck_require__(41423));
-const Parameters = tslib_1.__importStar(__nccwpck_require__(23469));
+const Mappers = tslib_1.__importStar(__nccwpck_require__(76462));
+const Parameters = tslib_1.__importStar(__nccwpck_require__(17902));
 /** Class containing PageBlob operations. */
 class PageBlobImpl {
     client;
@@ -79847,7 +79682,7 @@ const copyIncrementalOperationSpec = {
 
 /***/ }),
 
-/***/ 94570:
+/***/ 83167:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -79862,8 +79697,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ServiceImpl = void 0;
 const tslib_1 = __nccwpck_require__(67892);
 const coreClient = tslib_1.__importStar(__nccwpck_require__(99307));
-const Mappers = tslib_1.__importStar(__nccwpck_require__(41423));
-const Parameters = tslib_1.__importStar(__nccwpck_require__(23469));
+const Mappers = tslib_1.__importStar(__nccwpck_require__(76462));
+const Parameters = tslib_1.__importStar(__nccwpck_require__(17902));
 /** Class containing Service operations. */
 class ServiceImpl {
     client;
@@ -80182,7 +80017,7 @@ const filterBlobsOperationSpec = {
 
 /***/ }),
 
-/***/ 36242:
+/***/ 62757:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80198,7 +80033,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 42294:
+/***/ 81617:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80214,7 +80049,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 26003:
+/***/ 48262:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80230,7 +80065,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 2718:
+/***/ 69307:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80246,7 +80081,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 52597:
+/***/ 71396:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -80259,17 +80094,17 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
  */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const tslib_1 = __nccwpck_require__(67892);
-tslib_1.__exportStar(__nccwpck_require__(87126), exports);
-tslib_1.__exportStar(__nccwpck_require__(2718), exports);
-tslib_1.__exportStar(__nccwpck_require__(42294), exports);
-tslib_1.__exportStar(__nccwpck_require__(85517), exports);
-tslib_1.__exportStar(__nccwpck_require__(36242), exports);
-tslib_1.__exportStar(__nccwpck_require__(26003), exports);
+tslib_1.__exportStar(__nccwpck_require__(78031), exports);
+tslib_1.__exportStar(__nccwpck_require__(69307), exports);
+tslib_1.__exportStar(__nccwpck_require__(81617), exports);
+tslib_1.__exportStar(__nccwpck_require__(80546), exports);
+tslib_1.__exportStar(__nccwpck_require__(62757), exports);
+tslib_1.__exportStar(__nccwpck_require__(48262), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
 
-/***/ 85517:
+/***/ 80546:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80285,7 +80120,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 87126:
+/***/ 78031:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80301,7 +80136,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 36244:
+/***/ 54447:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -80316,7 +80151,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageClient = void 0;
 const tslib_1 = __nccwpck_require__(67892);
 const coreHttpCompat = tslib_1.__importStar(__nccwpck_require__(80976));
-const index_js_1 = __nccwpck_require__(21305);
+const index_js_1 = __nccwpck_require__(45716);
 class StorageClient extends coreHttpCompat.ExtendedServiceClient {
     url;
     version;
@@ -80337,7 +80172,7 @@ class StorageClient extends coreHttpCompat.ExtendedServiceClient {
         const defaults = {
             requestContentType: "application/json; charset=utf-8",
         };
-        const packageDetails = `azsdk-js-azure-storage-blob/12.29.1`;
+        const packageDetails = `azsdk-js-azure-storage-blob/12.30.0`;
         const userAgentPrefix = options.userAgentOptions && options.userAgentOptions.userAgentPrefix
             ? `${options.userAgentOptions.userAgentPrefix} ${packageDetails}`
             : `${packageDetails}`;
@@ -80353,7 +80188,7 @@ class StorageClient extends coreHttpCompat.ExtendedServiceClient {
         // Parameter assignments
         this.url = url;
         // Assigning values to Constant parameters
-        this.version = options.version || "2025-11-05";
+        this.version = options.version || "2026-02-06";
         this.service = new index_js_1.ServiceImpl(this);
         this.container = new index_js_1.ContainerImpl(this);
         this.blob = new index_js_1.BlobImpl(this);
@@ -80373,7 +80208,7 @@ exports.StorageClient = StorageClient;
 
 /***/ }),
 
-/***/ 13430:
+/***/ 91365:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80390,63 +80225,65 @@ var KnownEncryptionAlgorithmType;
 
 /***/ }),
 
-/***/ 32917:
+/***/ 50506:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.logger = exports.RestError = exports.BaseRequestPolicy = exports.StorageOAuthScopes = exports.newPipeline = exports.isPipelineLike = exports.Pipeline = exports.getBlobServiceAccountAudience = exports.StorageBlobAudience = exports.PremiumPageBlobTier = exports.BlockBlobTier = exports.generateBlobSASQueryParameters = exports.generateAccountSASQueryParameters = void 0;
+exports.logger = exports.RestError = exports.StorageBrowserPolicyFactory = exports.StorageBrowserPolicy = exports.StorageSharedKeyCredentialPolicy = exports.StorageSharedKeyCredential = exports.StorageRetryPolicyFactory = exports.StorageRetryPolicy = exports.StorageRetryPolicyType = exports.Credential = exports.CredentialPolicy = exports.BaseRequestPolicy = exports.AnonymousCredentialPolicy = exports.AnonymousCredential = exports.StorageOAuthScopes = exports.newPipeline = exports.isPipelineLike = exports.Pipeline = exports.getBlobServiceAccountAudience = exports.StorageBlobAudience = exports.PremiumPageBlobTier = exports.BlockBlobTier = exports.generateBlobSASQueryParameters = exports.generateAccountSASQueryParameters = void 0;
 const tslib_1 = __nccwpck_require__(67892);
 const core_rest_pipeline_1 = __nccwpck_require__(81591);
 Object.defineProperty(exports, "RestError", ({ enumerable: true, get: function () { return core_rest_pipeline_1.RestError; } }));
-tslib_1.__exportStar(__nccwpck_require__(91352), exports);
-tslib_1.__exportStar(__nccwpck_require__(59813), exports);
-tslib_1.__exportStar(__nccwpck_require__(83745), exports);
-tslib_1.__exportStar(__nccwpck_require__(51029), exports);
-tslib_1.__exportStar(__nccwpck_require__(56139), exports);
-tslib_1.__exportStar(__nccwpck_require__(49286), exports);
-tslib_1.__exportStar(__nccwpck_require__(89159), exports);
-var AccountSASSignatureValues_js_1 = __nccwpck_require__(10319);
+tslib_1.__exportStar(__nccwpck_require__(19671), exports);
+tslib_1.__exportStar(__nccwpck_require__(86198), exports);
+tslib_1.__exportStar(__nccwpck_require__(11798), exports);
+tslib_1.__exportStar(__nccwpck_require__(45050), exports);
+tslib_1.__exportStar(__nccwpck_require__(78008), exports);
+tslib_1.__exportStar(__nccwpck_require__(29757), exports);
+tslib_1.__exportStar(__nccwpck_require__(63638), exports);
+var AccountSASSignatureValues_js_1 = __nccwpck_require__(10928);
 Object.defineProperty(exports, "generateAccountSASQueryParameters", ({ enumerable: true, get: function () { return AccountSASSignatureValues_js_1.generateAccountSASQueryParameters; } }));
-tslib_1.__exportStar(__nccwpck_require__(27776), exports);
-tslib_1.__exportStar(__nccwpck_require__(37683), exports);
-tslib_1.__exportStar(__nccwpck_require__(4766), exports);
-tslib_1.__exportStar(__nccwpck_require__(7831), exports);
-var BlobSASSignatureValues_js_1 = __nccwpck_require__(38147);
+tslib_1.__exportStar(__nccwpck_require__(17107), exports);
+tslib_1.__exportStar(__nccwpck_require__(99808), exports);
+tslib_1.__exportStar(__nccwpck_require__(14753), exports);
+tslib_1.__exportStar(__nccwpck_require__(75490), exports);
+var BlobSASSignatureValues_js_1 = __nccwpck_require__(22794);
 Object.defineProperty(exports, "generateBlobSASQueryParameters", ({ enumerable: true, get: function () { return BlobSASSignatureValues_js_1.generateBlobSASQueryParameters; } }));
-tslib_1.__exportStar(__nccwpck_require__(92156), exports);
-tslib_1.__exportStar(__nccwpck_require__(32739), exports);
-tslib_1.__exportStar(__nccwpck_require__(13360), exports);
-tslib_1.__exportStar(__nccwpck_require__(44175), exports);
-tslib_1.__exportStar(__nccwpck_require__(64220), exports);
-var models_js_1 = __nccwpck_require__(37647);
+tslib_1.__exportStar(__nccwpck_require__(94068), exports);
+var models_js_1 = __nccwpck_require__(82834);
 Object.defineProperty(exports, "BlockBlobTier", ({ enumerable: true, get: function () { return models_js_1.BlockBlobTier; } }));
 Object.defineProperty(exports, "PremiumPageBlobTier", ({ enumerable: true, get: function () { return models_js_1.PremiumPageBlobTier; } }));
 Object.defineProperty(exports, "StorageBlobAudience", ({ enumerable: true, get: function () { return models_js_1.StorageBlobAudience; } }));
 Object.defineProperty(exports, "getBlobServiceAccountAudience", ({ enumerable: true, get: function () { return models_js_1.getBlobServiceAccountAudience; } }));
-var Pipeline_js_1 = __nccwpck_require__(33543);
+var Pipeline_js_1 = __nccwpck_require__(55830);
 Object.defineProperty(exports, "Pipeline", ({ enumerable: true, get: function () { return Pipeline_js_1.Pipeline; } }));
 Object.defineProperty(exports, "isPipelineLike", ({ enumerable: true, get: function () { return Pipeline_js_1.isPipelineLike; } }));
 Object.defineProperty(exports, "newPipeline", ({ enumerable: true, get: function () { return Pipeline_js_1.newPipeline; } }));
 Object.defineProperty(exports, "StorageOAuthScopes", ({ enumerable: true, get: function () { return Pipeline_js_1.StorageOAuthScopes; } }));
-tslib_1.__exportStar(__nccwpck_require__(64574), exports);
-var RequestPolicy_js_1 = __nccwpck_require__(30679);
-Object.defineProperty(exports, "BaseRequestPolicy", ({ enumerable: true, get: function () { return RequestPolicy_js_1.BaseRequestPolicy; } }));
-tslib_1.__exportStar(__nccwpck_require__(74090), exports);
-tslib_1.__exportStar(__nccwpck_require__(39809), exports);
-tslib_1.__exportStar(__nccwpck_require__(64574), exports);
-tslib_1.__exportStar(__nccwpck_require__(47318), exports);
-tslib_1.__exportStar(__nccwpck_require__(65424), exports);
-tslib_1.__exportStar(__nccwpck_require__(13430), exports);
-var log_js_1 = __nccwpck_require__(32763);
+var storage_common_1 = __nccwpck_require__(55637);
+Object.defineProperty(exports, "AnonymousCredential", ({ enumerable: true, get: function () { return storage_common_1.AnonymousCredential; } }));
+Object.defineProperty(exports, "AnonymousCredentialPolicy", ({ enumerable: true, get: function () { return storage_common_1.AnonymousCredentialPolicy; } }));
+Object.defineProperty(exports, "BaseRequestPolicy", ({ enumerable: true, get: function () { return storage_common_1.BaseRequestPolicy; } }));
+Object.defineProperty(exports, "CredentialPolicy", ({ enumerable: true, get: function () { return storage_common_1.CredentialPolicy; } }));
+Object.defineProperty(exports, "Credential", ({ enumerable: true, get: function () { return storage_common_1.Credential; } }));
+Object.defineProperty(exports, "StorageRetryPolicyType", ({ enumerable: true, get: function () { return storage_common_1.StorageRetryPolicyType; } }));
+Object.defineProperty(exports, "StorageRetryPolicy", ({ enumerable: true, get: function () { return storage_common_1.StorageRetryPolicy; } }));
+Object.defineProperty(exports, "StorageRetryPolicyFactory", ({ enumerable: true, get: function () { return storage_common_1.StorageRetryPolicyFactory; } }));
+Object.defineProperty(exports, "StorageSharedKeyCredential", ({ enumerable: true, get: function () { return storage_common_1.StorageSharedKeyCredential; } }));
+Object.defineProperty(exports, "StorageSharedKeyCredentialPolicy", ({ enumerable: true, get: function () { return storage_common_1.StorageSharedKeyCredentialPolicy; } }));
+Object.defineProperty(exports, "StorageBrowserPolicy", ({ enumerable: true, get: function () { return storage_common_1.StorageBrowserPolicy; } }));
+Object.defineProperty(exports, "StorageBrowserPolicyFactory", ({ enumerable: true, get: function () { return storage_common_1.StorageBrowserPolicyFactory; } }));
+tslib_1.__exportStar(__nccwpck_require__(78285), exports);
+tslib_1.__exportStar(__nccwpck_require__(91365), exports);
+var log_js_1 = __nccwpck_require__(11872);
 Object.defineProperty(exports, "logger", ({ enumerable: true, get: function () { return log_js_1.logger; } }));
 //# sourceMappingURL=index.js.map
 
 /***/ }),
 
-/***/ 58691:
+/***/ 74916:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80462,7 +80299,7 @@ exports.AVRO_SCHEMA_KEY = "avro.schema";
 
 /***/ }),
 
-/***/ 53355:
+/***/ 898:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80796,7 +80633,7 @@ class AvroRecordType extends AvroType {
 
 /***/ }),
 
-/***/ 92616:
+/***/ 20293:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -80811,7 +80648,7 @@ exports.AvroReadable = AvroReadable;
 
 /***/ }),
 
-/***/ 40092:
+/***/ 17537:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -80819,7 +80656,7 @@ exports.AvroReadable = AvroReadable;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AvroReadableFromStream = void 0;
-const AvroReadable_js_1 = __nccwpck_require__(92616);
+const AvroReadable_js_1 = __nccwpck_require__(20293);
 const abort_controller_1 = __nccwpck_require__(49797);
 const buffer_1 = __nccwpck_require__(20181);
 const ABORT_ERROR = new abort_controller_1.AbortError("Reading from the avro stream was aborted.");
@@ -80907,7 +80744,7 @@ exports.AvroReadableFromStream = AvroReadableFromStream;
 
 /***/ }),
 
-/***/ 94875:
+/***/ 44778:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -80917,9 +80754,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AvroReader = void 0;
 // TODO: Do a review of non-interfaces
 /* eslint-disable @azure/azure-sdk/ts-use-interface-parameters */
-const AvroConstants_js_1 = __nccwpck_require__(58691);
-const AvroParser_js_1 = __nccwpck_require__(53355);
-const utils_common_js_1 = __nccwpck_require__(1142);
+const AvroConstants_js_1 = __nccwpck_require__(74916);
+const AvroParser_js_1 = __nccwpck_require__(898);
+const utils_common_js_1 = __nccwpck_require__(74135);
 class AvroReader {
     _dataStream;
     _headerStream;
@@ -81033,7 +80870,7 @@ exports.AvroReader = AvroReader;
 
 /***/ }),
 
-/***/ 71338:
+/***/ 51777:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -81041,17 +80878,17 @@ exports.AvroReader = AvroReader;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AvroReadableFromStream = exports.AvroReadable = exports.AvroReader = void 0;
-var AvroReader_js_1 = __nccwpck_require__(94875);
+var AvroReader_js_1 = __nccwpck_require__(44778);
 Object.defineProperty(exports, "AvroReader", ({ enumerable: true, get: function () { return AvroReader_js_1.AvroReader; } }));
-var AvroReadable_js_1 = __nccwpck_require__(92616);
+var AvroReadable_js_1 = __nccwpck_require__(20293);
 Object.defineProperty(exports, "AvroReadable", ({ enumerable: true, get: function () { return AvroReadable_js_1.AvroReadable; } }));
-var AvroReadableFromStream_js_1 = __nccwpck_require__(40092);
+var AvroReadableFromStream_js_1 = __nccwpck_require__(17537);
 Object.defineProperty(exports, "AvroReadableFromStream", ({ enumerable: true, get: function () { return AvroReadableFromStream_js_1.AvroReadableFromStream; } }));
 //# sourceMappingURL=index.js.map
 
 /***/ }),
 
-/***/ 1142:
+/***/ 74135:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -81076,7 +80913,7 @@ function arraysEqual(a, b) {
 
 /***/ }),
 
-/***/ 32763:
+/***/ 11872:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -81093,7 +80930,7 @@ exports.logger = (0, logger_1.createClientLogger)("storage-blob");
 
 /***/ }),
 
-/***/ 37647:
+/***/ 82834:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -81104,7 +80941,7 @@ exports.StorageBlobAudience = exports.PremiumPageBlobTier = exports.BlockBlobTie
 exports.toAccessTier = toAccessTier;
 exports.ensureCpkIfSpecified = ensureCpkIfSpecified;
 exports.getBlobServiceAccountAudience = getBlobServiceAccountAudience;
-const constants_js_1 = __nccwpck_require__(9386);
+const constants_js_1 = __nccwpck_require__(25097);
 /**
  * Represents the access tier on a blob.
  * For detailed information about block blob level tiering see {@link https://learn.microsoft.com/azure/storage/blobs/storage-blob-storage-tiers|Hot, cool and archive storage tiers.}
@@ -81220,990 +81057,7 @@ function getBlobServiceAccountAudience(storageAccountName) {
 
 /***/ }),
 
-/***/ 74090:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AnonymousCredentialPolicy = void 0;
-const CredentialPolicy_js_1 = __nccwpck_require__(39809);
-/**
- * AnonymousCredentialPolicy is used with HTTP(S) requests that read public resources
- * or for use with Shared Access Signatures (SAS).
- */
-class AnonymousCredentialPolicy extends CredentialPolicy_js_1.CredentialPolicy {
-    /**
-     * Creates an instance of AnonymousCredentialPolicy.
-     * @param nextPolicy -
-     * @param options -
-     */
-    // The base class has a protected constructor. Adding a public one to enable constructing of this class.
-    /* eslint-disable-next-line @typescript-eslint/no-useless-constructor*/
-    constructor(nextPolicy, options) {
-        super(nextPolicy, options);
-    }
-}
-exports.AnonymousCredentialPolicy = AnonymousCredentialPolicy;
-//# sourceMappingURL=AnonymousCredentialPolicy.js.map
-
-/***/ }),
-
-/***/ 39809:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CredentialPolicy = void 0;
-const RequestPolicy_js_1 = __nccwpck_require__(30679);
-/**
- * Credential policy used to sign HTTP(S) requests before sending. This is an
- * abstract class.
- */
-class CredentialPolicy extends RequestPolicy_js_1.BaseRequestPolicy {
-    /**
-     * Sends out request.
-     *
-     * @param request -
-     */
-    sendRequest(request) {
-        return this._nextPolicy.sendRequest(this.signRequest(request));
-    }
-    /**
-     * Child classes must implement this method with request signing. This method
-     * will be executed in {@link sendRequest}.
-     *
-     * @param request -
-     */
-    signRequest(request) {
-        // Child classes must override this method with request signing. This method
-        // will be executed in sendRequest().
-        return request;
-    }
-}
-exports.CredentialPolicy = CredentialPolicy;
-//# sourceMappingURL=CredentialPolicy.js.map
-
-/***/ }),
-
-/***/ 30679:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BaseRequestPolicy = void 0;
-/**
- * The base class from which all request policies derive.
- */
-class BaseRequestPolicy {
-    _nextPolicy;
-    _options;
-    /**
-     * The main method to implement that manipulates a request/response.
-     */
-    constructor(
-    /**
-     * The next policy in the pipeline. Each policy is responsible for executing the next one if the request is to continue through the pipeline.
-     */
-    _nextPolicy, 
-    /**
-     * The options that can be passed to a given request policy.
-     */
-    _options) {
-        this._nextPolicy = _nextPolicy;
-        this._options = _options;
-    }
-    /**
-     * Get whether or not a log with the provided log level should be logged.
-     * @param logLevel - The log level of the log that will be logged.
-     * @returns Whether or not a log with the provided log level should be logged.
-     */
-    shouldLog(logLevel) {
-        return this._options.shouldLog(logLevel);
-    }
-    /**
-     * Attempt to log the provided message to the provided logger. If no logger was provided or if
-     * the log level does not meat the logger's threshold, then nothing will be logged.
-     * @param logLevel - The log level of this log.
-     * @param message - The message of this log.
-     */
-    log(logLevel, message) {
-        this._options.log(logLevel, message);
-    }
-}
-exports.BaseRequestPolicy = BaseRequestPolicy;
-//# sourceMappingURL=RequestPolicy.js.map
-
-/***/ }),
-
-/***/ 66687:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.StorageBrowserPolicy = void 0;
-const RequestPolicy_js_1 = __nccwpck_require__(30679);
-const core_util_1 = __nccwpck_require__(33000);
-const constants_js_1 = __nccwpck_require__(9386);
-const utils_common_js_1 = __nccwpck_require__(98915);
-/**
- * StorageBrowserPolicy will handle differences between Node.js and browser runtime, including:
- *
- * 1. Browsers cache GET/HEAD requests by adding conditional headers such as 'IF_MODIFIED_SINCE'.
- * StorageBrowserPolicy is a policy used to add a timestamp query to GET/HEAD request URL
- * thus avoid the browser cache.
- *
- * 2. Remove cookie header for security
- *
- * 3. Remove content-length header to avoid browsers warning
- */
-class StorageBrowserPolicy extends RequestPolicy_js_1.BaseRequestPolicy {
-    /**
-     * Creates an instance of StorageBrowserPolicy.
-     * @param nextPolicy -
-     * @param options -
-     */
-    // The base class has a protected constructor. Adding a public one to enable constructing of this class.
-    /* eslint-disable-next-line @typescript-eslint/no-useless-constructor*/
-    constructor(nextPolicy, options) {
-        super(nextPolicy, options);
-    }
-    /**
-     * Sends out request.
-     *
-     * @param request -
-     */
-    async sendRequest(request) {
-        if (core_util_1.isNodeLike) {
-            return this._nextPolicy.sendRequest(request);
-        }
-        if (request.method.toUpperCase() === "GET" || request.method.toUpperCase() === "HEAD") {
-            request.url = (0, utils_common_js_1.setURLParameter)(request.url, constants_js_1.URLConstants.Parameters.FORCE_BROWSER_NO_CACHE, new Date().getTime().toString());
-        }
-        request.headers.remove(constants_js_1.HeaderConstants.COOKIE);
-        // According to XHR standards, content-length should be fully controlled by browsers
-        request.headers.remove(constants_js_1.HeaderConstants.CONTENT_LENGTH);
-        return this._nextPolicy.sendRequest(request);
-    }
-}
-exports.StorageBrowserPolicy = StorageBrowserPolicy;
-//# sourceMappingURL=StorageBrowserPolicy.js.map
-
-/***/ }),
-
-/***/ 12391:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.storageBrowserPolicyName = void 0;
-exports.storageBrowserPolicy = storageBrowserPolicy;
-const core_util_1 = __nccwpck_require__(33000);
-const constants_js_1 = __nccwpck_require__(9386);
-const utils_common_js_1 = __nccwpck_require__(98915);
-/**
- * The programmatic identifier of the StorageBrowserPolicy.
- */
-exports.storageBrowserPolicyName = "storageBrowserPolicy";
-/**
- * storageBrowserPolicy is a policy used to prevent browsers from caching requests
- * and to remove cookies and explicit content-length headers.
- */
-function storageBrowserPolicy() {
-    return {
-        name: exports.storageBrowserPolicyName,
-        async sendRequest(request, next) {
-            if (core_util_1.isNodeLike) {
-                return next(request);
-            }
-            if (request.method === "GET" || request.method === "HEAD") {
-                request.url = (0, utils_common_js_1.setURLParameter)(request.url, constants_js_1.URLConstants.Parameters.FORCE_BROWSER_NO_CACHE, new Date().getTime().toString());
-            }
-            request.headers.delete(constants_js_1.HeaderConstants.COOKIE);
-            // According to XHR standards, content-length should be fully controlled by browsers
-            request.headers.delete(constants_js_1.HeaderConstants.CONTENT_LENGTH);
-            return next(request);
-        },
-    };
-}
-//# sourceMappingURL=StorageBrowserPolicyV2.js.map
-
-/***/ }),
-
-/***/ 77348:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.storageCorrectContentLengthPolicyName = void 0;
-exports.storageCorrectContentLengthPolicy = storageCorrectContentLengthPolicy;
-const constants_js_1 = __nccwpck_require__(9386);
-/**
- * The programmatic identifier of the storageCorrectContentLengthPolicy.
- */
-exports.storageCorrectContentLengthPolicyName = "StorageCorrectContentLengthPolicy";
-/**
- * storageCorrectContentLengthPolicy to correctly set Content-Length header with request body length.
- */
-function storageCorrectContentLengthPolicy() {
-    function correctContentLength(request) {
-        if (request.body &&
-            (typeof request.body === "string" || Buffer.isBuffer(request.body)) &&
-            request.body.length > 0) {
-            request.headers.set(constants_js_1.HeaderConstants.CONTENT_LENGTH, Buffer.byteLength(request.body));
-        }
-    }
-    return {
-        name: exports.storageCorrectContentLengthPolicyName,
-        async sendRequest(request, next) {
-            correctContentLength(request);
-            return next(request);
-        },
-    };
-}
-//# sourceMappingURL=StorageCorrectContentLengthPolicy.js.map
-
-/***/ }),
-
-/***/ 21613:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.StorageRetryPolicy = void 0;
-exports.NewRetryPolicyFactory = NewRetryPolicyFactory;
-const abort_controller_1 = __nccwpck_require__(49797);
-const RequestPolicy_js_1 = __nccwpck_require__(30679);
-const constants_js_1 = __nccwpck_require__(9386);
-const utils_common_js_1 = __nccwpck_require__(98915);
-const log_js_1 = __nccwpck_require__(32763);
-const StorageRetryPolicyType_js_1 = __nccwpck_require__(26941);
-/**
- * A factory method used to generated a RetryPolicy factory.
- *
- * @param retryOptions -
- */
-function NewRetryPolicyFactory(retryOptions) {
-    return {
-        create: (nextPolicy, options) => {
-            return new StorageRetryPolicy(nextPolicy, options, retryOptions);
-        },
-    };
-}
-// Default values of StorageRetryOptions
-const DEFAULT_RETRY_OPTIONS = {
-    maxRetryDelayInMs: 120 * 1000,
-    maxTries: 4,
-    retryDelayInMs: 4 * 1000,
-    retryPolicyType: StorageRetryPolicyType_js_1.StorageRetryPolicyType.EXPONENTIAL,
-    secondaryHost: "",
-    tryTimeoutInMs: undefined, // Use server side default timeout strategy
-};
-const RETRY_ABORT_ERROR = new abort_controller_1.AbortError("The operation was aborted.");
-/**
- * Retry policy with exponential retry and linear retry implemented.
- */
-class StorageRetryPolicy extends RequestPolicy_js_1.BaseRequestPolicy {
-    /**
-     * RetryOptions.
-     */
-    retryOptions;
-    /**
-     * Creates an instance of RetryPolicy.
-     *
-     * @param nextPolicy -
-     * @param options -
-     * @param retryOptions -
-     */
-    constructor(nextPolicy, options, retryOptions = DEFAULT_RETRY_OPTIONS) {
-        super(nextPolicy, options);
-        // Initialize retry options
-        this.retryOptions = {
-            retryPolicyType: retryOptions.retryPolicyType
-                ? retryOptions.retryPolicyType
-                : DEFAULT_RETRY_OPTIONS.retryPolicyType,
-            maxTries: retryOptions.maxTries && retryOptions.maxTries >= 1
-                ? Math.floor(retryOptions.maxTries)
-                : DEFAULT_RETRY_OPTIONS.maxTries,
-            tryTimeoutInMs: retryOptions.tryTimeoutInMs && retryOptions.tryTimeoutInMs >= 0
-                ? retryOptions.tryTimeoutInMs
-                : DEFAULT_RETRY_OPTIONS.tryTimeoutInMs,
-            retryDelayInMs: retryOptions.retryDelayInMs && retryOptions.retryDelayInMs >= 0
-                ? Math.min(retryOptions.retryDelayInMs, retryOptions.maxRetryDelayInMs
-                    ? retryOptions.maxRetryDelayInMs
-                    : DEFAULT_RETRY_OPTIONS.maxRetryDelayInMs)
-                : DEFAULT_RETRY_OPTIONS.retryDelayInMs,
-            maxRetryDelayInMs: retryOptions.maxRetryDelayInMs && retryOptions.maxRetryDelayInMs >= 0
-                ? retryOptions.maxRetryDelayInMs
-                : DEFAULT_RETRY_OPTIONS.maxRetryDelayInMs,
-            secondaryHost: retryOptions.secondaryHost
-                ? retryOptions.secondaryHost
-                : DEFAULT_RETRY_OPTIONS.secondaryHost,
-        };
-    }
-    /**
-     * Sends request.
-     *
-     * @param request -
-     */
-    async sendRequest(request) {
-        return this.attemptSendRequest(request, false, 1);
-    }
-    /**
-     * Decide and perform next retry. Won't mutate request parameter.
-     *
-     * @param request -
-     * @param secondaryHas404 -  If attempt was against the secondary & it returned a StatusNotFound (404), then
-     *                                   the resource was not found. This may be due to replication delay. So, in this
-     *                                   case, we'll never try the secondary again for this operation.
-     * @param attempt -           How many retries has been attempted to performed, starting from 1, which includes
-     *                                   the attempt will be performed by this method call.
-     */
-    async attemptSendRequest(request, secondaryHas404, attempt) {
-        const newRequest = request.clone();
-        const isPrimaryRetry = secondaryHas404 ||
-            !this.retryOptions.secondaryHost ||
-            !(request.method === "GET" || request.method === "HEAD" || request.method === "OPTIONS") ||
-            attempt % 2 === 1;
-        if (!isPrimaryRetry) {
-            newRequest.url = (0, utils_common_js_1.setURLHost)(newRequest.url, this.retryOptions.secondaryHost);
-        }
-        // Set the server-side timeout query parameter "timeout=[seconds]"
-        if (this.retryOptions.tryTimeoutInMs) {
-            newRequest.url = (0, utils_common_js_1.setURLParameter)(newRequest.url, constants_js_1.URLConstants.Parameters.TIMEOUT, Math.floor(this.retryOptions.tryTimeoutInMs / 1000).toString());
-        }
-        let response;
-        try {
-            log_js_1.logger.info(`RetryPolicy: =====> Try=${attempt} ${isPrimaryRetry ? "Primary" : "Secondary"}`);
-            response = await this._nextPolicy.sendRequest(newRequest);
-            if (!this.shouldRetry(isPrimaryRetry, attempt, response)) {
-                return response;
-            }
-            secondaryHas404 = secondaryHas404 || (!isPrimaryRetry && response.status === 404);
-        }
-        catch (err) {
-            log_js_1.logger.error(`RetryPolicy: Caught error, message: ${err.message}, code: ${err.code}`);
-            if (!this.shouldRetry(isPrimaryRetry, attempt, response, err)) {
-                throw err;
-            }
-        }
-        await this.delay(isPrimaryRetry, attempt, request.abortSignal);
-        return this.attemptSendRequest(request, secondaryHas404, ++attempt);
-    }
-    /**
-     * Decide whether to retry according to last HTTP response and retry counters.
-     *
-     * @param isPrimaryRetry -
-     * @param attempt -
-     * @param response -
-     * @param err -
-     */
-    shouldRetry(isPrimaryRetry, attempt, response, err) {
-        if (attempt >= this.retryOptions.maxTries) {
-            log_js_1.logger.info(`RetryPolicy: Attempt(s) ${attempt} >= maxTries ${this.retryOptions
-                .maxTries}, no further try.`);
-            return false;
-        }
-        // Handle network failures, you may need to customize the list when you implement
-        // your own http client
-        const retriableErrors = [
-            "ETIMEDOUT",
-            "ESOCKETTIMEDOUT",
-            "ECONNREFUSED",
-            "ECONNRESET",
-            "ENOENT",
-            "ENOTFOUND",
-            "TIMEOUT",
-            "EPIPE",
-            "REQUEST_SEND_ERROR", // For default xhr based http client provided in ms-rest-js
-        ];
-        if (err) {
-            for (const retriableError of retriableErrors) {
-                if (err.name.toUpperCase().includes(retriableError) ||
-                    err.message.toUpperCase().includes(retriableError) ||
-                    (err.code && err.code.toString().toUpperCase() === retriableError)) {
-                    log_js_1.logger.info(`RetryPolicy: Network error ${retriableError} found, will retry.`);
-                    return true;
-                }
-            }
-        }
-        // If attempt was against the secondary & it returned a StatusNotFound (404), then
-        // the resource was not found. This may be due to replication delay. So, in this
-        // case, we'll never try the secondary again for this operation.
-        if (response || err) {
-            const statusCode = response ? response.status : err ? err.statusCode : 0;
-            if (!isPrimaryRetry && statusCode === 404) {
-                log_js_1.logger.info(`RetryPolicy: Secondary access with 404, will retry.`);
-                return true;
-            }
-            // Server internal error or server timeout
-            if (statusCode === 503 || statusCode === 500) {
-                log_js_1.logger.info(`RetryPolicy: Will retry for status code ${statusCode}.`);
-                return true;
-            }
-        }
-        if (response) {
-            // Retry select Copy Source Error Codes.
-            if (response?.status >= 400) {
-                const copySourceError = response.headers.get(constants_js_1.HeaderConstants.X_MS_CopySourceErrorCode);
-                if (copySourceError !== undefined) {
-                    switch (copySourceError) {
-                        case "InternalError":
-                        case "OperationTimedOut":
-                        case "ServerBusy":
-                            return true;
-                    }
-                }
-            }
-        }
-        if (err?.code === "PARSE_ERROR" && err?.message.startsWith(`Error "Error: Unclosed root tag`)) {
-            log_js_1.logger.info("RetryPolicy: Incomplete XML response likely due to service timeout, will retry.");
-            return true;
-        }
-        return false;
-    }
-    /**
-     * Delay a calculated time between retries.
-     *
-     * @param isPrimaryRetry -
-     * @param attempt -
-     * @param abortSignal -
-     */
-    async delay(isPrimaryRetry, attempt, abortSignal) {
-        let delayTimeInMs = 0;
-        if (isPrimaryRetry) {
-            switch (this.retryOptions.retryPolicyType) {
-                case StorageRetryPolicyType_js_1.StorageRetryPolicyType.EXPONENTIAL:
-                    delayTimeInMs = Math.min((Math.pow(2, attempt - 1) - 1) * this.retryOptions.retryDelayInMs, this.retryOptions.maxRetryDelayInMs);
-                    break;
-                case StorageRetryPolicyType_js_1.StorageRetryPolicyType.FIXED:
-                    delayTimeInMs = this.retryOptions.retryDelayInMs;
-                    break;
-            }
-        }
-        else {
-            delayTimeInMs = Math.random() * 1000;
-        }
-        log_js_1.logger.info(`RetryPolicy: Delay for ${delayTimeInMs}ms`);
-        return (0, utils_common_js_1.delay)(delayTimeInMs, abortSignal, RETRY_ABORT_ERROR);
-    }
-}
-exports.StorageRetryPolicy = StorageRetryPolicy;
-//# sourceMappingURL=StorageRetryPolicy.js.map
-
-/***/ }),
-
-/***/ 26941:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.StorageRetryPolicyType = void 0;
-/**
- * RetryPolicy types.
- */
-var StorageRetryPolicyType;
-(function (StorageRetryPolicyType) {
-    /**
-     * Exponential retry. Retry time delay grows exponentially.
-     */
-    StorageRetryPolicyType[StorageRetryPolicyType["EXPONENTIAL"] = 0] = "EXPONENTIAL";
-    /**
-     * Linear retry. Retry time delay grows linearly.
-     */
-    StorageRetryPolicyType[StorageRetryPolicyType["FIXED"] = 1] = "FIXED";
-})(StorageRetryPolicyType || (exports.StorageRetryPolicyType = StorageRetryPolicyType = {}));
-//# sourceMappingURL=StorageRetryPolicyType.js.map
-
-/***/ }),
-
-/***/ 46221:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.storageRetryPolicyName = void 0;
-exports.storageRetryPolicy = storageRetryPolicy;
-const abort_controller_1 = __nccwpck_require__(49797);
-const core_rest_pipeline_1 = __nccwpck_require__(81591);
-const core_util_1 = __nccwpck_require__(33000);
-const StorageRetryPolicyFactory_js_1 = __nccwpck_require__(64574);
-const constants_js_1 = __nccwpck_require__(9386);
-const utils_common_js_1 = __nccwpck_require__(98915);
-const log_js_1 = __nccwpck_require__(32763);
-/**
- * Name of the {@link storageRetryPolicy}
- */
-exports.storageRetryPolicyName = "storageRetryPolicy";
-// Default values of StorageRetryOptions
-const DEFAULT_RETRY_OPTIONS = {
-    maxRetryDelayInMs: 120 * 1000,
-    maxTries: 4,
-    retryDelayInMs: 4 * 1000,
-    retryPolicyType: StorageRetryPolicyFactory_js_1.StorageRetryPolicyType.EXPONENTIAL,
-    secondaryHost: "",
-    tryTimeoutInMs: undefined, // Use server side default timeout strategy
-};
-const retriableErrors = [
-    "ETIMEDOUT",
-    "ESOCKETTIMEDOUT",
-    "ECONNREFUSED",
-    "ECONNRESET",
-    "ENOENT",
-    "ENOTFOUND",
-    "TIMEOUT",
-    "EPIPE",
-    "REQUEST_SEND_ERROR",
-];
-const RETRY_ABORT_ERROR = new abort_controller_1.AbortError("The operation was aborted.");
-/**
- * Retry policy with exponential retry and linear retry implemented.
- */
-function storageRetryPolicy(options = {}) {
-    const retryPolicyType = options.retryPolicyType ?? DEFAULT_RETRY_OPTIONS.retryPolicyType;
-    const maxTries = options.maxTries ?? DEFAULT_RETRY_OPTIONS.maxTries;
-    const retryDelayInMs = options.retryDelayInMs ?? DEFAULT_RETRY_OPTIONS.retryDelayInMs;
-    const maxRetryDelayInMs = options.maxRetryDelayInMs ?? DEFAULT_RETRY_OPTIONS.maxRetryDelayInMs;
-    const secondaryHost = options.secondaryHost ?? DEFAULT_RETRY_OPTIONS.secondaryHost;
-    const tryTimeoutInMs = options.tryTimeoutInMs ?? DEFAULT_RETRY_OPTIONS.tryTimeoutInMs;
-    function shouldRetry({ isPrimaryRetry, attempt, response, error, }) {
-        if (attempt >= maxTries) {
-            log_js_1.logger.info(`RetryPolicy: Attempt(s) ${attempt} >= maxTries ${maxTries}, no further try.`);
-            return false;
-        }
-        if (error) {
-            for (const retriableError of retriableErrors) {
-                if (error.name.toUpperCase().includes(retriableError) ||
-                    error.message.toUpperCase().includes(retriableError) ||
-                    (error.code && error.code.toString().toUpperCase() === retriableError)) {
-                    log_js_1.logger.info(`RetryPolicy: Network error ${retriableError} found, will retry.`);
-                    return true;
-                }
-            }
-            if (error?.code === "PARSE_ERROR" &&
-                error?.message.startsWith(`Error "Error: Unclosed root tag`)) {
-                log_js_1.logger.info("RetryPolicy: Incomplete XML response likely due to service timeout, will retry.");
-                return true;
-            }
-        }
-        // If attempt was against the secondary & it returned a StatusNotFound (404), then
-        // the resource was not found. This may be due to replication delay. So, in this
-        // case, we'll never try the secondary again for this operation.
-        if (response || error) {
-            const statusCode = response?.status ?? error?.statusCode ?? 0;
-            if (!isPrimaryRetry && statusCode === 404) {
-                log_js_1.logger.info(`RetryPolicy: Secondary access with 404, will retry.`);
-                return true;
-            }
-            // Server internal error or server timeout
-            if (statusCode === 503 || statusCode === 500) {
-                log_js_1.logger.info(`RetryPolicy: Will retry for status code ${statusCode}.`);
-                return true;
-            }
-        }
-        if (response) {
-            // Retry select Copy Source Error Codes.
-            if (response?.status >= 400) {
-                const copySourceError = response.headers.get(constants_js_1.HeaderConstants.X_MS_CopySourceErrorCode);
-                if (copySourceError !== undefined) {
-                    switch (copySourceError) {
-                        case "InternalError":
-                        case "OperationTimedOut":
-                        case "ServerBusy":
-                            return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-    function calculateDelay(isPrimaryRetry, attempt) {
-        let delayTimeInMs = 0;
-        if (isPrimaryRetry) {
-            switch (retryPolicyType) {
-                case StorageRetryPolicyFactory_js_1.StorageRetryPolicyType.EXPONENTIAL:
-                    delayTimeInMs = Math.min((Math.pow(2, attempt - 1) - 1) * retryDelayInMs, maxRetryDelayInMs);
-                    break;
-                case StorageRetryPolicyFactory_js_1.StorageRetryPolicyType.FIXED:
-                    delayTimeInMs = retryDelayInMs;
-                    break;
-            }
-        }
-        else {
-            delayTimeInMs = Math.random() * 1000;
-        }
-        log_js_1.logger.info(`RetryPolicy: Delay for ${delayTimeInMs}ms`);
-        return delayTimeInMs;
-    }
-    return {
-        name: exports.storageRetryPolicyName,
-        async sendRequest(request, next) {
-            // Set the server-side timeout query parameter "timeout=[seconds]"
-            if (tryTimeoutInMs) {
-                request.url = (0, utils_common_js_1.setURLParameter)(request.url, constants_js_1.URLConstants.Parameters.TIMEOUT, String(Math.floor(tryTimeoutInMs / 1000)));
-            }
-            const primaryUrl = request.url;
-            const secondaryUrl = secondaryHost ? (0, utils_common_js_1.setURLHost)(request.url, secondaryHost) : undefined;
-            let secondaryHas404 = false;
-            let attempt = 1;
-            let retryAgain = true;
-            let response;
-            let error;
-            while (retryAgain) {
-                const isPrimaryRetry = secondaryHas404 ||
-                    !secondaryUrl ||
-                    !["GET", "HEAD", "OPTIONS"].includes(request.method) ||
-                    attempt % 2 === 1;
-                request.url = isPrimaryRetry ? primaryUrl : secondaryUrl;
-                response = undefined;
-                error = undefined;
-                try {
-                    log_js_1.logger.info(`RetryPolicy: =====> Try=${attempt} ${isPrimaryRetry ? "Primary" : "Secondary"}`);
-                    response = await next(request);
-                    secondaryHas404 = secondaryHas404 || (!isPrimaryRetry && response.status === 404);
-                }
-                catch (e) {
-                    if ((0, core_rest_pipeline_1.isRestError)(e)) {
-                        log_js_1.logger.error(`RetryPolicy: Caught error, message: ${e.message}, code: ${e.code}`);
-                        error = e;
-                    }
-                    else {
-                        log_js_1.logger.error(`RetryPolicy: Caught error, message: ${(0, core_util_1.getErrorMessage)(e)}`);
-                        throw e;
-                    }
-                }
-                retryAgain = shouldRetry({ isPrimaryRetry, attempt, response, error });
-                if (retryAgain) {
-                    await (0, utils_common_js_1.delay)(calculateDelay(isPrimaryRetry, attempt), request.abortSignal, RETRY_ABORT_ERROR);
-                }
-                attempt++;
-            }
-            if (response) {
-                return response;
-            }
-            throw error ?? new core_rest_pipeline_1.RestError("RetryPolicy failed without known error.");
-        },
-    };
-}
-//# sourceMappingURL=StorageRetryPolicyV2.js.map
-
-/***/ }),
-
-/***/ 47318:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.StorageSharedKeyCredentialPolicy = void 0;
-const constants_js_1 = __nccwpck_require__(9386);
-const utils_common_js_1 = __nccwpck_require__(98915);
-const CredentialPolicy_js_1 = __nccwpck_require__(39809);
-const SharedKeyComparator_js_1 = __nccwpck_require__(81179);
-/**
- * StorageSharedKeyCredentialPolicy is a policy used to sign HTTP request with a shared key.
- */
-class StorageSharedKeyCredentialPolicy extends CredentialPolicy_js_1.CredentialPolicy {
-    /**
-     * Reference to StorageSharedKeyCredential which generates StorageSharedKeyCredentialPolicy
-     */
-    factory;
-    /**
-     * Creates an instance of StorageSharedKeyCredentialPolicy.
-     * @param nextPolicy -
-     * @param options -
-     * @param factory -
-     */
-    constructor(nextPolicy, options, factory) {
-        super(nextPolicy, options);
-        this.factory = factory;
-    }
-    /**
-     * Signs request.
-     *
-     * @param request -
-     */
-    signRequest(request) {
-        request.headers.set(constants_js_1.HeaderConstants.X_MS_DATE, new Date().toUTCString());
-        if (request.body &&
-            (typeof request.body === "string" || request.body !== undefined) &&
-            request.body.length > 0) {
-            request.headers.set(constants_js_1.HeaderConstants.CONTENT_LENGTH, Buffer.byteLength(request.body));
-        }
-        const stringToSign = [
-            request.method.toUpperCase(),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_LANGUAGE),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_ENCODING),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_LENGTH),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_MD5),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_TYPE),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.DATE),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.IF_MODIFIED_SINCE),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.IF_MATCH),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.IF_NONE_MATCH),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.IF_UNMODIFIED_SINCE),
-            this.getHeaderValueToSign(request, constants_js_1.HeaderConstants.RANGE),
-        ].join("\n") +
-            "\n" +
-            this.getCanonicalizedHeadersString(request) +
-            this.getCanonicalizedResourceString(request);
-        const signature = this.factory.computeHMACSHA256(stringToSign);
-        request.headers.set(constants_js_1.HeaderConstants.AUTHORIZATION, `SharedKey ${this.factory.accountName}:${signature}`);
-        // console.log(`[URL]:${request.url}`);
-        // console.log(`[HEADERS]:${request.headers.toString()}`);
-        // console.log(`[STRING TO SIGN]:${JSON.stringify(stringToSign)}`);
-        // console.log(`[KEY]: ${request.headers.get(HeaderConstants.AUTHORIZATION)}`);
-        return request;
-    }
-    /**
-     * Retrieve header value according to shared key sign rules.
-     * @see https://learn.microsoft.com/rest/api/storageservices/authenticate-with-shared-key
-     *
-     * @param request -
-     * @param headerName -
-     */
-    getHeaderValueToSign(request, headerName) {
-        const value = request.headers.get(headerName);
-        if (!value) {
-            return "";
-        }
-        // When using version 2015-02-21 or later, if Content-Length is zero, then
-        // set the Content-Length part of the StringToSign to an empty string.
-        // https://learn.microsoft.com/rest/api/storageservices/authenticate-with-shared-key
-        if (headerName === constants_js_1.HeaderConstants.CONTENT_LENGTH && value === "0") {
-            return "";
-        }
-        return value;
-    }
-    /**
-     * To construct the CanonicalizedHeaders portion of the signature string, follow these steps:
-     * 1. Retrieve all headers for the resource that begin with x-ms-, including the x-ms-date header.
-     * 2. Convert each HTTP header name to lowercase.
-     * 3. Sort the headers lexicographically by header name, in ascending order.
-     *    Each header may appear only once in the string.
-     * 4. Replace any linear whitespace in the header value with a single space.
-     * 5. Trim any whitespace around the colon in the header.
-     * 6. Finally, append a new-line character to each canonicalized header in the resulting list.
-     *    Construct the CanonicalizedHeaders string by concatenating all headers in this list into a single string.
-     *
-     * @param request -
-     */
-    getCanonicalizedHeadersString(request) {
-        let headersArray = request.headers.headersArray().filter((value) => {
-            return value.name.toLowerCase().startsWith(constants_js_1.HeaderConstants.PREFIX_FOR_STORAGE);
-        });
-        headersArray.sort((a, b) => {
-            return (0, SharedKeyComparator_js_1.compareHeader)(a.name.toLowerCase(), b.name.toLowerCase());
-        });
-        // Remove duplicate headers
-        headersArray = headersArray.filter((value, index, array) => {
-            if (index > 0 && value.name.toLowerCase() === array[index - 1].name.toLowerCase()) {
-                return false;
-            }
-            return true;
-        });
-        let canonicalizedHeadersStringToSign = "";
-        headersArray.forEach((header) => {
-            canonicalizedHeadersStringToSign += `${header.name
-                .toLowerCase()
-                .trimRight()}:${header.value.trimLeft()}\n`;
-        });
-        return canonicalizedHeadersStringToSign;
-    }
-    /**
-     * Retrieves the webResource canonicalized resource string.
-     *
-     * @param request -
-     */
-    getCanonicalizedResourceString(request) {
-        const path = (0, utils_common_js_1.getURLPath)(request.url) || "/";
-        let canonicalizedResourceString = "";
-        canonicalizedResourceString += `/${this.factory.accountName}${path}`;
-        const queries = (0, utils_common_js_1.getURLQueries)(request.url);
-        const lowercaseQueries = {};
-        if (queries) {
-            const queryKeys = [];
-            for (const key in queries) {
-                if (Object.prototype.hasOwnProperty.call(queries, key)) {
-                    const lowercaseKey = key.toLowerCase();
-                    lowercaseQueries[lowercaseKey] = queries[key];
-                    queryKeys.push(lowercaseKey);
-                }
-            }
-            queryKeys.sort();
-            for (const key of queryKeys) {
-                canonicalizedResourceString += `\n${key}:${decodeURIComponent(lowercaseQueries[key])}`;
-            }
-        }
-        return canonicalizedResourceString;
-    }
-}
-exports.StorageSharedKeyCredentialPolicy = StorageSharedKeyCredentialPolicy;
-//# sourceMappingURL=StorageSharedKeyCredentialPolicy.js.map
-
-/***/ }),
-
-/***/ 61154:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.storageSharedKeyCredentialPolicyName = void 0;
-exports.storageSharedKeyCredentialPolicy = storageSharedKeyCredentialPolicy;
-const node_crypto_1 = __nccwpck_require__(77598);
-const constants_js_1 = __nccwpck_require__(9386);
-const utils_common_js_1 = __nccwpck_require__(98915);
-const SharedKeyComparator_js_1 = __nccwpck_require__(81179);
-/**
- * The programmatic identifier of the storageSharedKeyCredentialPolicy.
- */
-exports.storageSharedKeyCredentialPolicyName = "storageSharedKeyCredentialPolicy";
-/**
- * storageSharedKeyCredentialPolicy handles signing requests using storage account keys.
- */
-function storageSharedKeyCredentialPolicy(options) {
-    function signRequest(request) {
-        request.headers.set(constants_js_1.HeaderConstants.X_MS_DATE, new Date().toUTCString());
-        if (request.body &&
-            (typeof request.body === "string" || Buffer.isBuffer(request.body)) &&
-            request.body.length > 0) {
-            request.headers.set(constants_js_1.HeaderConstants.CONTENT_LENGTH, Buffer.byteLength(request.body));
-        }
-        const stringToSign = [
-            request.method.toUpperCase(),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_LANGUAGE),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_ENCODING),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_LENGTH),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_MD5),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.CONTENT_TYPE),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.DATE),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.IF_MODIFIED_SINCE),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.IF_MATCH),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.IF_NONE_MATCH),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.IF_UNMODIFIED_SINCE),
-            getHeaderValueToSign(request, constants_js_1.HeaderConstants.RANGE),
-        ].join("\n") +
-            "\n" +
-            getCanonicalizedHeadersString(request) +
-            getCanonicalizedResourceString(request);
-        const signature = (0, node_crypto_1.createHmac)("sha256", options.accountKey)
-            .update(stringToSign, "utf8")
-            .digest("base64");
-        request.headers.set(constants_js_1.HeaderConstants.AUTHORIZATION, `SharedKey ${options.accountName}:${signature}`);
-        // console.log(`[URL]:${request.url}`);
-        // console.log(`[HEADERS]:${request.headers.toString()}`);
-        // console.log(`[STRING TO SIGN]:${JSON.stringify(stringToSign)}`);
-        // console.log(`[KEY]: ${request.headers.get(HeaderConstants.AUTHORIZATION)}`);
-    }
-    /**
-     * Retrieve header value according to shared key sign rules.
-     * @see https://learn.microsoft.com/rest/api/storageservices/authenticate-with-shared-key
-     */
-    function getHeaderValueToSign(request, headerName) {
-        const value = request.headers.get(headerName);
-        if (!value) {
-            return "";
-        }
-        // When using version 2015-02-21 or later, if Content-Length is zero, then
-        // set the Content-Length part of the StringToSign to an empty string.
-        // https://learn.microsoft.com/rest/api/storageservices/authenticate-with-shared-key
-        if (headerName === constants_js_1.HeaderConstants.CONTENT_LENGTH && value === "0") {
-            return "";
-        }
-        return value;
-    }
-    /**
-     * To construct the CanonicalizedHeaders portion of the signature string, follow these steps:
-     * 1. Retrieve all headers for the resource that begin with x-ms-, including the x-ms-date header.
-     * 2. Convert each HTTP header name to lowercase.
-     * 3. Sort the headers lexicographically by header name, in ascending order.
-     *    Each header may appear only once in the string.
-     * 4. Replace any linear whitespace in the header value with a single space.
-     * 5. Trim any whitespace around the colon in the header.
-     * 6. Finally, append a new-line character to each canonicalized header in the resulting list.
-     *    Construct the CanonicalizedHeaders string by concatenating all headers in this list into a single string.
-     *
-     */
-    function getCanonicalizedHeadersString(request) {
-        let headersArray = [];
-        for (const [name, value] of request.headers) {
-            if (name.toLowerCase().startsWith(constants_js_1.HeaderConstants.PREFIX_FOR_STORAGE)) {
-                headersArray.push({ name, value });
-            }
-        }
-        headersArray.sort((a, b) => {
-            return (0, SharedKeyComparator_js_1.compareHeader)(a.name.toLowerCase(), b.name.toLowerCase());
-        });
-        // Remove duplicate headers
-        headersArray = headersArray.filter((value, index, array) => {
-            if (index > 0 && value.name.toLowerCase() === array[index - 1].name.toLowerCase()) {
-                return false;
-            }
-            return true;
-        });
-        let canonicalizedHeadersStringToSign = "";
-        headersArray.forEach((header) => {
-            canonicalizedHeadersStringToSign += `${header.name
-                .toLowerCase()
-                .trimRight()}:${header.value.trimLeft()}\n`;
-        });
-        return canonicalizedHeadersStringToSign;
-    }
-    function getCanonicalizedResourceString(request) {
-        const path = (0, utils_common_js_1.getURLPath)(request.url) || "/";
-        let canonicalizedResourceString = "";
-        canonicalizedResourceString += `/${options.accountName}${path}`;
-        const queries = (0, utils_common_js_1.getURLQueries)(request.url);
-        const lowercaseQueries = {};
-        if (queries) {
-            const queryKeys = [];
-            for (const key in queries) {
-                if (Object.prototype.hasOwnProperty.call(queries, key)) {
-                    const lowercaseKey = key.toLowerCase();
-                    lowercaseQueries[lowercaseKey] = queries[key];
-                    queryKeys.push(lowercaseKey);
-                }
-            }
-            queryKeys.sort();
-            for (const key of queryKeys) {
-                canonicalizedResourceString += `\n${key}:${decodeURIComponent(lowercaseQueries[key])}`;
-            }
-        }
-        return canonicalizedResourceString;
-    }
-    return {
-        name: exports.storageSharedKeyCredentialPolicyName,
-        async sendRequest(request, next) {
-            signRequest(request);
-            return next(request);
-        },
-    };
-}
-//# sourceMappingURL=StorageSharedKeyCredentialPolicyV2.js.map
-
-/***/ }),
-
-/***/ 22958:
+/***/ 28159:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -82347,7 +81201,7 @@ function makeBlobBeginCopyFromURLPollOperation(state) {
 
 /***/ }),
 
-/***/ 56139:
+/***/ 78008:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -82582,7 +81436,7 @@ exports.AccountSASPermissions = AccountSASPermissions;
 
 /***/ }),
 
-/***/ 49286:
+/***/ 29757:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -82662,7 +81516,7 @@ exports.AccountSASResourceTypes = AccountSASResourceTypes;
 
 /***/ }),
 
-/***/ 89159:
+/***/ 63638:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -82750,7 +81604,7 @@ exports.AccountSASServices = AccountSASServices;
 
 /***/ }),
 
-/***/ 10319:
+/***/ 10928:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -82759,13 +81613,13 @@ exports.AccountSASServices = AccountSASServices;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.generateAccountSASQueryParameters = generateAccountSASQueryParameters;
 exports.generateAccountSASQueryParametersInternal = generateAccountSASQueryParametersInternal;
-const AccountSASPermissions_js_1 = __nccwpck_require__(56139);
-const AccountSASResourceTypes_js_1 = __nccwpck_require__(49286);
-const AccountSASServices_js_1 = __nccwpck_require__(89159);
-const SasIPRange_js_1 = __nccwpck_require__(98562);
-const SASQueryParameters_js_1 = __nccwpck_require__(65424);
-const constants_js_1 = __nccwpck_require__(9386);
-const utils_common_js_1 = __nccwpck_require__(98915);
+const AccountSASPermissions_js_1 = __nccwpck_require__(78008);
+const AccountSASResourceTypes_js_1 = __nccwpck_require__(29757);
+const AccountSASServices_js_1 = __nccwpck_require__(63638);
+const SasIPRange_js_1 = __nccwpck_require__(58667);
+const SASQueryParameters_js_1 = __nccwpck_require__(78285);
+const constants_js_1 = __nccwpck_require__(25097);
+const utils_common_js_1 = __nccwpck_require__(43542);
 /**
  * ONLY AVAILABLE IN NODE.JS RUNTIME.
  *
@@ -82860,7 +81714,7 @@ function generateAccountSASQueryParametersInternal(accountSASSignatureValues, sh
 
 /***/ }),
 
-/***/ 7831:
+/***/ 75490:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -83063,7 +81917,7 @@ exports.BlobSASPermissions = BlobSASPermissions;
 
 /***/ }),
 
-/***/ 38147:
+/***/ 22794:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -83072,25 +81926,25 @@ exports.generateBlobSASQueryParameters = generateBlobSASQueryParameters;
 exports.generateBlobSASQueryParametersInternal = generateBlobSASQueryParametersInternal;
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-const BlobSASPermissions_js_1 = __nccwpck_require__(7831);
-const ContainerSASPermissions_js_1 = __nccwpck_require__(32739);
-const StorageSharedKeyCredential_js_1 = __nccwpck_require__(64220);
-const UserDelegationKeyCredential_js_1 = __nccwpck_require__(20061);
-const SasIPRange_js_1 = __nccwpck_require__(98562);
-const SASQueryParameters_js_1 = __nccwpck_require__(65424);
-const constants_js_1 = __nccwpck_require__(9386);
-const utils_common_js_1 = __nccwpck_require__(98915);
+const BlobSASPermissions_js_1 = __nccwpck_require__(75490);
+const ContainerSASPermissions_js_1 = __nccwpck_require__(94068);
+const storage_common_1 = __nccwpck_require__(55637);
+const SasIPRange_js_1 = __nccwpck_require__(58667);
+const SASQueryParameters_js_1 = __nccwpck_require__(78285);
+const constants_js_1 = __nccwpck_require__(25097);
+const utils_common_js_1 = __nccwpck_require__(43542);
+const storage_common_2 = __nccwpck_require__(55637);
 function generateBlobSASQueryParameters(blobSASSignatureValues, sharedKeyCredentialOrUserDelegationKey, accountName) {
     return generateBlobSASQueryParametersInternal(blobSASSignatureValues, sharedKeyCredentialOrUserDelegationKey, accountName).sasQueryParameters;
 }
 function generateBlobSASQueryParametersInternal(blobSASSignatureValues, sharedKeyCredentialOrUserDelegationKey, accountName) {
     const version = blobSASSignatureValues.version ? blobSASSignatureValues.version : constants_js_1.SERVICE_VERSION;
-    const sharedKeyCredential = sharedKeyCredentialOrUserDelegationKey instanceof StorageSharedKeyCredential_js_1.StorageSharedKeyCredential
+    const sharedKeyCredential = sharedKeyCredentialOrUserDelegationKey instanceof storage_common_1.StorageSharedKeyCredential
         ? sharedKeyCredentialOrUserDelegationKey
         : undefined;
     let userDelegationKeyCredential;
     if (sharedKeyCredential === undefined && accountName !== undefined) {
-        userDelegationKeyCredential = new UserDelegationKeyCredential_js_1.UserDelegationKeyCredential(accountName, sharedKeyCredentialOrUserDelegationKey);
+        userDelegationKeyCredential = new storage_common_2.UserDelegationKeyCredential(accountName, sharedKeyCredentialOrUserDelegationKey);
     }
     if (sharedKeyCredential === undefined && userDelegationKeyCredential === undefined) {
         throw TypeError("Invalid sharedKeyCredential, userDelegationKey or accountName.");
@@ -83653,7 +82507,7 @@ function generateBlobSASQueryParametersUDK20250705(blobSASSignatureValues, userD
         undefined, // agentObjectId
         blobSASSignatureValues.correlationId,
         undefined, // SignedKeyDelegatedUserTenantId, will be added in a future release.
-        undefined, // SignedDelegatedUserObjectId, will be added in future release.
+        blobSASSignatureValues.delegatedUserObjectId,
         blobSASSignatureValues.ipRange ? (0, SasIPRange_js_1.ipRangeToString)(blobSASSignatureValues.ipRange) : "",
         blobSASSignatureValues.protocol ? blobSASSignatureValues.protocol : "",
         blobSASSignatureValues.version,
@@ -83668,7 +82522,7 @@ function generateBlobSASQueryParametersUDK20250705(blobSASSignatureValues, userD
     ].join("\n");
     const signature = userDelegationKeyCredential.computeHMACSHA256(stringToSign);
     return {
-        sasQueryParameters: new SASQueryParameters_js_1.SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope),
+        sasQueryParameters: new SASQueryParameters_js_1.SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope, blobSASSignatureValues.delegatedUserObjectId),
         stringToSign: stringToSign,
     };
 }
@@ -83739,7 +82593,7 @@ function SASSignatureValuesSanityCheckAndAutofill(blobSASSignatureValues) {
 
 /***/ }),
 
-/***/ 32739:
+/***/ 94068:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -83968,7 +82822,7 @@ exports.ContainerSASPermissions = ContainerSASPermissions;
 
 /***/ }),
 
-/***/ 65424:
+/***/ 78285:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -83976,8 +82830,8 @@ exports.ContainerSASPermissions = ContainerSASPermissions;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SASQueryParameters = exports.SASProtocol = void 0;
-const SasIPRange_js_1 = __nccwpck_require__(98562);
-const utils_common_js_1 = __nccwpck_require__(98915);
+const SasIPRange_js_1 = __nccwpck_require__(58667);
+const utils_common_js_1 = __nccwpck_require__(43542);
 /**
  * Protocols for generated SAS.
  */
@@ -84040,6 +82894,12 @@ class SASQueryParameters {
      * @see https://learn.microsoft.com/rest/api/storageservices/establishing-a-stored-access-policy
      */
     identifier;
+    /**
+     * Optional. Beginning in version 2025-07-05, this value specifies the Entra ID of the user would is authorized to
+     * use the resulting SAS URL.  The resulting SAS URL must be used in conjunction with an Entra ID token that has been
+     * issued to the user specified in this value.
+     */
+    delegatedUserObjectId;
     /**
      * Optional. Encryption scope to use when sending requests authorized with this SAS URI.
      */
@@ -84133,7 +82993,7 @@ class SASQueryParameters {
         }
         return undefined;
     }
-    constructor(version, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType, userDelegationKey, preauthorizedAgentObjectId, correlationId, encryptionScope) {
+    constructor(version, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType, userDelegationKey, preauthorizedAgentObjectId, correlationId, encryptionScope, delegatedUserObjectId) {
         this.version = version;
         this.signature = signature;
         if (permissionsOrOptions !== undefined && typeof permissionsOrOptions !== "string") {
@@ -84146,6 +83006,7 @@ class SASQueryParameters {
             this.expiresOn = permissionsOrOptions.expiresOn;
             this.ipRangeInner = permissionsOrOptions.ipRange;
             this.identifier = permissionsOrOptions.identifier;
+            this.delegatedUserObjectId = permissionsOrOptions.delegatedUserObjectId;
             this.encryptionScope = permissionsOrOptions.encryptionScope;
             this.resource = permissionsOrOptions.resource;
             this.cacheControl = permissionsOrOptions.cacheControl;
@@ -84172,6 +83033,7 @@ class SASQueryParameters {
             this.protocol = protocol;
             this.startsOn = startsOn;
             this.ipRangeInner = ipRange;
+            this.delegatedUserObjectId = delegatedUserObjectId;
             this.encryptionScope = encryptionScope;
             this.identifier = identifier;
             this.resource = resource;
@@ -84223,6 +83085,7 @@ class SASQueryParameters {
             "rsct",
             "saoid",
             "scid",
+            "sduoid", // Signed key user delegation object ID
         ];
         const queries = [];
         for (const param of params) {
@@ -84302,6 +83165,9 @@ class SASQueryParameters {
                 case "scid":
                     this.tryAppendQueryParameter(queries, param, this.correlationId);
                     break;
+                case "sduoid":
+                    this.tryAppendQueryParameter(queries, param, this.delegatedUserObjectId);
+                    break;
             }
         }
         return queries.join("&");
@@ -84329,7 +83195,7 @@ exports.SASQueryParameters = SASQueryParameters;
 
 /***/ }),
 
-/***/ 98562:
+/***/ 58667:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -84351,7 +83217,7 @@ function ipRangeToString(ipRange) {
 
 /***/ }),
 
-/***/ 14539:
+/***/ 19988:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -84491,7 +83357,7 @@ exports.Batch = Batch;
 
 /***/ }),
 
-/***/ 17097:
+/***/ 55980:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -84500,7 +83366,7 @@ exports.Batch = Batch;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BlobQuickQueryStream = void 0;
 const node_stream_1 = __nccwpck_require__(57075);
-const index_js_1 = __nccwpck_require__(71338);
+const index_js_1 = __nccwpck_require__(51777);
 /**
  * ONLY AVAILABLE IN NODE.JS RUNTIME.
  *
@@ -84617,7 +83483,7 @@ exports.BlobQuickQueryStream = BlobQuickQueryStream;
 
 /***/ }),
 
-/***/ 39948:
+/***/ 91903:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -84692,7 +83558,7 @@ exports.Mutex = Mutex;
 
 /***/ }),
 
-/***/ 81473:
+/***/ 62910:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -84829,89 +83695,7 @@ exports.RetriableReadableStream = RetriableReadableStream;
 
 /***/ }),
 
-/***/ 81179:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.compareHeader = compareHeader;
-/*
- * We need to imitate .Net culture-aware sorting, which is used in storage service.
- * Below tables contain sort-keys for en-US culture.
- */
-const table_lv0 = new Uint32Array([
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x71c, 0x0, 0x71f, 0x721,
-    0x723, 0x725, 0x0, 0x0, 0x0, 0x72d, 0x803, 0x0, 0x0, 0x733, 0x0, 0xd03, 0xd1a, 0xd1c, 0xd1e,
-    0xd20, 0xd22, 0xd24, 0xd26, 0xd28, 0xd2a, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe02, 0xe09, 0xe0a,
-    0xe1a, 0xe21, 0xe23, 0xe25, 0xe2c, 0xe32, 0xe35, 0xe36, 0xe48, 0xe51, 0xe70, 0xe7c, 0xe7e, 0xe89,
-    0xe8a, 0xe91, 0xe99, 0xe9f, 0xea2, 0xea4, 0xea6, 0xea7, 0xea9, 0x0, 0x0, 0x0, 0x743, 0x744, 0x748,
-    0xe02, 0xe09, 0xe0a, 0xe1a, 0xe21, 0xe23, 0xe25, 0xe2c, 0xe32, 0xe35, 0xe36, 0xe48, 0xe51, 0xe70,
-    0xe7c, 0xe7e, 0xe89, 0xe8a, 0xe91, 0xe99, 0xe9f, 0xea2, 0xea4, 0xea6, 0xea7, 0xea9, 0x0, 0x74c,
-    0x0, 0x750, 0x0,
-]);
-const table_lv2 = new Uint32Array([
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12,
-    0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12,
-    0x12, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-]);
-const table_lv4 = new Uint32Array([
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x8012, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8212, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-]);
-function compareHeader(lhs, rhs) {
-    if (isLessThan(lhs, rhs))
-        return -1;
-    return 1;
-}
-function isLessThan(lhs, rhs) {
-    const tables = [table_lv0, table_lv2, table_lv4];
-    let curr_level = 0;
-    let i = 0;
-    let j = 0;
-    while (curr_level < tables.length) {
-        if (curr_level === tables.length - 1 && i !== j) {
-            return i > j;
-        }
-        const weight1 = i < lhs.length ? tables[curr_level][lhs[i].charCodeAt(0)] : 0x1;
-        const weight2 = j < rhs.length ? tables[curr_level][rhs[j].charCodeAt(0)] : 0x1;
-        if (weight1 === 0x1 && weight2 === 0x1) {
-            i = 0;
-            j = 0;
-            ++curr_level;
-        }
-        else if (weight1 === weight2) {
-            ++i;
-            ++j;
-        }
-        else if (weight1 === 0) {
-            ++i;
-        }
-        else if (weight2 === 0) {
-            ++j;
-        }
-        else {
-            return weight1 < weight2;
-        }
-    }
-    return false;
-}
-//# sourceMappingURL=SharedKeyComparator.js.map
-
-/***/ }),
-
-/***/ 9386:
+/***/ 25097:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -84919,8 +83703,8 @@ function isLessThan(lhs, rhs) {
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PathStylePorts = exports.BlobDoesNotUseCustomerSpecifiedEncryption = exports.BlobUsesCustomerSpecifiedEncryptionMsg = exports.StorageBlobLoggingAllowedQueryParameters = exports.StorageBlobLoggingAllowedHeaderNames = exports.DevelopmentConnectionString = exports.EncryptionAlgorithmAES25 = exports.HTTP_VERSION_1_1 = exports.HTTP_LINE_ENDING = exports.BATCH_MAX_PAYLOAD_IN_BYTES = exports.BATCH_MAX_REQUEST = exports.SIZE_1_MB = exports.ETagAny = exports.ETagNone = exports.HeaderConstants = exports.HTTPURLConnection = exports.URLConstants = exports.StorageOAuthScopes = exports.REQUEST_TIMEOUT = exports.DEFAULT_MAX_DOWNLOAD_RETRY_REQUESTS = exports.DEFAULT_BLOB_DOWNLOAD_BLOCK_BYTES = exports.DEFAULT_BLOCK_BUFFER_SIZE_BYTES = exports.BLOCK_BLOB_MAX_BLOCKS = exports.BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES = exports.BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES = exports.SERVICE_VERSION = exports.SDK_VERSION = void 0;
-exports.SDK_VERSION = "12.29.1";
-exports.SERVICE_VERSION = "2025-11-05";
+exports.SDK_VERSION = "12.30.0";
+exports.SERVICE_VERSION = "2026-02-06";
 exports.BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES = 256 * 1024 * 1024; // 256MB
 exports.BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES = 4000 * 1024 * 1024; // 4000MB
 exports.BLOCK_BLOB_MAX_BLOCKS = 50000;
@@ -85146,7 +83930,7 @@ exports.PathStylePorts = [
 
 /***/ }),
 
-/***/ 67985:
+/***/ 74342:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -85155,7 +83939,7 @@ exports.PathStylePorts = [
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.tracingClient = void 0;
 const core_tracing_1 = __nccwpck_require__(26637);
-const constants_js_1 = __nccwpck_require__(9386);
+const constants_js_1 = __nccwpck_require__(25097);
 /**
  * Creates a span using the global tracer.
  * @internal
@@ -85169,7 +83953,7 @@ exports.tracingClient = (0, core_tracing_1.createTracingClient)({
 
 /***/ }),
 
-/***/ 98915:
+/***/ 43542:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -85214,7 +83998,7 @@ exports.EscapePath = EscapePath;
 exports.assertResponse = assertResponse;
 const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_util_1 = __nccwpck_require__(33000);
-const constants_js_1 = __nccwpck_require__(9386);
+const constants_js_1 = __nccwpck_require__(25097);
 /**
  * Reserved URL characters must be properly escaped for Storage services like Blob or File.
  *
@@ -85982,7 +84766,7 @@ function assertResponse(response) {
 
 /***/ }),
 
-/***/ 73170:
+/***/ 63725:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -85997,7 +84781,7 @@ exports.readStreamToLocalFile = readStreamToLocalFile;
 const tslib_1 = __nccwpck_require__(67892);
 const node_fs_1 = tslib_1.__importDefault(__nccwpck_require__(73024));
 const node_util_1 = tslib_1.__importDefault(__nccwpck_require__(57975));
-const constants_js_1 = __nccwpck_require__(9386);
+const constants_js_1 = __nccwpck_require__(25097);
 /**
  * Reads a readable stream into buffer. Fill the buffer from offset to end.
  *
@@ -86128,7 +84912,7 @@ exports.fsCreateReadStream = node_fs_1.default.createReadStream;
 
 /***/ }),
 
-/***/ 3092:
+/***/ 94102:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86137,7 +84921,7 @@ exports.fsCreateReadStream = node_fs_1.default.createReadStream;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BufferScheduler = void 0;
 const events_1 = __nccwpck_require__(24434);
-const PooledBuffer_js_1 = __nccwpck_require__(88126);
+const PooledBuffer_js_1 = __nccwpck_require__(59016);
 /**
  * This class accepts a Node.js Readable stream as input, and keeps reading data
  * from the stream into the internal buffer structure, until it reaches maxBuffers.
@@ -86416,7 +85200,7 @@ exports.BufferScheduler = BufferScheduler;
 
 /***/ }),
 
-/***/ 14712:
+/***/ 57682:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86523,7 +85307,7 @@ exports.BuffersStream = BuffersStream;
 
 /***/ }),
 
-/***/ 88126:
+/***/ 59016:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86532,7 +85316,7 @@ exports.BuffersStream = BuffersStream;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PooledBuffer = void 0;
 const tslib_1 = __nccwpck_require__(67892);
-const BuffersStream_js_1 = __nccwpck_require__(14712);
+const BuffersStream_js_1 = __nccwpck_require__(57682);
 const node_buffer_1 = tslib_1.__importDefault(__nccwpck_require__(4573));
 /**
  * maxBufferLength is max size of each buffer in the pooled buffers.
@@ -86629,7 +85413,7 @@ exports.PooledBuffer = PooledBuffer;
 
 /***/ }),
 
-/***/ 30782:
+/***/ 14236:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86637,7 +85421,7 @@ exports.PooledBuffer = PooledBuffer;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageBrowserPolicyFactory = exports.StorageBrowserPolicy = void 0;
-const StorageBrowserPolicy_js_1 = __nccwpck_require__(65473);
+const StorageBrowserPolicy_js_1 = __nccwpck_require__(86847);
 Object.defineProperty(exports, "StorageBrowserPolicy", ({ enumerable: true, get: function () { return StorageBrowserPolicy_js_1.StorageBrowserPolicy; } }));
 /**
  * StorageBrowserPolicyFactory is a factory class helping generating StorageBrowserPolicy objects.
@@ -86658,7 +85442,7 @@ exports.StorageBrowserPolicyFactory = StorageBrowserPolicyFactory;
 
 /***/ }),
 
-/***/ 87848:
+/***/ 63870:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86666,9 +85450,9 @@ exports.StorageBrowserPolicyFactory = StorageBrowserPolicyFactory;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageRetryPolicyFactory = exports.StorageRetryPolicy = exports.StorageRetryPolicyType = void 0;
-const StorageRetryPolicy_js_1 = __nccwpck_require__(65975);
+const StorageRetryPolicy_js_1 = __nccwpck_require__(43693);
 Object.defineProperty(exports, "StorageRetryPolicy", ({ enumerable: true, get: function () { return StorageRetryPolicy_js_1.StorageRetryPolicy; } }));
-const StorageRetryPolicyType_js_1 = __nccwpck_require__(73087);
+const StorageRetryPolicyType_js_1 = __nccwpck_require__(66141);
 Object.defineProperty(exports, "StorageRetryPolicyType", ({ enumerable: true, get: function () { return StorageRetryPolicyType_js_1.StorageRetryPolicyType; } }));
 /**
  * StorageRetryPolicyFactory is a factory class helping generating {@link StorageRetryPolicy} objects.
@@ -86697,7 +85481,7 @@ exports.StorageRetryPolicyFactory = StorageRetryPolicyFactory;
 
 /***/ }),
 
-/***/ 16125:
+/***/ 38307:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86717,7 +85501,7 @@ function getCachedDefaultHttpClient() {
 
 /***/ }),
 
-/***/ 3422:
+/***/ 52560:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86725,8 +85509,8 @@ function getCachedDefaultHttpClient() {
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AnonymousCredential = void 0;
-const AnonymousCredentialPolicy_js_1 = __nccwpck_require__(36936);
-const Credential_js_1 = __nccwpck_require__(7069);
+const AnonymousCredentialPolicy_js_1 = __nccwpck_require__(77578);
+const Credential_js_1 = __nccwpck_require__(71919);
 /**
  * AnonymousCredential provides a credentialPolicyCreator member used to create
  * AnonymousCredentialPolicy objects. AnonymousCredentialPolicy is used with
@@ -86749,7 +85533,7 @@ exports.AnonymousCredential = AnonymousCredential;
 
 /***/ }),
 
-/***/ 7069:
+/***/ 71919:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -86777,7 +85561,7 @@ exports.Credential = Credential;
 
 /***/ }),
 
-/***/ 76590:
+/***/ 97500:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86786,8 +85570,8 @@ exports.Credential = Credential;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageSharedKeyCredential = void 0;
 const node_crypto_1 = __nccwpck_require__(77598);
-const StorageSharedKeyCredentialPolicy_js_1 = __nccwpck_require__(9640);
-const Credential_js_1 = __nccwpck_require__(7069);
+const StorageSharedKeyCredentialPolicy_js_1 = __nccwpck_require__(77430);
+const Credential_js_1 = __nccwpck_require__(71919);
 /**
  * ONLY AVAILABLE IN NODE.JS RUNTIME.
  *
@@ -86835,7 +85619,60 @@ exports.StorageSharedKeyCredential = StorageSharedKeyCredential;
 
 /***/ }),
 
-/***/ 13507:
+/***/ 18141:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.UserDelegationKeyCredential = void 0;
+const node_crypto_1 = __nccwpck_require__(77598);
+/**
+ * ONLY AVAILABLE IN NODE.JS RUNTIME.
+ *
+ * UserDelegationKeyCredential is only used for generation of user delegation SAS.
+ * @see https://learn.microsoft.com/rest/api/storageservices/create-user-delegation-sas
+ */
+class UserDelegationKeyCredential {
+    /**
+     * Azure Storage account name; readonly.
+     */
+    accountName;
+    /**
+     * Azure Storage user delegation key; readonly.
+     */
+    userDelegationKey;
+    /**
+     * Key value in Buffer type.
+     */
+    key;
+    /**
+     * Creates an instance of UserDelegationKeyCredential.
+     * @param accountName -
+     * @param userDelegationKey -
+     */
+    constructor(accountName, userDelegationKey) {
+        this.accountName = accountName;
+        this.userDelegationKey = userDelegationKey;
+        this.key = Buffer.from(userDelegationKey.value, "base64");
+    }
+    /**
+     * Generates a hash signature for an HTTP request or for a SAS.
+     *
+     * @param stringToSign -
+     */
+    computeHMACSHA256(stringToSign) {
+        // console.log(`stringToSign: ${JSON.stringify(stringToSign)}`);
+        return (0, node_crypto_1.createHmac)("sha256", this.key).update(stringToSign, "utf8").digest("base64");
+    }
+}
+exports.UserDelegationKeyCredential = UserDelegationKeyCredential;
+//# sourceMappingURL=UserDelegationKeyCredential.js.map
+
+/***/ }),
+
+/***/ 55637:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86844,33 +85681,34 @@ exports.StorageSharedKeyCredential = StorageSharedKeyCredential;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaseRequestPolicy = exports.getCachedDefaultHttpClient = void 0;
 const tslib_1 = __nccwpck_require__(67892);
-tslib_1.__exportStar(__nccwpck_require__(3092), exports);
-var cache_js_1 = __nccwpck_require__(16125);
+tslib_1.__exportStar(__nccwpck_require__(94102), exports);
+var cache_js_1 = __nccwpck_require__(38307);
 Object.defineProperty(exports, "getCachedDefaultHttpClient", ({ enumerable: true, get: function () { return cache_js_1.getCachedDefaultHttpClient; } }));
-tslib_1.__exportStar(__nccwpck_require__(30782), exports);
-tslib_1.__exportStar(__nccwpck_require__(3422), exports);
-tslib_1.__exportStar(__nccwpck_require__(7069), exports);
-tslib_1.__exportStar(__nccwpck_require__(76590), exports);
-tslib_1.__exportStar(__nccwpck_require__(87848), exports);
-var RequestPolicy_js_1 = __nccwpck_require__(3165);
+tslib_1.__exportStar(__nccwpck_require__(14236), exports);
+tslib_1.__exportStar(__nccwpck_require__(52560), exports);
+tslib_1.__exportStar(__nccwpck_require__(71919), exports);
+tslib_1.__exportStar(__nccwpck_require__(97500), exports);
+tslib_1.__exportStar(__nccwpck_require__(63870), exports);
+var RequestPolicy_js_1 = __nccwpck_require__(58423);
 Object.defineProperty(exports, "BaseRequestPolicy", ({ enumerable: true, get: function () { return RequestPolicy_js_1.BaseRequestPolicy; } }));
-tslib_1.__exportStar(__nccwpck_require__(36936), exports);
-tslib_1.__exportStar(__nccwpck_require__(21503), exports);
-tslib_1.__exportStar(__nccwpck_require__(65473), exports);
-tslib_1.__exportStar(__nccwpck_require__(57641), exports);
-tslib_1.__exportStar(__nccwpck_require__(30134), exports);
-tslib_1.__exportStar(__nccwpck_require__(73087), exports);
-tslib_1.__exportStar(__nccwpck_require__(65975), exports);
-tslib_1.__exportStar(__nccwpck_require__(67135), exports);
-tslib_1.__exportStar(__nccwpck_require__(9640), exports);
-tslib_1.__exportStar(__nccwpck_require__(30332), exports);
-tslib_1.__exportStar(__nccwpck_require__(87848), exports);
-tslib_1.__exportStar(__nccwpck_require__(14047), exports);
+tslib_1.__exportStar(__nccwpck_require__(77578), exports);
+tslib_1.__exportStar(__nccwpck_require__(39105), exports);
+tslib_1.__exportStar(__nccwpck_require__(86847), exports);
+tslib_1.__exportStar(__nccwpck_require__(90324), exports);
+tslib_1.__exportStar(__nccwpck_require__(62148), exports);
+tslib_1.__exportStar(__nccwpck_require__(66141), exports);
+tslib_1.__exportStar(__nccwpck_require__(43693), exports);
+tslib_1.__exportStar(__nccwpck_require__(82733), exports);
+tslib_1.__exportStar(__nccwpck_require__(77430), exports);
+tslib_1.__exportStar(__nccwpck_require__(10370), exports);
+tslib_1.__exportStar(__nccwpck_require__(63870), exports);
+tslib_1.__exportStar(__nccwpck_require__(93781), exports);
+tslib_1.__exportStar(__nccwpck_require__(18141), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
 
-/***/ 85541:
+/***/ 68731:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86887,7 +85725,7 @@ exports.logger = (0, logger_1.createClientLogger)("storage-common");
 
 /***/ }),
 
-/***/ 36936:
+/***/ 77578:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86895,7 +85733,7 @@ exports.logger = (0, logger_1.createClientLogger)("storage-common");
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AnonymousCredentialPolicy = void 0;
-const CredentialPolicy_js_1 = __nccwpck_require__(21503);
+const CredentialPolicy_js_1 = __nccwpck_require__(39105);
 /**
  * AnonymousCredentialPolicy is used with HTTP(S) requests that read public resources
  * or for use with Shared Access Signatures (SAS).
@@ -86917,7 +85755,7 @@ exports.AnonymousCredentialPolicy = AnonymousCredentialPolicy;
 
 /***/ }),
 
-/***/ 21503:
+/***/ 39105:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -86925,7 +85763,7 @@ exports.AnonymousCredentialPolicy = AnonymousCredentialPolicy;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CredentialPolicy = void 0;
-const RequestPolicy_js_1 = __nccwpck_require__(3165);
+const RequestPolicy_js_1 = __nccwpck_require__(58423);
 /**
  * Credential policy used to sign HTTP(S) requests before sending. This is an
  * abstract class.
@@ -86956,7 +85794,7 @@ exports.CredentialPolicy = CredentialPolicy;
 
 /***/ }),
 
-/***/ 3165:
+/***/ 58423:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -87008,7 +85846,7 @@ exports.BaseRequestPolicy = BaseRequestPolicy;
 
 /***/ }),
 
-/***/ 65473:
+/***/ 86847:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -87016,10 +85854,10 @@ exports.BaseRequestPolicy = BaseRequestPolicy;
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageBrowserPolicy = void 0;
-const RequestPolicy_js_1 = __nccwpck_require__(3165);
+const RequestPolicy_js_1 = __nccwpck_require__(58423);
 const core_util_1 = __nccwpck_require__(33000);
-const constants_js_1 = __nccwpck_require__(8484);
-const utils_common_js_1 = __nccwpck_require__(60481);
+const constants_js_1 = __nccwpck_require__(65866);
+const utils_common_js_1 = __nccwpck_require__(48323);
 /**
  * StorageBrowserPolicy will handle differences between Node.js and browser runtime, including:
  *
@@ -87065,7 +85903,7 @@ exports.StorageBrowserPolicy = StorageBrowserPolicy;
 
 /***/ }),
 
-/***/ 57641:
+/***/ 90324:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -87075,8 +85913,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.storageBrowserPolicyName = void 0;
 exports.storageBrowserPolicy = storageBrowserPolicy;
 const core_util_1 = __nccwpck_require__(33000);
-const constants_js_1 = __nccwpck_require__(8484);
-const utils_common_js_1 = __nccwpck_require__(60481);
+const constants_js_1 = __nccwpck_require__(65866);
+const utils_common_js_1 = __nccwpck_require__(48323);
 /**
  * The programmatic identifier of the StorageBrowserPolicy.
  */
@@ -87106,7 +85944,7 @@ function storageBrowserPolicy() {
 
 /***/ }),
 
-/***/ 30134:
+/***/ 62148:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -87115,7 +85953,7 @@ function storageBrowserPolicy() {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.storageCorrectContentLengthPolicyName = void 0;
 exports.storageCorrectContentLengthPolicy = storageCorrectContentLengthPolicy;
-const constants_js_1 = __nccwpck_require__(8484);
+const constants_js_1 = __nccwpck_require__(65866);
 /**
  * The programmatic identifier of the storageCorrectContentLengthPolicy.
  */
@@ -87143,7 +85981,7 @@ function storageCorrectContentLengthPolicy() {
 
 /***/ }),
 
-/***/ 14047:
+/***/ 93781:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -87187,7 +86025,7 @@ function storageRequestFailureDetailsParserPolicy() {
 
 /***/ }),
 
-/***/ 65975:
+/***/ 43693:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -87197,11 +86035,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageRetryPolicy = void 0;
 exports.NewRetryPolicyFactory = NewRetryPolicyFactory;
 const abort_controller_1 = __nccwpck_require__(49797);
-const RequestPolicy_js_1 = __nccwpck_require__(3165);
-const constants_js_1 = __nccwpck_require__(8484);
-const utils_common_js_1 = __nccwpck_require__(60481);
-const log_js_1 = __nccwpck_require__(85541);
-const StorageRetryPolicyType_js_1 = __nccwpck_require__(73087);
+const RequestPolicy_js_1 = __nccwpck_require__(58423);
+const constants_js_1 = __nccwpck_require__(65866);
+const utils_common_js_1 = __nccwpck_require__(48323);
+const log_js_1 = __nccwpck_require__(68731);
+const StorageRetryPolicyType_js_1 = __nccwpck_require__(66141);
 /**
  * A factory method used to generated a RetryPolicy factory.
  *
@@ -87417,7 +86255,7 @@ exports.StorageRetryPolicy = StorageRetryPolicy;
 
 /***/ }),
 
-/***/ 73087:
+/***/ 66141:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -87443,7 +86281,7 @@ var StorageRetryPolicyType;
 
 /***/ }),
 
-/***/ 67135:
+/***/ 82733:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -87455,10 +86293,10 @@ exports.storageRetryPolicy = storageRetryPolicy;
 const abort_controller_1 = __nccwpck_require__(49797);
 const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_util_1 = __nccwpck_require__(33000);
-const StorageRetryPolicyFactory_js_1 = __nccwpck_require__(87848);
-const constants_js_1 = __nccwpck_require__(8484);
-const utils_common_js_1 = __nccwpck_require__(60481);
-const log_js_1 = __nccwpck_require__(85541);
+const StorageRetryPolicyFactory_js_1 = __nccwpck_require__(63870);
+const constants_js_1 = __nccwpck_require__(65866);
+const utils_common_js_1 = __nccwpck_require__(48323);
+const log_js_1 = __nccwpck_require__(68731);
 /**
  * Name of the {@link storageRetryPolicy}
  */
@@ -87617,7 +86455,7 @@ function storageRetryPolicy(options = {}) {
 
 /***/ }),
 
-/***/ 9640:
+/***/ 77430:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -87625,10 +86463,10 @@ function storageRetryPolicy(options = {}) {
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StorageSharedKeyCredentialPolicy = void 0;
-const constants_js_1 = __nccwpck_require__(8484);
-const utils_common_js_1 = __nccwpck_require__(60481);
-const CredentialPolicy_js_1 = __nccwpck_require__(21503);
-const SharedKeyComparator_js_1 = __nccwpck_require__(41349);
+const constants_js_1 = __nccwpck_require__(65866);
+const utils_common_js_1 = __nccwpck_require__(48323);
+const CredentialPolicy_js_1 = __nccwpck_require__(39105);
+const SharedKeyComparator_js_1 = __nccwpck_require__(2856);
 /**
  * StorageSharedKeyCredentialPolicy is a policy used to sign HTTP request with a shared key.
  */
@@ -87686,7 +86524,7 @@ class StorageSharedKeyCredentialPolicy extends CredentialPolicy_js_1.CredentialP
     }
     /**
      * Retrieve header value according to shared key sign rules.
-     * @see https://learn.microsoft.com/en-us/rest/api/storageservices/authenticate-with-shared-key
+     * @see https://learn.microsoft.com/rest/api/storageservices/authenticate-with-shared-key
      *
      * @param request -
      * @param headerName -
@@ -87698,7 +86536,7 @@ class StorageSharedKeyCredentialPolicy extends CredentialPolicy_js_1.CredentialP
         }
         // When using version 2015-02-21 or later, if Content-Length is zero, then
         // set the Content-Length part of the StringToSign to an empty string.
-        // https://learn.microsoft.com/en-us/rest/api/storageservices/authenticate-with-shared-key
+        // https://learn.microsoft.com/rest/api/storageservices/authenticate-with-shared-key
         if (headerName === constants_js_1.HeaderConstants.CONTENT_LENGTH && value === "0") {
             return "";
         }
@@ -87772,7 +86610,7 @@ exports.StorageSharedKeyCredentialPolicy = StorageSharedKeyCredentialPolicy;
 
 /***/ }),
 
-/***/ 30332:
+/***/ 10370:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -87782,9 +86620,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.storageSharedKeyCredentialPolicyName = void 0;
 exports.storageSharedKeyCredentialPolicy = storageSharedKeyCredentialPolicy;
 const node_crypto_1 = __nccwpck_require__(77598);
-const constants_js_1 = __nccwpck_require__(8484);
-const utils_common_js_1 = __nccwpck_require__(60481);
-const SharedKeyComparator_js_1 = __nccwpck_require__(41349);
+const constants_js_1 = __nccwpck_require__(65866);
+const utils_common_js_1 = __nccwpck_require__(48323);
+const SharedKeyComparator_js_1 = __nccwpck_require__(2856);
 /**
  * The programmatic identifier of the storageSharedKeyCredentialPolicy.
  */
@@ -87828,7 +86666,7 @@ function storageSharedKeyCredentialPolicy(options) {
     }
     /**
      * Retrieve header value according to shared key sign rules.
-     * @see https://learn.microsoft.com/en-us/rest/api/storageservices/authenticate-with-shared-key
+     * @see https://learn.microsoft.com/rest/api/storageservices/authenticate-with-shared-key
      */
     function getHeaderValueToSign(request, headerName) {
         const value = request.headers.get(headerName);
@@ -87837,7 +86675,7 @@ function storageSharedKeyCredentialPolicy(options) {
         }
         // When using version 2015-02-21 or later, if Content-Length is zero, then
         // set the Content-Length part of the StringToSign to an empty string.
-        // https://learn.microsoft.com/en-us/rest/api/storageservices/authenticate-with-shared-key
+        // https://learn.microsoft.com/rest/api/storageservices/authenticate-with-shared-key
         if (headerName === constants_js_1.HeaderConstants.CONTENT_LENGTH && value === "0") {
             return "";
         }
@@ -87914,7 +86752,7 @@ function storageSharedKeyCredentialPolicy(options) {
 
 /***/ }),
 
-/***/ 41349:
+/***/ 2856:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -87996,7 +86834,7 @@ function isLessThan(lhs, rhs) {
 
 /***/ }),
 
-/***/ 8484:
+/***/ 65866:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -88069,7 +86907,7 @@ exports.PathStylePorts = [
 
 /***/ }),
 
-/***/ 60481:
+/***/ 48323:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -88105,7 +86943,7 @@ exports.EscapePath = EscapePath;
 exports.assertResponse = assertResponse;
 const core_rest_pipeline_1 = __nccwpck_require__(81591);
 const core_util_1 = __nccwpck_require__(33000);
-const constants_js_1 = __nccwpck_require__(8484);
+const constants_js_1 = __nccwpck_require__(65866);
 /**
  * Reserved URL characters must be properly escaped for Storage services like Blob or File.
  *
@@ -88153,8 +86991,8 @@ const constants_js_1 = __nccwpck_require__(8484);
  *
  * We will apply strategy one, and call encodeURIComponent for these parameters like blobName. Because what customers passes in is a plain name instead of a URL.
  *
- * @see https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
- * @see https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata
+ * @see https://learn.microsoft.com/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+ * @see https://learn.microsoft.com/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata
  *
  * @param url -
  */
@@ -88168,7 +87006,7 @@ function escapeURLPath(url) {
 }
 function getProxyUriFromDevConnString(connectionString) {
     // Development Connection String
-    // https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#connect-to-the-emulator-account-using-the-well-known-account-name-and-key
+    // https://learn.microsoft.com/azure/storage/common/storage-configure-connection-string#connect-to-the-emulator-account-using-the-well-known-account-name-and-key
     let proxyUri = "";
     if (connectionString.search("DevelopmentStorageProxyUri=") !== -1) {
         // CONNECTION_STRING=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://myProxyUri
@@ -94578,10 +93416,10 @@ function randomUUID() {
 
 /***/ }),
 
-/***/ 22947:
+/***/ 87720:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"5.0.2","preview":true,"description":"Actions cache lib","keywords":["github","actions","cache"],"homepage":"https://github.com/actions/toolkit/tree/main/packages/cache","license":"MIT","main":"lib/cache.js","types":"lib/cache.d.ts","directories":{"lib":"lib","test":"__tests__"},"files":["lib","!.DS_Store"],"publishConfig":{"access":"public"},"repository":{"type":"git","url":"git+https://github.com/actions/toolkit.git","directory":"packages/cache"},"scripts":{"audit-moderate":"npm install && npm audit --json --audit-level=moderate > audit.json","test":"echo \\"Error: run tests from root\\" && exit 1","tsc":"tsc"},"bugs":{"url":"https://github.com/actions/toolkit/issues"},"dependencies":{"@actions/core":"^2.0.0","@actions/exec":"^2.0.0","@actions/glob":"^0.5.0","@protobuf-ts/runtime-rpc":"^2.11.1","@actions/http-client":"^3.0.1","@actions/io":"^2.0.0","@azure/abort-controller":"^1.1.0","@azure/core-rest-pipeline":"^1.22.0","@azure/storage-blob":"^12.29.1","semver":"^6.3.1"},"devDependencies":{"@types/node":"^24.1.0","@types/semver":"^6.0.0","@protobuf-ts/plugin":"^2.9.4","typescript":"^5.2.2"},"overrides":{"uri-js":"npm:uri-js-replace@^1.0.1","node-fetch":"^3.3.2"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"5.0.3","preview":true,"description":"Actions cache lib","keywords":["github","actions","cache"],"homepage":"https://github.com/actions/toolkit/tree/main/packages/cache","license":"MIT","main":"lib/cache.js","types":"lib/cache.d.ts","directories":{"lib":"lib","test":"__tests__"},"files":["lib","!.DS_Store"],"publishConfig":{"access":"public"},"repository":{"type":"git","url":"git+https://github.com/actions/toolkit.git","directory":"packages/cache"},"scripts":{"audit-moderate":"npm install && npm audit --json --audit-level=moderate > audit.json","test":"echo \\"Error: run tests from root\\" && exit 1","tsc":"tsc"},"bugs":{"url":"https://github.com/actions/toolkit/issues"},"dependencies":{"@actions/core":"^2.0.0","@actions/exec":"^2.0.0","@actions/glob":"^0.5.0","@protobuf-ts/runtime-rpc":"^2.11.1","@actions/http-client":"^3.0.1","@actions/io":"^2.0.0","@azure/abort-controller":"^1.1.0","@azure/core-rest-pipeline":"^1.22.0","@azure/storage-blob":"^12.29.1","semver":"^6.3.1"},"devDependencies":{"@types/node":"^24.1.0","@types/semver":"^6.0.0","@protobuf-ts/plugin":"^2.9.4","typescript":"^5.2.2"},"overrides":{"uri-js":"npm:uri-js-replace@^1.0.1","node-fetch":"^3.3.2"}}');
 
 /***/ })
 
@@ -94637,7 +93475,7 @@ var external_path_ = __nccwpck_require__(16928);
 var tail = __nccwpck_require__(7555);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+github@6.0.1/node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(84903);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@157fae9c23160158d80bff4260243a2f117febd4_zgvqckiaikh6cqaxwfr3gyksvi/node_modules/detsys-ts/dist/chunk-15K8U1wQ.mjs
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@9c9f0b9d483ddc61fd4ff1f8d269b7006aa469d4_i4bvpum3pnjl2tw7ehqmsfcxsy/node_modules/detsys-ts/dist/chunk-15K8U1wQ.mjs
 //#region rolldown:runtime
 var __defProp = Object.defineProperty;
 var __exportAll = (all, symbols) => {
@@ -96836,7 +95674,7 @@ var defaultDeserialize = (data) => JSON.parse(data, (_, value) => {
 });
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/keyv@5.5.5/node_modules/keyv/dist/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/keyv@5.6.0/node_modules/keyv/dist/index.js
 // src/index.ts
 
 
@@ -97289,7 +96127,7 @@ var Keyv = class extends event_manager_default {
           continue;
         }
         if (typeof data.expires === "number" && Date.now() > data.expires) {
-          this.delete(key);
+          await this.delete(key);
           continue;
         }
         yield [this._getKeyUnprefix(key), data.value];
@@ -97307,6 +96145,9 @@ var Keyv = class extends event_manager_default {
       return key;
     }
     if (!this._namespace) {
+      return key;
+    }
+    if (key.startsWith(`${this._namespace}:`)) {
       return key;
     }
     return `${this._namespace}:${key}`;
@@ -103801,13 +102642,13 @@ const got = source_create(defaults);
 
 ;// CONCATENATED MODULE: external "node:dns/promises"
 const external_node_dns_promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:dns/promises");
-// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@5.0.2/node_modules/@actions/cache/lib/cache.js
-var cache = __nccwpck_require__(31760);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+cache@5.0.3/node_modules/@actions/cache/lib/cache.js
+var cache = __nccwpck_require__(73171);
 ;// CONCATENATED MODULE: external "node:child_process"
 const external_node_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:child_process");
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@157fae9c23160158d80bff4260243a2f117febd4_zgvqckiaikh6cqaxwfr3gyksvi/node_modules/detsys-ts/dist/index.mjs
+;// CONCATENATED MODULE: ./node_modules/.pnpm/github.com+DeterminateSystems+detsys-ts@9c9f0b9d483ddc61fd4ff1f8d269b7006aa469d4_i4bvpum3pnjl2tw7ehqmsfcxsy/node_modules/detsys-ts/dist/index.mjs
 
 
 
