@@ -126,6 +126,8 @@ jobs:
         with:
           _internal-strict-mode: true
           _internal-obliterate-actions-id-token-request-variables: ${{ matrix.id-token == 'none' }}
+          listen: 127.0.0.1:0
+          startup-notification-port: 0
           use-gha-cache: ${{ matrix.use-gha-cache }}
           use-flakehub: ${{ matrix.use-flakehub }}
       - name: Check the cache for liveness

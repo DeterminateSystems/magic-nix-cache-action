@@ -105281,6 +105281,7 @@ async function flakeHubLogin(netrc) {
 
 
 var ENV_DAEMON_DIR = "MAGIC_NIX_CACHE_DAEMONDIR";
+var ENV_MNC_ADDR = "MAGIC_NIX_CACHE_ADDRESS";
 var FACT_ENV_VARS_PRESENT = "required_env_vars_present";
 var FACT_SENT_SIGTERM = "sent_sigterm";
 var FACT_DIFF_STORE_ENABLED = "diff_store";
@@ -105334,6 +105335,10 @@ var MagicNixCacheAction = class extends DetSysAction {
       this.alreadyRunning = process.env[ENV_DAEMON_DIR] !== this.daemonDir;
     }
     this.addFact(FACT_ALREADY_RUNNING, this.alreadyRunning);
+    if (process.env[ENV_MNC_ADDR] !== void 0) {
+      this.hostAndPort = process.env[ENV_MNC_ADDR];
+      core.exportVariable(ENV_MNC_ADDR, this.hostAndPort);
+    }
     this.stapleFile("daemon.log", external_path_.join(this.daemonDir, "daemon.log"));
   }
   async main() {
@@ -105413,25 +105418,47 @@ var MagicNixCacheAction = class extends DetSysAction {
         ...extraEnv
       };
     }
-    const notifyPort = inputs_exports.getString("startup-notification-port");
-    const notifyPromise = new Promise((resolveListening) => {
-      const promise = new Promise(async (resolveQuit) => {
-        const notifyServer = external_http_.createServer((req, res) => {
-          if (req.method === "POST" && req.url === "/") {
-            core.debug(`Notify server shutting down.`);
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end("{}");
-            notifyServer.close(() => {
-              resolveQuit();
-            });
-          }
+    const notifyPromise = new Promise(
+      (resolveListening, rejectListening) => {
+        const promise = new Promise((resolveQuit, rejectQuit) => {
+          const notifyServer = external_http_.createServer((req, res) => {
+            if (req.method === "POST" && req.url === "/") {
+              const data = [];
+              req.on("data", (chunk) => {
+                data.push(chunk);
+              });
+              req.on("end", () => {
+                try {
+                  const body = JSON.parse(Buffer.concat(data).toString());
+                  core.debug(`Notify server shutting down.`);
+                  res.writeHead(200, { "Content-Type": "application/json" });
+                  res.end("{}");
+                  notifyServer.close(() => {
+                    resolveQuit(body.address);
+                  });
+                } catch (e) {
+                  rejectQuit(e);
+                }
+              });
+            }
+          });
+          notifyServer.listen(
+            inputs_exports.getString("startup-notification-port"),
+            () => {
+              core.debug(`Notify server running.`);
+              const addr = notifyServer.address();
+              if (typeof addr === "string") {
+                resolveListening([promise, addr]);
+              } else if (addr !== null) {
+                resolveListening([promise, `http://127.0.0.1:${addr.port}`]);
+              } else {
+                rejectListening(new Error("Server failed to start correctly"));
+              }
+            }
+          );
         });
-        notifyServer.listen(notifyPort, () => {
-          core.debug(`Notify server running.`);
-          resolveListening(promise);
-        });
-      });
-    });
+      }
+    );
     const outputPath = `${this.daemonDir}/daemon.log`;
     const output = (0,external_fs_.openSync)(outputPath, "a");
     const log = tailLog(this.daemonDir);
@@ -105443,65 +105470,67 @@ var MagicNixCacheAction = class extends DetSysAction {
     const flakeHubApiServer = inputs_exports.getString("flakehub-api-server");
     const flakeHubFlakeName = inputs_exports.getString("flakehub-flake-name");
     const useGhaCache = getTrinaryInput("use-gha-cache");
-    const daemonCliFlags = [
-      "--startup-notification-url",
-      `http://127.0.0.1:${notifyPort}`,
-      "--listen",
-      this.hostAndPort,
-      "--upstream",
-      upstreamCache,
-      "--diagnostic-endpoint",
-      (await this.getDiagnosticsUrl())?.toString() ?? "",
-      "--nix-conf",
-      nixConfPath,
-      "--use-gha-cache",
-      useGhaCache,
-      "--use-flakehub",
-      useFlakeHub
-    ].concat(this.diffStore ? ["--diff-store"] : []).concat(
-      useFlakeHub !== "disabled" ? [
-        "--flakehub-cache-server",
-        flakeHubCacheServer,
-        "--flakehub-api-server",
-        flakeHubApiServer,
-        "--flakehub-api-server-netrc",
-        netrc,
-        "--flakehub-flake-name",
-        flakeHubFlakeName
-      ] : []
-    );
-    const opts = {
-      stdio: ["ignore", output, output],
-      env: runEnv,
-      detached: true
-    };
-    core.debug("Full daemon start command:");
-    core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
-    const daemon = (0,external_child_process_.spawn)(daemonBin, daemonCliFlags, opts);
-    this.daemonStarted = true;
-    core.saveState(STATE_STARTED, STARTED_HINT);
-    const pidFile = external_path_.join(this.daemonDir, "daemon.pid");
-    await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
-    core.info("Waiting for magic-nix-cache to start...");
     await new Promise((resolve) => {
-      notifyPromise.then((_value) => {
+      notifyPromise.then(async (promiseResult) => {
+        const daemonCliFlags = [
+          "--startup-notification-url",
+          promiseResult[1],
+          "--listen",
+          this.hostAndPort,
+          "--upstream",
+          upstreamCache,
+          "--diagnostic-endpoint",
+          (await this.getDiagnosticsUrl())?.toString() ?? "",
+          "--nix-conf",
+          nixConfPath,
+          "--use-gha-cache",
+          useGhaCache,
+          "--use-flakehub",
+          useFlakeHub
+        ].concat(this.diffStore ? ["--diff-store"] : []).concat(
+          useFlakeHub !== "disabled" ? [
+            "--flakehub-cache-server",
+            flakeHubCacheServer,
+            "--flakehub-api-server",
+            flakeHubApiServer,
+            "--flakehub-api-server-netrc",
+            netrc,
+            "--flakehub-flake-name",
+            flakeHubFlakeName
+          ] : []
+        );
+        const opts = {
+          stdio: ["ignore", output, output],
+          env: runEnv,
+          detached: true
+        };
+        core.debug("Full daemon start command:");
+        core.debug(`${daemonBin} ${daemonCliFlags.join(" ")}`);
+        const daemon = (0,external_child_process_.spawn)(daemonBin, daemonCliFlags, opts);
+        this.daemonStarted = true;
+        core.saveState(STATE_STARTED, STARTED_HINT);
+        const pidFile = external_path_.join(this.daemonDir, "daemon.pid");
+        await promises_namespaceObject.writeFile(pidFile, `${daemon.pid}`);
+        core.info("Waiting for magic-nix-cache to start...");
+        this.hostAndPort = await promiseResult[0];
+        core.exportVariable(ENV_MNC_ADDR, this.hostAndPort);
         resolve();
+        daemon.on("exit", (code, signal) => {
+          let msg;
+          if (signal) {
+            msg = `Daemon was killed by signal ${signal}`;
+          } else if (code) {
+            msg = `Daemon exited with code ${code}`;
+          } else {
+            msg = "Daemon unexpectedly exited";
+          }
+          this.exitMain(msg);
+        });
+        daemon.unref();
       }).catch((e) => {
         this.exitMain(`Error in notifyPromise: ${stringifyError(e)}`);
       });
-      daemon.on("exit", async (code, signal) => {
-        let msg;
-        if (signal) {
-          msg = `Daemon was killed by signal ${signal}`;
-        } else if (code) {
-          msg = `Daemon exited with code ${code}`;
-        } else {
-          msg = "Daemon unexpectedly exited";
-        }
-        this.exitMain(msg);
-      });
     });
-    daemon.unref();
     core.info("Launched Magic Nix Cache");
     log.unwatch();
   }
