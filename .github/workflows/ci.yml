@@ -84,7 +84,7 @@ jobs:
       fail-fast: false
       matrix:
         determinate: [true, false]
-        use-gha-cache: ["disabled", "no-preference", "enabled"]
+        use-gha-cache: ["disabled", "no-preference"]
         use-flakehub: ["disabled", "no-preference", "enabled"]
         id-token: ["write", "none"]
         systems:
@@ -96,6 +96,22 @@ jobs:
             runner: "namespace-profile-default-arm64"
           - nix-system: "x86_64-linux"
             runner: "ubuntu-22.04"
+        include:
+          - determinate: true
+            use-gha-cache: "enabled"
+            use-flakehub: "disabled"
+            id-token: "write"
+            systems:
+              nix-system: "x86_64-linux"
+              runner: "ubuntu-22.04"
+          - determinate: true
+            use-gha-cache: "enabled"
+            use-flakehub: "disabled"
+            id-token: "none"
+            systems:
+              nix-system: "x86_64-linux"
+              runner: "ubuntu-22.04"
+
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
