@@ -26,7 +26,7 @@
   "homepage": "https://github.com/DeterminateSystems/magic-nix-cache-action#readme",
   "dependencies": {
     "@actions/core": "^3.0.0",
-    "@actions/exec": "^1.1.1",
+    "@actions/exec": "^3.0.0",
     "@actions/github": "^6.0.1",
     "@actions/glob": "^0.5.1",
     "detsys-ts": "github:DeterminateSystems/detsys-ts",
