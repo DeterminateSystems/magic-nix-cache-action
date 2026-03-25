@@ -3,8 +3,8 @@
  * is now unused, although we should keep it around in case GitHub once again
  * makes a major change.
  */
-import actionsCore from "@actions/core";
-import glob from "@actions/glob";
+import * as actionsCore from "@actions/core";
+import * as glob from "@actions/glob";
 import { stringifyError } from "detsys-ts";
 import * as fs from "node:fs/promises";
 
