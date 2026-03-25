@@ -28,7 +28,7 @@
     "@actions/core": "^3.0.0",
     "@actions/exec": "^3.0.0",
     "@actions/github": "^9.0.0",
-    "@actions/glob": "^0.5.1",
+    "@actions/glob": "^0.6.1",
     "detsys-ts": "github:DeterminateSystems/detsys-ts",
     "got": "^14.6.6",
     "tail": "^2.2.6"
