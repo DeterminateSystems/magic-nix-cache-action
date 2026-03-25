@@ -9,12 +9,12 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       id-token: "write"
       contents: "read"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
@@ -38,14 +38,14 @@ jobs:
   test-no-nix:
     needs: build
     name: "Test: Nix not installed"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       id-token: "write"
       contents: "read"
     env:
       ACTIONS_STEP_DEBUG: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Cache the store
         uses: ./
         with:
@@ -54,14 +54,14 @@ jobs:
   run-x86_64-linux-untrusted:
     needs: build
     name: Run x86_64-linux, Untrusted
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       id-token: "write"
       contents: "read"
     env:
       ACTIONS_STEP_DEBUG: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
         with:
@@ -98,7 +98,7 @@ jobs:
           - nix-system: "aarch64-linux"
             runner: "namespace-profile-default-arm64"
           - nix-system: "x86_64-linux"
-            runner: "ubuntu-22.04"
+            runner: "ubuntu-latest"
         include:
           - determinate: true
             use-gha-cache: "enabled"
@@ -106,17 +106,17 @@ jobs:
             id-token: "write"
             systems:
               nix-system: "x86_64-linux"
-              runner: "ubuntu-22.04"
+              runner: "ubuntu-latest"
           - determinate: true
             use-gha-cache: "enabled"
             use-flakehub: "disabled"
             id-token: "none"
             systems:
               nix-system: "x86_64-linux"
-              runner: "ubuntu-22.04"
+              runner: "ubuntu-latest"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Nix on ${{ matrix.systems.nix-system }} system
         uses: DeterminateSystems/nix-installer-action@main
         with:
