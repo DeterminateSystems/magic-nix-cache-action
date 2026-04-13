@@ -15,25 +15,45 @@ jobs:
       contents: "read"
     steps:
       - uses: actions/checkout@v6
-      - name: Install Nix
-        uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/determinate-nix-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
+
       - name: Check shell scripts
         run: |
           nix develop --command shellcheck ./.github/workflows/cache-test.sh
-      - uses: DeterminateSystems/determinate-nix-action@main
-      - name: Install pnpm dependencies
-        run: nix develop --command pnpm install
+
+      - name: Get npm cache directory
+        run: |
+          echo "NPM_CACHE_DIRECTORY=$(nix develop --command npm config get cache | tr -d '\n')" >> $GITHUB_ENV
+
+      - name: Set up npm cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.NPM_CACHE_DIRECTORY }}
+          key: mnca-npm-cache-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            mnca-npm-cache
+
+      - name: Install npm dependencies
+        run: nix develop --command npm ci
+
       - name: Check formatting
-        run: nix develop --command pnpm run check-fmt
+        run: nix develop --command npm run check-fmt
+
       - name: Lint
-        run: nix develop --command pnpm run lint
+        run: nix develop --command npm run lint
+
       - name: Build
-        run: nix develop --command pnpm run build
+        run: nix develop --command npm run build
+
       - name: Package
-        run: nix develop --command pnpm run package
-      - run: git status --porcelain=v1
-      - run: git diff --exit-code
+        run: nix develop --command npm run package
+
+      - name: Check git status
+        run: git status --porcelain=v1
+
+      - name: Ensure no staged changes
+        run: git diff --exit-code
 
   test-no-nix:
     needs: build
