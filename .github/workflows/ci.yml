@@ -49,8 +49,11 @@ jobs:
       - name: Package
         run: nix develop --command npm run package
 
-      - name: Check git status
+      - name: git status
         run: git status --porcelain=v1
+
+      - name: Ensure no unstaged changes
+        run: git diff --exit-code
 
       - name: Ensure no staged changes
         run: git diff --cached --exit-code
