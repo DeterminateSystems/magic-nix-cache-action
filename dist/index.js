@@ -19870,7 +19870,6 @@ function defaultFactory (origin, opts) {
 
 class Agent extends DispatcherBase {
   constructor ({ factory = defaultFactory, maxRedirections = 0, connect, ...options } = {}) {
-    super()
 
     if (typeof factory !== 'function') {
       throw new InvalidArgumentError('factory must be a function.')
@@ -19883,6 +19882,8 @@ class Agent extends DispatcherBase {
     if (!Number.isInteger(maxRedirections) || maxRedirections < 0) {
       throw new InvalidArgumentError('maxRedirections must be a positive number')
     }
+
+    super(options)
 
     if (connect && typeof connect !== 'function') {
       connect = { ...connect }
@@ -22432,9 +22433,10 @@ class Client extends DispatcherBase {
     autoSelectFamilyAttemptTimeout,
     // h2
     maxConcurrentStreams,
-    allowH2
+    allowH2,
+    webSocket
   } = {}) {
-    super()
+    super({ webSocket })
 
     if (keepAlive !== undefined) {
       throw new InvalidArgumentError('unsupported keepAlive, use pipelining=0 instead')
@@ -22966,15 +22968,23 @@ const { kDestroy, kClose, kClosed, kDestroyed, kDispatch, kInterceptors } = __nc
 const kOnDestroyed = Symbol('onDestroyed')
 const kOnClosed = Symbol('onClosed')
 const kInterceptedDispatch = Symbol('Intercepted Dispatch')
+const kWebSocketOptions = Symbol('webSocketOptions')
 
 class DispatcherBase extends Dispatcher {
-  constructor () {
+  constructor (opts) {
     super()
 
     this[kDestroyed] = false
     this[kOnDestroyed] = null
     this[kClosed] = false
     this[kOnClosed] = []
+    this[kWebSocketOptions] = opts?.webSocket ?? {}
+  }
+
+  get webSocketOptions () {
+    return {
+      maxPayloadSize: this[kWebSocketOptions].maxPayloadSize ?? 128 * 1024 * 1024
+    }
   }
 
   get destroyed () {
@@ -23534,8 +23544,8 @@ const kRemoveClient = Symbol('remove client')
 const kStats = Symbol('stats')
 
 class PoolBase extends DispatcherBase {
-  constructor () {
-    super()
+  constructor (opts) {
+    super(opts)
 
     this[kQueue] = new FixedQueue()
     this[kClients] = []
@@ -23794,8 +23804,6 @@ class Pool extends PoolBase {
     allowH2,
     ...options
   } = {}) {
-    super()
-
     if (connections != null && (!Number.isFinite(connections) || connections < 0)) {
       throw new InvalidArgumentError('invalid connections')
     }
@@ -23819,6 +23827,8 @@ class Pool extends PoolBase {
         ...connect
       })
     }
+
+    super(options)
 
     this[kInterceptors] = options.interceptors?.Pool && Array.isArray(options.interceptors.Pool)
       ? options.interceptors.Pool
@@ -41574,40 +41584,35 @@ const tail = Buffer.from([0x00, 0x00, 0xff, 0xff])
 const kBuffer = Symbol('kBuffer')
 const kLength = Symbol('kLength')
 
-// Default maximum decompressed message size: 4 MB
-const kDefaultMaxDecompressedSize = 4 * 1024 * 1024
-
 class PerMessageDeflate {
   /** @type {import('node:zlib').InflateRaw} */
   #inflate
 
   #options = {}
 
-  /** @type {boolean} */
-  #aborted = false
-
-  /** @type {Function|null} */
-  #currentCallback = null
+  #maxPayloadSize = 0
 
   /**
    * @param {Map<string, string>} extensions
    */
-  constructor (extensions) {
+  constructor (extensions, options) {
     this.#options.serverNoContextTakeover = extensions.has('server_no_context_takeover')
     this.#options.serverMaxWindowBits = extensions.get('server_max_window_bits')
+
+    this.#maxPayloadSize = options.maxPayloadSize
   }
 
+  /**
+   * Decompress a compressed payload.
+   * @param {Buffer} chunk Compressed data
+   * @param {boolean} fin Final fragment flag
+   * @param {Function} callback Callback function
+   */
   decompress (chunk, fin, callback) {
     // An endpoint uses the following algorithm to decompress a message.
     // 1.  Append 4 octets of 0x00 0x00 0xff 0xff to the tail end of the
     //     payload of the message.
     // 2.  Decompress the resulting data using DEFLATE.
-
-    if (this.#aborted) {
-      callback(new MessageSizeExceededError())
-      return
-    }
-
     if (!this.#inflate) {
       let windowBits = Z_DEFAULT_WINDOWBITS
 
@@ -41630,23 +41635,12 @@ class PerMessageDeflate {
       this.#inflate[kLength] = 0
 
       this.#inflate.on('data', (data) => {
-        if (this.#aborted) {
-          return
-        }
-
         this.#inflate[kLength] += data.length
 
-        if (this.#inflate[kLength] > kDefaultMaxDecompressedSize) {
-          this.#aborted = true
+        if (this.#maxPayloadSize > 0 && this.#inflate[kLength] > this.#maxPayloadSize) {
+          callback(new MessageSizeExceededError())
           this.#inflate.removeAllListeners()
-          this.#inflate.destroy()
           this.#inflate = null
-
-          if (this.#currentCallback) {
-            const cb = this.#currentCallback
-            this.#currentCallback = null
-            cb(new MessageSizeExceededError())
-          }
           return
         }
 
@@ -41659,14 +41653,13 @@ class PerMessageDeflate {
       })
     }
 
-    this.#currentCallback = callback
     this.#inflate.write(chunk)
     if (fin) {
       this.#inflate.write(tail)
     }
 
     this.#inflate.flush(() => {
-      if (this.#aborted || !this.#inflate) {
+      if (!this.#inflate) {
         return
       }
 
@@ -41674,7 +41667,6 @@ class PerMessageDeflate {
 
       this.#inflate[kBuffer].length = 0
       this.#inflate[kLength] = 0
-      this.#currentCallback = null
 
       callback(null, full)
     })
@@ -41709,6 +41701,7 @@ const {
 const { WebsocketFrameSend } = __nccwpck_require__(3264)
 const { closeWebSocketConnection } = __nccwpck_require__(6897)
 const { PerMessageDeflate } = __nccwpck_require__(9469)
+const { MessageSizeExceededError } = __nccwpck_require__(8707)
 
 // This code was influenced by ws released under the MIT license.
 // Copyright (c) 2011 Einar Otto Stangvik <einaros@gmail.com>
@@ -41717,6 +41710,7 @@ const { PerMessageDeflate } = __nccwpck_require__(9469)
 
 class ByteParser extends Writable {
   #buffers = []
+  #fragmentsBytes = 0
   #byteOffset = 0
   #loop = false
 
@@ -41728,18 +41722,23 @@ class ByteParser extends Writable {
   /** @type {Map<string, PerMessageDeflate>} */
   #extensions
 
+  /** @type {number} */
+  #maxPayloadSize
+
   /**
    * @param {import('./websocket').WebSocket} ws
    * @param {Map<string, string>|null} extensions
+   * @param {{ maxPayloadSize?: number }} [options]
    */
-  constructor (ws, extensions) {
+  constructor (ws, extensions, options = {}) {
     super()
 
     this.ws = ws
     this.#extensions = extensions == null ? new Map() : extensions
+    this.#maxPayloadSize = options.maxPayloadSize ?? 0
 
     if (this.#extensions.has('permessage-deflate')) {
-      this.#extensions.set('permessage-deflate', new PerMessageDeflate(extensions))
+      this.#extensions.set('permessage-deflate', new PerMessageDeflate(extensions, options))
     }
   }
 
@@ -41753,6 +41752,19 @@ class ByteParser extends Writable {
     this.#loop = true
 
     this.run(callback)
+  }
+
+  #validatePayloadLength () {
+    if (
+      this.#maxPayloadSize > 0 &&
+      !isControlFrame(this.#info.opcode) &&
+      this.#info.payloadLength > this.#maxPayloadSize
+    ) {
+      failWebsocketConnection(this.ws, 'Payload size exceeds maximum allowed size')
+      return false
+    }
+
+    return true
   }
 
   /**
@@ -41843,6 +41855,10 @@ class ByteParser extends Writable {
         if (payloadLength <= 125) {
           this.#info.payloadLength = payloadLength
           this.#state = parserStates.READ_DATA
+
+          if (!this.#validatePayloadLength()) {
+            return
+          }
         } else if (payloadLength === 126) {
           this.#state = parserStates.PAYLOADLENGTH_16
         } else if (payloadLength === 127) {
@@ -41867,6 +41883,10 @@ class ByteParser extends Writable {
 
         this.#info.payloadLength = buffer.readUInt16BE(0)
         this.#state = parserStates.READ_DATA
+
+        if (!this.#validatePayloadLength()) {
+          return
+        }
       } else if (this.#state === parserStates.PAYLOADLENGTH_64) {
         if (this.#byteOffset < 8) {
           return callback()
@@ -41889,6 +41909,10 @@ class ByteParser extends Writable {
 
         this.#info.payloadLength = lower
         this.#state = parserStates.READ_DATA
+
+        if (!this.#validatePayloadLength()) {
+          return
+        }
       } else if (this.#state === parserStates.READ_DATA) {
         if (this.#byteOffset < this.#info.payloadLength) {
           return callback()
@@ -41901,42 +41925,53 @@ class ByteParser extends Writable {
           this.#state = parserStates.INFO
         } else {
           if (!this.#info.compressed) {
-            this.#fragments.push(body)
+            this.writeFragments(body)
+
+            if (this.#maxPayloadSize > 0 && this.#fragmentsBytes > this.#maxPayloadSize) {
+              failWebsocketConnection(this.ws, new MessageSizeExceededError().message)
+              return
+            }
 
             // If the frame is not fragmented, a message has been received.
             // If the frame is fragmented, it will terminate with a fin bit set
             // and an opcode of 0 (continuation), therefore we handle that when
             // parsing continuation frames, not here.
             if (!this.#info.fragmented && this.#info.fin) {
-              const fullMessage = Buffer.concat(this.#fragments)
-              websocketMessageReceived(this.ws, this.#info.binaryType, fullMessage)
-              this.#fragments.length = 0
+              websocketMessageReceived(this.ws, this.#info.binaryType, this.consumeFragments())
             }
 
             this.#state = parserStates.INFO
           } else {
-            this.#extensions.get('permessage-deflate').decompress(body, this.#info.fin, (error, data) => {
-              if (error) {
-                failWebsocketConnection(this.ws, error.message)
-                return
-              }
+            this.#extensions.get('permessage-deflate').decompress(
+              body,
+              this.#info.fin,
+              (error, data) => {
+                if (error) {
+                  failWebsocketConnection(this.ws, error.message)
+                  return
+                }
 
-              this.#fragments.push(data)
+                this.writeFragments(data)
 
-              if (!this.#info.fin) {
-                this.#state = parserStates.INFO
+                if (this.#maxPayloadSize > 0 && this.#fragmentsBytes > this.#maxPayloadSize) {
+                  failWebsocketConnection(this.ws, new MessageSizeExceededError().message)
+                  return
+                }
+
+                if (!this.#info.fin) {
+                  this.#state = parserStates.INFO
+                  this.#loop = true
+                  this.run(callback)
+                  return
+                }
+
+                websocketMessageReceived(this.ws, this.#info.binaryType, this.consumeFragments())
+
                 this.#loop = true
+                this.#state = parserStates.INFO
                 this.run(callback)
-                return
               }
-
-              websocketMessageReceived(this.ws, this.#info.binaryType, Buffer.concat(this.#fragments))
-
-              this.#loop = true
-              this.#state = parserStates.INFO
-              this.#fragments.length = 0
-              this.run(callback)
-            })
+            )
 
             this.#loop = false
             break
@@ -41986,6 +42021,26 @@ class ByteParser extends Writable {
     this.#byteOffset -= n
 
     return buffer
+  }
+
+  writeFragments (fragment) {
+    this.#fragmentsBytes += fragment.length
+    this.#fragments.push(fragment)
+  }
+
+  consumeFragments () {
+    const fragments = this.#fragments
+
+    if (fragments.length === 1) {
+      this.#fragmentsBytes = 0
+      return fragments.shift()
+    }
+
+    const output = Buffer.concat(fragments, this.#fragmentsBytes)
+    this.#fragments = []
+    this.#fragmentsBytes = 0
+
+    return output
   }
 
   parseCloseBody (data) {
@@ -43019,7 +43074,11 @@ class WebSocket extends EventTarget {
     // once this happens, the connection is open
     this[kResponse] = response
 
-    const parser = new ByteParser(this, parsedExtensions)
+    const maxPayloadSize = this[kController]?.dispatcher?.webSocketOptions?.maxPayloadSize
+
+    const parser = new ByteParser(this, parsedExtensions, {
+      maxPayloadSize
+    })
     parser.on('drain', onParserDrain)
     parser.on('error', onParserError.bind(this))
 
@@ -72998,9 +73057,508 @@ class ExpressionSet {
   }
 }
 
+;// CONCATENATED MODULE: ./node_modules/@nodable/entities/src/EntityReplacer.js
+// ---------------------------------------------------------------------------
+// Built-in entity tables
+// ---------------------------------------------------------------------------
+
+/**
+ * Standard XML entities — always processed after external/system so they
+ * cannot be overridden by DOCTYPE, and &amp; is deferred to its own final pass.
+ *
+ * Each entry: { regex: RegExp, val: string }
+ */
+const DEFAULT_XML_ENTITIES = {
+  apos: { regex: /&(apos|#0*39|#x0*27);/g, val: "'" },
+  gt: { regex: /&(gt|#0*62|#x0*3[Ee]);/g, val: '>' },
+  lt: { regex: /&(lt|#0*60|#x0*3[Cc]);/g, val: '<' },
+  quot: { regex: /&(quot|#0*34|#x0*22);/g, val: '"' },
+};
+
+/** &amp; — always expanded last to avoid double-expansion. */
+const AMP_ENTITY = { regex: /&(amp|#0*38|#x0*26);/g, val: '&' };
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const SPECIAL_CHARS = new Set('!?\\\\/[]$%{}^&*()<>|+');
+
+/**
+ * Validate that an entity name contains no regex-special or otherwise
+ * dangerous characters.
+ * @param {string} name
+ * @returns {string} the name, unchanged
+ * @throws {Error} on invalid characters
+ */
+function EntityReplacer_validateEntityName(name) {
+  for (const ch of name) {
+    if (SPECIAL_CHARS.has(ch)) {
+      throw new Error(`[EntityReplacer] Invalid character '${ch}' in entity name: "${name}"`);
+    }
+  }
+  return name;
+}
+
+/**
+ * Escape a string for use inside a RegExp character class / alternation.
+ */
+function escapeForRegex(str) {
+  return str.replace(/[.\-+*:]/g, '\\$&');
+}
+
+/**
+ * Resolve a constructor option to an entity table (plain object) or null.
+ */
+function resolveTable(option, builtIn, enabledByDefault = false) {
+  if (option === false || option === null) return null;
+  if (option === true) return builtIn;
+  if (option === undefined) return enabledByDefault ? builtIn : null;
+  if (typeof option === 'object') return option;
+  return null;
+}
+
+/**
+ * Convert a category name or array of names into a Set<string>.
+ */
+function resolveApplyLimitsTo(spec) {
+  if (spec === 'all') return 'all';
+  if (typeof spec === 'string') return new Set([spec]);
+  if (Array.isArray(spec)) return new Set(spec);
+  return new Set(['external']);
+}
+
+/**
+ * Build an entries array from a raw map of name → string|{regex,val}.
+ * Skips string values that contain '&' (recursive expansion risk).
+ * Normalises DocTypeReader's `regx` spelling to `regex`.
+ *
+ * @param {object} map
+ * @returns {Array<[string, {regex: RegExp, val: string}]>}
+ */
+function buildEntries(map) {
+  const entries = [];
+  for (const key of Object.keys(map)) {
+    const raw = map[key];
+    if (typeof raw === 'object' && raw !== null && (raw.val !== undefined)) {
+      // Accept pre-built { regex, val } or DocTypeReader's { regx, val }
+      entries.push([key, { regex: raw.regex ?? raw.regx, val: raw.val }]);
+    } else if (typeof raw === 'string') {
+      if (raw.indexOf('&') !== -1) continue; // skip — would cause recursive expansion
+      EntityReplacer_validateEntityName(key);
+      entries.push([key, {
+        regex: new RegExp('&' + escapeForRegex(key) + ';', 'g'),
+        val: raw,
+      }]);
+    }
+  }
+  return entries;
+}
+
+// ---------------------------------------------------------------------------
+// EntityReplacer
+// ---------------------------------------------------------------------------
+
+/**
+ * Standalone, zero-dependency entity replacer for XML/HTML content.
+ *
+ * Entity categories:
+ *  - **persistent external** — configured once, survive across documents.
+ *    Set via `setExternalEntities()` or built up via `addExternalEntity()`.
+ *  - **input / runtime** — DOCTYPE entities for the *current* document only.
+ *    Injected via `addInputEntities()`. Wiped on every `getInstance()` call
+ *    so they never leak between documents.
+ *
+ * Replacement order (fixed):
+ *   1. persistent external
+ *   2. input / runtime  (DOCTYPE)
+ *   3. system           (named entity groups)
+ *   4. default          (lt / gt / apos / quot)
+ *   5. amp              (&amp; final pass)
+ *
+ * @example
+ * const replacer = new EntityReplacer({ default: true, system: COMMON_HTML });
+ * replacer.setExternalEntities({ brand: 'Acme' });
+ *
+ * // Builder factory calls getInstance() before each document:
+ * const instance = replacer.getInstance();
+ * // Builder calls addInputEntities() if DOCTYPE entities are present:
+ * instance.addInputEntities({ version: '1.0' });
+ * instance.replace('&brand; v&version; &lt;'); // 'Acme v1.0 <'
+ */
+class EntityReplacer {
+  /**
+   * @param {object} [options]
+   * @param {boolean|object|null} [options.default=true]
+   * @param {boolean|object|null} [options.amp=true]
+   * @param {boolean|object|null} [options.system=false]
+   * @param {number}              [options.maxTotalExpansions=0]
+   * @param {number}              [options.maxExpandedLength=0]
+   * @param {'external'|'all'|string[]} [options.applyLimitsTo='external']
+   * @param {((resolved: string, original: string) => string)|null} [options.postCheck=null]
+   */
+  constructor(options = {}) {
+    // Immutable config resolved at construction
+    this._defaultTable = resolveTable(options.default, DEFAULT_XML_ENTITIES, true);
+    this._systemTable = resolveTable(options.system, null, false);
+    this._ampEnabled = options.amp !== false && options.amp !== null;
+
+    this._maxTotalExpansions = options.maxTotalExpansions || 0;
+    this._maxExpandedLength = options.maxExpandedLength || 0;
+    this._applyLimitsTo = resolveApplyLimitsTo(options.applyLimitsTo ?? 'external');
+    this._postCheck = typeof options.postCheck === 'function' ? options.postCheck : r => r;
+
+    // Pre-computed category limit flags
+    this._limitExternal = this._applyLimitsTo === 'all' || (this._applyLimitsTo instanceof Set && this._applyLimitsTo.has('external'));
+    this._limitSystem = this._applyLimitsTo === 'all' || (this._applyLimitsTo instanceof Set && this._applyLimitsTo.has('system'));
+    this._limitDefault = this._applyLimitsTo === 'all' || (this._applyLimitsTo instanceof Set && this._applyLimitsTo.has('default'));
+
+    // Frozen immutable entry arrays
+    this._defaultEntries = this._defaultTable ? Object.entries(this._defaultTable) : [];
+    this._systemEntries = this._systemTable ? Object.entries(this._systemTable) : [];
+
+    // Persistent external entities — survive across documents
+    /** @type {Array<[string, {regex: RegExp, val: string}]>} */
+    this._persistentEntries = [];
+
+    // Input / runtime entities — current document only, reset per getInstance()
+    /** @type {Array<[string, {regex: RegExp, val: string}]>} */
+    this._inputEntries = [];
+
+    // Per-document counters — reset in getInstance()
+    this._totalExpansions = 0;
+    this._expandedLength = 0;
+  }
+
+  // -------------------------------------------------------------------------
+  // Persistent external entity registration (survives across documents)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Replace the full set of persistent external entities.
+   * These are never wiped between documents.
+   *
+   * @param {Record<string, string | { regex: RegExp, val: string | Function }>} map
+   */
+  setExternalEntities(map) {
+    this._persistentEntries = buildEntries(map);
+  }
+
+  /**
+   * Add a single persistent external entity without disturbing existing ones.
+   *
+   * @param {string} key   — bare entity name, e.g. `'copy'`
+   * @param {string} value — replacement string, e.g. `'©'`
+   */
+  addExternalEntity(key, value) {
+    EntityReplacer_validateEntityName(key);
+    if (typeof value === 'string' && value.indexOf('&') === -1) {
+      this._persistentEntries.push([key, {
+        regex: new RegExp('&' + escapeForRegex(key) + ';', 'g'),
+        val: value,
+      }]);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Input / runtime entity registration (per document)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Inject DOCTYPE (input/runtime) entities for the current document.
+   * These are stored separately from persistent entities and wiped on the
+   * next `getInstance()` call so they never leak into subsequent documents.
+   *
+   * Also resets per-document expansion counters.
+   *
+   * @param {Record<string, string | { regx?: RegExp, regex?: RegExp, val: string | Function }>} map
+   */
+  addInputEntities(map) {
+    this._totalExpansions = 0;
+    this._expandedLength = 0;
+    this._inputEntries = buildEntries(map);
+  }
+
+  // -------------------------------------------------------------------------
+  // getInstance — builder factory integration point
+  // -------------------------------------------------------------------------
+
+  /**
+   * Reset all per-document state (input entities + expansion counters) and
+   * return `this`.
+   *
+   * The builder factory calls this each time it creates a new builder instance
+   * so DOCTYPE entities from a previous document are never carried over.
+   *
+   */
+  reset() {
+    this._inputEntries = [];
+    this._totalExpansions = 0;
+    this._expandedLength = 0;
+  }
+
+  // -------------------------------------------------------------------------
+  // Primary API
+  // -------------------------------------------------------------------------
+
+  /**
+   * Replace all entity references in `str`.
+   *
+   * Processing order:
+   *   1. persistent external
+   *   2. input / runtime  (DOCTYPE)
+   *   3. system
+   *   4. default (lt/gt/apos/quot)
+   *   5. amp
+   *   6. postCheck hook
+   *
+   * @param {string} str
+   * @returns {string}
+   */
+  replace(str) {
+    if (typeof str !== 'string' || str.length === 0) return str;
+    if (str.indexOf('&') === -1) return str; // fast path
+
+    const original = str;
+
+
+    // 1. Persistent external entities
+    if (this._persistentEntries.length > 0) {
+      str = this._applyEntries(str, this._persistentEntries, this._limitExternal);
+    }
+
+    // 2. Input / runtime entities (DOCTYPE)
+    if (this._inputEntries.length > 0 && str.indexOf('&') !== -1) {
+      str = this._applyEntries(str, this._inputEntries, this._limitExternal);
+    }
+
+    // 3. Default XML entities (lt / gt / apos / quot)
+    if (this._defaultEntries.length > 0 && str.indexOf('&') !== -1) {
+      str = this._applyEntries(str, this._defaultEntries, this._limitDefault);
+    }
+
+    // 4. System (named groups)
+    if (this._systemEntries.length > 0 && str.indexOf('&') !== -1) {
+      str = this._applyEntries(str, this._systemEntries, this._limitSystem);
+    }
+
+    // 5. &amp; — always last
+    if (this._ampEnabled && str.indexOf('&') !== -1) {
+      str = str.replace(AMP_ENTITY.regex, AMP_ENTITY.val);
+    }
+
+    // 6. postCheck
+    str = this._postCheck(str, original);
+
+    return str;
+  }
+
+
+  /**
+   * 
+   * @param {string} val 
+   * @returns 
+   */
+  parse(val) {
+    return this.replace(val);
+  }
+  // -------------------------------------------------------------------------
+  // Private helpers
+  // -------------------------------------------------------------------------
+
+  _applyEntries(str, entries, track) {
+    const limitExpansions = track && this._maxTotalExpansions > 0;
+    const limitLength = track && this._maxExpandedLength > 0;
+    const trackAny = limitExpansions || limitLength;
+
+    for (let i = 0; i < entries.length; i++) {
+      if (str.indexOf('&') === -1) break;
+
+      const entity = entries[i][1];
+
+      if (!trackAny) {
+        str = str.replace(entity.regex, entity.val);
+        continue;
+      }
+
+      if (limitExpansions && !limitLength) {
+        let count = 0;
+        str = str.replace(entity.regex, (...args) => {
+          count++;
+          return typeof entity.val === 'function' ? entity.val(...args) : entity.val;
+        });
+        if (count > 0) {
+          this._totalExpansions += count;
+          if (this._totalExpansions > this._maxTotalExpansions) {
+            throw new Error(
+              `[EntityReplacer] Entity expansion count limit exceeded: ` +
+              `${this._totalExpansions} > ${this._maxTotalExpansions}`
+            );
+          }
+        }
+      } else if (limitLength && !limitExpansions) {
+        const before = str.length;
+        str = str.replace(entity.regex, entity.val);
+        const delta = str.length - before;
+        if (delta > 0) {
+          this._expandedLength += delta;
+          if (this._expandedLength > this._maxExpandedLength) {
+            throw new Error(
+              `[EntityReplacer] Expanded content length limit exceeded: ` +
+              `${this._expandedLength} > ${this._maxExpandedLength}`
+            );
+          }
+        }
+      } else {
+        const before = str.length;
+        let count = 0;
+        str = str.replace(entity.regex, (...args) => {
+          count++;
+          return typeof entity.val === 'function' ? entity.val(...args) : entity.val;
+        });
+        if (count > 0) {
+          this._totalExpansions += count;
+          if (this._totalExpansions > this._maxTotalExpansions) {
+            throw new Error(
+              `[EntityReplacer] Entity expansion count limit exceeded: ` +
+              `${this._totalExpansions} > ${this._maxTotalExpansions}`
+            );
+          }
+        }
+        const delta = str.length - before;
+        if (delta > 0) {
+          this._expandedLength += delta;
+          if (this._expandedLength > this._maxExpandedLength) {
+            throw new Error(
+              `[EntityReplacer] Expanded content length limit exceeded: ` +
+              `${this._expandedLength} > ${this._maxExpandedLength}`
+            );
+          }
+        }
+      }
+    }
+    return str;
+  }
+}
+
+// Re-export the built-in tables for advanced users who want to extend them
+
+
+;// CONCATENATED MODULE: ./node_modules/@nodable/entities/src/groups.js
+// ---------------------------------------------------------------------------
+// Named entity groups — importable separately and freely composable.
+// All groups are plain objects; no magic, no classes.
+// ---------------------------------------------------------------------------
+
+/**
+ * ~20 most commonly needed HTML named entities.
+ * @type {Record<string, { regex: RegExp, val: string | ((m: string, s: string) => string) }>}
+ */
+const COMMON_HTML = {
+  nbsp: { regex: /&(nbsp|#0*160|#x0*[Aa]0);/g, val: '\u00a0' },
+  copy: { regex: /&(copy|#0*169|#x0*[Aa]9);/g, val: '\u00a9' },
+  reg: { regex: /&(reg|#0*174|#x0*[Aa][Ee]);/g, val: '\u00ae' },
+  trade: { regex: /&(trade|#0*8482|#x0*2122);/g, val: '\u2122' },
+  mdash: { regex: /&(mdash|#0*8212|#x0*2014);/g, val: '\u2014' },
+  ndash: { regex: /&(ndash|#0*8211|#x0*2013);/g, val: '\u2013' },
+  hellip: { regex: /&(hellip|#0*8230|#x0*2026);/g, val: '\u2026' },
+  laquo: { regex: /&(laquo|#0*171|#x0*[Aa][Bb]);/g, val: '\u00ab' },
+  raquo: { regex: /&(raquo|#0*187|#x0*[Bb][Bb]);/g, val: '\u00bb' },
+  lsquo: { regex: /&(lsquo|#0*8216|#x0*2018);/g, val: '\u2018' },
+  rsquo: { regex: /&(rsquo|#0*8217|#x0*2019);/g, val: '\u2019' },
+  ldquo: { regex: /&(ldquo|#0*8220|#x0*201[Cc]);/g, val: '\u201c' },
+  rdquo: { regex: /&(rdquo|#0*8221|#x0*201[Dd]);/g, val: '\u201d' },
+  bull: { regex: /&(bull|#0*8226|#x0*2022);/g, val: '\u2022' },
+  para: { regex: /&(para|#0*182|#x0*[Bb]6);/g, val: '\u00b6' },
+  sect: { regex: /&(sect|#0*167|#x0*[Aa]7);/g, val: '\u00a7' },
+  deg: { regex: /&(deg|#0*176|#x0*[Bb]0);/g, val: '\u00b0' },
+  frac12: { regex: /&(frac12|#0*189|#x0*[Bb][Dd]);/g, val: '\u00bd' },
+  frac14: { regex: /&(frac14|#0*188|#x0*[Bb][Cc]);/g, val: '\u00bc' },
+  frac34: { regex: /&(frac34|#0*190|#x0*[Bb][Ee]);/g, val: '\u00be' },
+  inr: { regex: /&(inr|#0*8377);/g, val: "₹" },
+};
+
+/**
+ * Currency symbol entities.
+ */
+const CURRENCY_ENTITIES = {
+  cent: { regex: /&(cent|#0*162|#x0*[Aa]2);/g, val: '\u00a2' },
+  pound: { regex: /&(pound|#0*163|#x0*[Aa]3);/g, val: '\u00a3' },
+  yen: { regex: /&(yen|#0*165|#x0*[Aa]5);/g, val: '\u00a5' },
+  euro: { regex: /&(euro|#0*8364|#x0*20[Aa][Cc]);/g, val: '\u20ac' },
+  inr: { regex: /&(inr|#0*8377|#x0*20[Bb]9);/g, val: '\u20b9' },
+  curren: { regex: /&(curren|#0*164|#x0*[Aa]4);/g, val: '\u00a4' },
+  fnof: { regex: /&(fnof|#0*402|#x0*192);/g, val: '\u0192' },
+};
+
+/**
+ * Mathematical operator entities.
+ */
+const MATH_ENTITIES = {
+  times: { regex: /&(times|#0*215|#x0*[Dd]7);/g, val: '\u00d7' },
+  divide: { regex: /&(divide|#0*247|#x0*[Ff]7);/g, val: '\u00f7' },
+  plusmn: { regex: /&(plusmn|#0*177|#x0*[Bb]1);/g, val: '\u00b1' },
+  minus: { regex: /&(minus|#0*8722|#x0*2212);/g, val: '\u2212' },
+  sup2: { regex: /&(sup2|#0*178|#x0*[Bb]2);/g, val: '\u00b2' },
+  sup3: { regex: /&(sup3|#0*179|#x0*[Bb]3);/g, val: '\u00b3' },
+  sup1: { regex: /&(sup1|#0*185|#x0*[Bb]9);/g, val: '\u00b9' },
+  frac12: { regex: /&(frac12|#0*189|#x0*[Bb][Dd]);/g, val: '\u00bd' },
+  frac14: { regex: /&(frac14|#0*188|#x0*[Bb][Cc]);/g, val: '\u00bc' },
+  frac34: { regex: /&(frac34|#0*190|#x0*[Bb][Ee]);/g, val: '\u00be' },
+  permil: { regex: /&(permil|#0*8240|#x0*2030);/g, val: '\u2030' },
+  infin: { regex: /&(infin|#0*8734|#x0*221[Ee]);/g, val: '\u221e' },
+  sum: { regex: /&(sum|#0*8721|#x0*2211);/g, val: '\u2211' },
+  prod: { regex: /&(prod|#0*8719|#x0*220[Ff]);/g, val: '\u220f' },
+  radic: { regex: /&(radic|#0*8730|#x0*221[Aa]);/g, val: '\u221a' },
+  ne: { regex: /&(ne|#0*8800|#x0*2260);/g, val: '\u2260' },
+  le: { regex: /&(le|#0*8804|#x0*2264);/g, val: '\u2264' },
+  ge: { regex: /&(ge|#0*8805|#x0*2265);/g, val: '\u2265' },
+};
+
+/**
+ * Arrow entities.
+ */
+const ARROW_ENTITIES = {
+  larr: { regex: /&(larr|#0*8592|#x0*2190);/g, val: '\u2190' },
+  uarr: { regex: /&(uarr|#0*8593|#x0*2191);/g, val: '\u2191' },
+  rarr: { regex: /&(rarr|#0*8594|#x0*2192);/g, val: '\u2192' },
+  darr: { regex: /&(darr|#0*8595|#x0*2193);/g, val: '\u2193' },
+  harr: { regex: /&(harr|#0*8596|#x0*2194);/g, val: '\u2194' },
+  lArr: { regex: /&(lArr|#0*8656|#x0*21[Dd]0);/g, val: '\u21d0' },
+  uArr: { regex: /&(uArr|#0*8657|#x0*21[Dd]1);/g, val: '\u21d1' },
+  rArr: { regex: /&(rArr|#0*8658|#x0*21[Dd]2);/g, val: '\u21d2' },
+  dArr: { regex: /&(dArr|#0*8659|#x0*21[Dd]3);/g, val: '\u21d3' },
+  hArr: { regex: /&(hArr|#0*8660|#x0*21[Dd]4);/g, val: '\u21d4' },
+};
+
+/**
+ * Numeric character references — decimal &#NNN; and hex &#xHH;
+ * These are function-replacers; they expand any valid code point.
+ */
+const NUMERIC_ENTITIES = {
+  num_dec: {
+    regex: /&#0*([0-9]{1,7});/g,
+    val: (_, s) => fromCodePoint(s, 10, "&#"),
+  },
+  num_hex: {
+    regex: /&#x0*([0-9a-fA-F]{1,6});/g,
+    val: (_, s) => fromCodePoint(s, 16, "&#x"),
+  },
+};
+
+function fromCodePoint(str, base, prefix) {
+  const codePoint = Number.parseInt(str, base);
+
+  if (codePoint >= 0 && codePoint <= 0x10FFFF) {
+    return String.fromCodePoint(codePoint);
+  } else {
+    return prefix + str + ";";
+  }
+}
 ;// CONCATENATED MODULE: ./node_modules/fast-xml-parser/src/xmlparser/OrderedObjParser.js
 
 ///@ts-check
+
 
 
 
@@ -73073,32 +73631,6 @@ class OrderedObjParser {
     this.options = options;
     this.currentNode = null;
     this.tagsNodeStack = [];
-    this.docTypeEntities = {};
-    this.lastEntities = {
-      "apos": { regex: /&(apos|#39|#x27);/g, val: "'" },
-      "gt": { regex: /&(gt|#62|#x3E);/g, val: ">" },
-      "lt": { regex: /&(lt|#60|#x3C);/g, val: "<" },
-      "quot": { regex: /&(quot|#34|#x22);/g, val: "\"" },
-    };
-    this.ampEntity = { regex: /&(amp|#38|#x26);/g, val: "&" };
-    this.htmlEntities = {
-      "space": { regex: /&(nbsp|#160);/g, val: " " },
-      // "lt" : { regex: /&(lt|#60);/g, val: "<" },
-      // "gt" : { regex: /&(gt|#62);/g, val: ">" },
-      // "amp" : { regex: /&(amp|#38);/g, val: "&" },
-      // "quot" : { regex: /&(quot|#34);/g, val: "\"" },
-      // "apos" : { regex: /&(apos|#39);/g, val: "'" },
-      "cent": { regex: /&(cent|#162);/g, val: "¢" },
-      "pound": { regex: /&(pound|#163);/g, val: "£" },
-      "yen": { regex: /&(yen|#165);/g, val: "¥" },
-      "euro": { regex: /&(euro|#8364);/g, val: "€" },
-      "copyright": { regex: /&(copy|#169);/g, val: "©" },
-      "reg": { regex: /&(reg|#174);/g, val: "®" },
-      "inr": { regex: /&(inr|#8377);/g, val: "₹" },
-      "num_dec": { regex: /&#([0-9]{1,7});/g, val: (_, str) => fromCodePoint(str, 10, "&#") },
-      "num_hex": { regex: /&#x([0-9a-fA-F]{1,6});/g, val: (_, str) => fromCodePoint(str, 16, "&#x") },
-    };
-    this.addExternalEntities = addExternalEntities;
     this.parseXml = parseXml;
     this.parseTextData = parseTextData;
     this.resolveNameSpace = resolveNameSpace;
@@ -73111,6 +73643,16 @@ class OrderedObjParser {
     this.ignoreAttributesFn = ignoreAttributes_getIgnoreAttributesFn(this.options.ignoreAttributes)
     this.entityExpansionCount = 0;
     this.currentExpandedLength = 0;
+
+    this.entityReplacer = new EntityReplacer({
+      default: true,
+      // amp:     true,
+      system: this.options.htmlEntities ? { ...COMMON_HTML, ...NUMERIC_ENTITIES, ...CURRENCY_ENTITIES } : {},
+      maxTotalExpansions: this.options.processEntities.maxTotalExpansions,
+      maxExpandedLength: this.options.processEntities.maxExpandedLength,
+      applyLimitsTo: "all",
+      //postCheck: resolved => resolved
+    });
 
     // Initialize path matcher for path-expression-matcher
     this.matcher = new Matcher();
@@ -73142,17 +73684,6 @@ class OrderedObjParser {
 
 }
 
-function addExternalEntities(externalEntities) {
-  const entKeys = Object.keys(externalEntities);
-  for (let i = 0; i < entKeys.length; i++) {
-    const ent = entKeys[i];
-    const escaped = ent.replace(/[.\-+*:]/g, '\\.');
-    this.lastEntities[ent] = {
-      regex: new RegExp("&" + escaped + ";", "g"),
-      val: externalEntities[ent]
-    }
-  }
-}
 
 /**
  * @param {string} val
@@ -73309,9 +73840,6 @@ const parseXml = function (xmlData) {
   // Reset entity expansion counters for this document
   this.entityExpansionCount = 0;
   this.currentExpandedLength = 0;
-  this.docTypeEntitiesKeys = [];
-  this.lastEntitiesKeys = Object.keys(this.lastEntities);
-  this.htmlEntitiesKeys = this.options.htmlEntities ? Object.keys(this.htmlEntities) : [];
   const options = this.options;
   const docTypeReader = new DocTypeReader(options.processEntities);
   const xmlLen = xmlData.length;
@@ -73391,8 +73919,7 @@ const parseXml = function (xmlData) {
       } else if (c1 === 33
         && xmlData.charCodeAt(i + 2) === 68) { //'!D'
         const result = docTypeReader.readDocType(xmlData, i);
-        this.docTypeEntities = result.entities;
-        this.docTypeEntitiesKeys = Object.keys(this.docTypeEntities) || []
+        this.entityReplacer.addInputEntities(result.entities);
         i = result.i;
       } else if (c1 === 33
         && xmlData.charCodeAt(i + 2) === 91) { // '!['
@@ -73633,78 +74160,7 @@ function OrderedObjParser_replaceEntitiesValue(val, tagName, jPath) {
     }
   }
 
-  // Replace DOCTYPE entities
-  for (const entityName of this.docTypeEntitiesKeys) {
-    const entity = this.docTypeEntities[entityName];
-    const matches = val.match(entity.regx);
-
-    if (matches) {
-      // Track expansions
-      this.entityExpansionCount += matches.length;
-
-      // Check expansion limit
-      if (entityConfig.maxTotalExpansions &&
-        this.entityExpansionCount > entityConfig.maxTotalExpansions) {
-        throw new Error(
-          `Entity expansion limit exceeded: ${this.entityExpansionCount} > ${entityConfig.maxTotalExpansions}`
-        );
-      }
-
-      // Store length before replacement
-      const lengthBefore = val.length;
-      val = val.replace(entity.regx, entity.val);
-
-      // Check expanded length immediately after replacement
-      if (entityConfig.maxExpandedLength) {
-        this.currentExpandedLength += (val.length - lengthBefore);
-
-        if (this.currentExpandedLength > entityConfig.maxExpandedLength) {
-          throw new Error(
-            `Total expanded content size exceeded: ${this.currentExpandedLength} > ${entityConfig.maxExpandedLength}`
-          );
-        }
-      }
-    }
-  }
-  if (val.indexOf('&') === -1) return val;
-  // Replace standard entities
-  for (const entityName of this.lastEntitiesKeys) {
-    const entity = this.lastEntities[entityName];
-    const matches = val.match(entity.regex);
-    if (matches) {
-      this.entityExpansionCount += matches.length;
-      if (entityConfig.maxTotalExpansions &&
-        this.entityExpansionCount > entityConfig.maxTotalExpansions) {
-        throw new Error(
-          `Entity expansion limit exceeded: ${this.entityExpansionCount} > ${entityConfig.maxTotalExpansions}`
-        );
-      }
-    }
-    val = val.replace(entity.regex, entity.val);
-  }
-  if (val.indexOf('&') === -1) return val;
-
-  // Replace HTML entities if enabled
-  for (const entityName of this.htmlEntitiesKeys) {
-    const entity = this.htmlEntities[entityName];
-    const matches = val.match(entity.regex);
-    if (matches) {
-      //console.log(matches);
-      this.entityExpansionCount += matches.length;
-      if (entityConfig.maxTotalExpansions &&
-        this.entityExpansionCount > entityConfig.maxTotalExpansions) {
-        throw new Error(
-          `Entity expansion limit exceeded: ${this.entityExpansionCount} > ${entityConfig.maxTotalExpansions}`
-        );
-      }
-    }
-    val = val.replace(entity.regex, entity.val);
-  }
-
-  // Replace ampersand entity last
-  val = val.replace(this.ampEntity.regex, this.ampEntity.val);
-
-  return val;
+  return this.entityReplacer.replace(val);
 }
 
 
@@ -73889,7 +74345,7 @@ function parseValue(val, shouldParse, options) {
   }
 }
 
-function fromCodePoint(str, base, prefix) {
+function OrderedObjParser_fromCodePoint(str, base, prefix) {
   const codePoint = Number.parseInt(str, base);
 
   if (codePoint >= 0 && codePoint <= 0x10FFFF) {
@@ -74130,7 +74586,7 @@ class XMLParser {
             }
         }
         const orderedObjParser = new OrderedObjParser(this.options);
-        orderedObjParser.addExternalEntities(this.externalEntities);
+        orderedObjParser.entityReplacer.setExternalEntities(this.externalEntities);
         const orderedResult = orderedObjParser.parseXml(xmlData);
         if (this.options.preserveOrder || orderedResult === undefined) return orderedResult;
         else return prettify(orderedResult, this.options, orderedObjParser.matcher, orderedObjParser.readonlyMatcher);
