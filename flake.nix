@@ -1,31 +1,47 @@
 {
-  description = "Magic Nix Cache";
+  description = "Magic Nix Cache Action";
 
-  inputs = {
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
+  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
 
-    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
-  };
-
-  outputs = { self, nixpkgs, ... }:
+  outputs =
+    { self, ... }@inputs:
     let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
-      forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f {
-        pkgs = import nixpkgs { inherit system; };
-      });
+      inherit (inputs.nixpkgs) lib;
+
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
+
+      forAllSystems =
+        f:
+        lib.genAttrs supportedSystems (
+          system:
+          f {
+            pkgs = import inputs.nixpkgs { inherit system; };
+          }
+        );
     in
     {
-      devShells = forAllSystems ({ pkgs }: {
-        default = pkgs.mkShell {
-          packages = with pkgs; [
-            jq
-            shellcheck
-            nodejs_latest
-            nixpkgs-fmt
-            nodePackages_latest.pnpm
-            nodePackages_latest.typescript-language-server
-          ];
-        };
-      });
+      devShells = forAllSystems (
+        { pkgs }:
+        {
+          default = pkgs.mkShell {
+            packages = with pkgs; [
+              shellcheck
+              nodejs_latest
+
+              # Keep people from accidentally running pnpm
+              (writeScriptBin "pnpm" ''
+                echo "pnpm is no longer used in this repo; use npm instead"
+                exit 1
+              '')
+            ];
+          };
+        }
+      );
+
+      formatter = forAllSystems ({ pkgs }: pkgs.nixfmt);
     };
 }
