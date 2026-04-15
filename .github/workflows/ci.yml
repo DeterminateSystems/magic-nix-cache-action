@@ -53,7 +53,7 @@ jobs:
         run: git status --porcelain=v1
 
       - name: Ensure no staged changes
-        run: git diff --exit-code
+        run: git diff --cached --exit-code
 
   test-no-nix:
     needs: build
