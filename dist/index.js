@@ -13869,6 +13869,61 @@ module.exports = sort
 
 /***/ }),
 
+/***/ 6114:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+
+
+const parse = __nccwpck_require__(6353)
+const constants = __nccwpck_require__(5101)
+const SemVer = __nccwpck_require__(7163)
+
+const truncate = (version, truncation, options) => {
+  if (!constants.RELEASE_TYPES.includes(truncation)) {
+    return null
+  }
+
+  const clonedVersion = cloneInputVersion(version, options)
+  return clonedVersion && doTruncation(clonedVersion, truncation)
+}
+
+const cloneInputVersion = (version, options) => {
+  const versionStringToParse = (
+    version instanceof SemVer ? version.version : version
+  )
+
+  return parse(versionStringToParse, options)
+}
+
+const doTruncation = (version, truncation) => {
+  if (isPrerelease(truncation)) {
+    return version.version
+  }
+
+  version.prerelease = []
+
+  switch (truncation) {
+    case 'major':
+      version.minor = 0
+      version.patch = 0
+      break
+    case 'minor':
+      version.patch = 0
+      break
+  }
+
+  return version.format()
+}
+
+const isPrerelease = (type) => {
+  return type.startsWith('pre')
+}
+
+module.exports = truncate
+
+
+/***/ }),
+
 /***/ 8780:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -13917,6 +13972,7 @@ const gte = __nccwpck_require__(1236)
 const lte = __nccwpck_require__(6717)
 const cmp = __nccwpck_require__(8646)
 const coerce = __nccwpck_require__(5385)
+const truncate = __nccwpck_require__(6114)
 const Comparator = __nccwpck_require__(9379)
 const Range = __nccwpck_require__(6782)
 const satisfies = __nccwpck_require__(8011)
@@ -13955,6 +14011,7 @@ module.exports = {
   lte,
   cmp,
   coerce,
+  truncate,
   Comparator,
   Range,
   satisfies,
@@ -14294,7 +14351,7 @@ createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`)
 createToken('GTLT', '((?:<|>)?=?)')
 
 // Something like "2.*" or "1.2.x".
-// Note that "x.x" is a valid xRange identifer, meaning "any version"
+// Note that "x.x" is a valid xRange identifier, meaning "any version"
 // Only the first item is strictly required.
 createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`)
 createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`)
@@ -73093,14 +73150,14 @@ function validateEntityName(name) {
 }
 ;// CONCATENATED MODULE: ./node_modules/strnum/strnum.js
 const hexRegex = /^[-+]?0x[a-fA-F0-9]+$/;
+const binRegex = /^0b[01]+$/;
+const octRegex = /^0o[0-7]+$/;
 const numRegex = /^([\-\+])?(0*)([0-9]*(\.[0-9]*)?)$/;
-// const octRegex = /^0x[a-z0-9]+/;
-// const binRegex = /0x[a-z0-9]+/;
-
 
 const consider = {
     hex: true,
-    // oct: false,
+    binary: false,
+    octal: false,
     leadingZeros: true,
     decimalPoint: "\.",
     eNotation: true,
@@ -73119,14 +73176,14 @@ function toNumber(str, options = {}) {
     else if (trimmedStr === "0") return 0;
     else if (options.hex && hexRegex.test(trimmedStr)) {
         return parse_int(trimmedStr, 16);
-        // }else if (options.oct && octRegex.test(str)) {
-        //     return Number.parseInt(val, 8);
+    } else if (options.binary && binRegex.test(trimmedStr)) {
+        return parse_int(trimmedStr, 2);
+    } else if (options.octal && octRegex.test(trimmedStr)) {
+        return parse_int(trimmedStr, 8);
     } else if (!isFinite(trimmedStr)) { //Infinity
         return handleInfinity(str, Number(trimmedStr), options);
     } else if (trimmedStr.includes('e') || trimmedStr.includes('E')) { //eNotation
         return resolveEnotation(str, trimmedStr, options);
-        // }else if (options.parseBin && binRegex.test(str)) {
-        //     return Number.parseInt(val, 2);
     } else {
         //separate negative sign, leading zeros, and rest number
         const match = numRegex.exec(trimmedStr);
@@ -73224,11 +73281,13 @@ function trimZeros(numStr) {
 }
 
 function parse_int(numStr, base) {
-    //polyfill
+    const str = numStr.trim();
+    if (base === 2 || base === 8) numStr = str.substring(2);
+
     if (parseInt) return parseInt(numStr, base);
     else if (Number.parseInt) return Number.parseInt(numStr, base);
     else if (window && window.parseInt) return window.parseInt(numStr, base);
-    else throw new Error("parseInt, Number.parseInt, window.parseInt are not supported")
+    else throw new Error("parseInt, Number.parseInt, window.parseInt are not supported");
 }
 
 /**
@@ -75984,7 +76043,7 @@ function readStopNodeData(xmlData, tagName, i) {
         const closeIndex = findClosingIndex(xmlData, "]]>", i, "StopNode is not closed.") - 2;
         i = closeIndex;
       } else {
-        const tagData = readTagExp(xmlData, i, '>')
+        const tagData = readTagExp(xmlData, i, false)
 
         if (tagData) {
           const openTagName = tagData && tagData.tagName;
@@ -76119,6 +76178,10 @@ function compress(arr, options, matcher, readonlyMatcher) {
 
       let val = compress(tagObj[property], options, matcher, readonlyMatcher);
       const isLeaf = isLeafTag(val, options);
+
+      if (Object.keys(val).length === 0 && options.alwaysCreateTextNode) {
+        val[options.textNodeName] = "";
+      }
 
       if (tagObj[":@"]) {
         assignAttributes(val, tagObj[":@"], readonlyMatcher, options);
