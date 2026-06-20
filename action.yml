@@ -65,6 +65,16 @@ inputs:
   source-url:
     description: A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options.
     required: false
+  source-checksums-url:
+    description: |
+      URL of a `shasum`-format checksums file listing the SHA-256 of each artifact. Used together
+      with `source-checksums-sha256` to verify the downloaded installer.
+    required: false
+  source-checksums-sha256:
+    description: |
+      Pinned SHA-256 (hex) of the file served at `source-checksums-url`. Must be set together with
+      `source-checksums-url`.
+    required: false
   _internal-strict-mode:
     description: Whether to fail when any errors are thrown. Used only to test the Action; do not set this in your own workflows.
     required: false
