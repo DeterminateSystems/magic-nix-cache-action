@@ -6174,103 +6174,109 @@ function gte(i, y) {
 function expand(str, max, isTop) {
   var expansions = [];
 
-  var m = balanced('{', '}', str);
-  if (!m || /\$$/.test(m.pre)) return [str];
+  // The `{a},b}` rewrite below restarts expansion on a rewritten string with
+  // the same `max` and `isTop = true`. Loop instead of recursing so a long run
+  // of non-expanding `{}` groups can't exhaust the call stack.
+  for (;;) {
+    var m = balanced('{', '}', str);
+    if (!m || /\$$/.test(m.pre)) return [str];
 
-  var isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m.body);
-  var isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m.body);
-  var isSequence = isNumericSequence || isAlphaSequence;
-  var isOptions = m.body.indexOf(',') >= 0;
-  if (!isSequence && !isOptions) {
-    // {a},b}
-    if (m.post.match(/,(?!,).*\}/)) {
-      str = m.pre + '{' + m.body + escClose + m.post;
-      return expand(str, max, true);
-    }
-    return [str];
-  }
-
-  var n;
-  if (isSequence) {
-    n = m.body.split(/\.\./);
-  } else {
-    n = parseCommaParts(m.body);
-    if (n.length === 1) {
-      // x{{a,b}}y ==> x{a}y x{b}y
-      n = expand(n[0], max, false).map(embrace);
-      if (n.length === 1) {
-        var post = m.post.length
-          ? expand(m.post, max, false)
-          : [''];
-        return post.map(function(p) {
-          return m.pre + n[0] + p;
-        });
+    var isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m.body);
+    var isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m.body);
+    var isSequence = isNumericSequence || isAlphaSequence;
+    var isOptions = m.body.indexOf(',') >= 0;
+    if (!isSequence && !isOptions) {
+      // {a},b}
+      if (m.post.match(/,(?!,).*\}/)) {
+        str = m.pre + '{' + m.body + escClose + m.post;
+        isTop = true
+        continue
       }
+      return [str];
     }
-  }
 
-  // at this point, n is the parts, and we know it's not a comma set
-  // with a single entry.
-
-  // no need to expand pre, since it is guaranteed to be free of brace-sets
-  var pre = m.pre;
-  var post = m.post.length
-    ? expand(m.post, max, false)
-    : [''];
-
-  var N;
-
-  if (isSequence) {
-    var x = numeric(n[0]);
-    var y = numeric(n[1]);
-    var width = Math.max(n[0].length, n[1].length)
-    var incr = n.length == 3
-      ? Math.max(Math.abs(numeric(n[2])), 1)
-      : 1;
-    var test = lte;
-    var reverse = y < x;
-    if (reverse) {
-      incr *= -1;
-      test = gte;
-    }
-    var pad = n.some(isPadded);
-
-    N = [];
-
-    for (var i = x; test(i, y) && N.length < max; i += incr) {
-      var c;
-      if (isAlphaSequence) {
-        c = String.fromCharCode(i);
-        if (c === '\\')
-          c = '';
-      } else {
-        c = String(i);
-        if (pad) {
-          var need = width - c.length;
-          if (need > 0) {
-            var z = new Array(need + 1).join('0');
-            if (i < 0)
-              c = '-' + z + c.slice(1);
-            else
-              c = z + c;
-          }
+    var n;
+    if (isSequence) {
+      n = m.body.split(/\.\./);
+    } else {
+      n = parseCommaParts(m.body);
+      if (n.length === 1) {
+        // x{{a,b}}y ==> x{a}y x{b}y
+        n = expand(n[0], max, false).map(embrace);
+        if (n.length === 1) {
+          var post = m.post.length
+            ? expand(m.post, max, false)
+            : [''];
+          return post.map(function(p) {
+            return m.pre + n[0] + p;
+          });
         }
       }
-      N.push(c);
     }
-  } else {
-    N = concatMap(n, function(el) { return expand(el, max, false) });
-  }
 
-  for (var j = 0; j < N.length; j++) {
-    for (var k = 0; k < post.length && expansions.length < max; k++) {
-      var expansion = pre + N[j] + post[k];
-      if (!isTop || isSequence || expansion)
-        expansions.push(expansion);
+    // at this point, n is the parts, and we know it's not a comma set
+    // with a single entry.
+
+    // no need to expand pre, since it is guaranteed to be free of brace-sets
+    var pre = m.pre;
+    var post = m.post.length
+      ? expand(m.post, max, false)
+      : [''];
+
+    var N;
+
+    if (isSequence) {
+      var x = numeric(n[0]);
+      var y = numeric(n[1]);
+      var width = Math.max(n[0].length, n[1].length)
+      var incr = n.length == 3
+        ? Math.max(Math.abs(numeric(n[2])), 1)
+        : 1;
+      var test = lte;
+      var reverse = y < x;
+      if (reverse) {
+        incr *= -1;
+        test = gte;
+      }
+      var pad = n.some(isPadded);
+
+      N = [];
+
+      for (var i = x; test(i, y) && N.length < max; i += incr) {
+        var c;
+        if (isAlphaSequence) {
+          c = String.fromCharCode(i);
+          if (c === '\\')
+            c = '';
+        } else {
+          c = String(i);
+          if (pad) {
+            var need = width - c.length;
+            if (need > 0) {
+              var z = new Array(need + 1).join('0');
+              if (i < 0)
+                c = '-' + z + c.slice(1);
+              else
+                c = z + c;
+            }
+          }
+        }
+        N.push(c);
+      }
+    } else {
+      N = concatMap(n, function(el) { return expand(el, max, false) });
     }
-  }
 
-  return expansions;
+    for (var j = 0; j < N.length; j++) {
+      for (var k = 0; k < post.length && expansions.length < max; k++) {
+        var expansion = pre + N[j] + post[k];
+        if (!isTop || isSequence || expansion)
+          expansions.push(expansion);
+      }
+    }
+
+    return expansions;
+  }
 }
 
 
@@ -12784,6 +12790,10 @@ const replaceTildes = (comp, options) => {
 
 const replaceTilde = (comp, options) => {
   const r = options.loose ? re[t.TILDELOOSE] : re[t.TILDE]
+  // if we're including prereleases in the match, then the lower bound is
+  // -0, the lowest possible prerelease value, just like x-ranges and carets.
+  // this keeps `~1.2` equivalent to the `1.2.x` x-range it's documented as.
+  const z = options.includePrerelease ? '-0' : ''
   return comp.replace(r, (_, M, m, p, pr) => {
     debug('tilde', comp, _, M, m, p, pr)
     let ret
@@ -12791,10 +12801,10 @@ const replaceTilde = (comp, options) => {
     if (isX(M)) {
       ret = ''
     } else if (isX(m)) {
-      ret = `>=${M}.0.0 <${+M + 1}.0.0-0`
+      ret = `>=${M}.0.0${z} <${+M + 1}.0.0-0`
     } else if (isX(p)) {
       // ~1.2 == >=1.2.0 <1.3.0-0
-      ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0-0`
+      ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`
     } else if (pr) {
       debug('replaceTilde pr', pr)
       ret = `>=${M}.${m}.${p}-${pr
@@ -43723,7 +43733,7 @@ exports.w = {
 
 /***/ }),
 
-/***/ 8914:
+/***/ 9437:
 /***/ ((__unused_webpack_module, exports) => {
 
 var __webpack_unused_export__;
@@ -43740,7 +43750,7 @@ exports.w = void 0;
 exports.w = {
     instrumenterImplementation: undefined,
 };
-//# sourceMappingURL=state-cjs.cjs.map
+//# sourceMappingURL=state-cjs.js.map
 
 /***/ }),
 
@@ -43938,7 +43948,7 @@ module.exports = { version: packageJson.version }
 /***/ 4012:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"6.1.0","description":"Actions cache lib","keywords":["github","actions","cache"],"homepage":"https://github.com/actions/toolkit/tree/main/packages/cache","license":"MIT","type":"module","main":"lib/cache.js","types":"lib/cache.d.ts","exports":{".":{"types":"./lib/cache.d.ts","import":"./lib/cache.js"}},"directories":{"lib":"lib","test":"__tests__"},"files":["lib","!.DS_Store"],"publishConfig":{"access":"public"},"repository":{"type":"git","url":"git+https://github.com/actions/toolkit.git","directory":"packages/cache"},"scripts":{"audit-moderate":"npm install && npm audit --json --audit-level=moderate > audit.json","test":"echo \\"Error: run tests from root\\" && exit 1","tsc":"tsc && cp src/internal/shared/package-version.cjs lib/internal/shared/"},"bugs":{"url":"https://github.com/actions/toolkit/issues"},"dependencies":{"@actions/core":"^3.0.1","@actions/exec":"^3.0.0","@actions/glob":"^0.6.1","@actions/http-client":"^4.0.1","@actions/io":"^3.0.2","@azure/core-rest-pipeline":"^1.23.0","@azure/storage-blob":"^12.31.0","@protobuf-ts/runtime-rpc":"^2.11.1","semver":"^7.7.4"},"devDependencies":{"@protobuf-ts/plugin":"^2.11.1","@types/node":"^25.6.0","@types/semver":"^7.7.1","typescript":"^5.9.3"},"overrides":{"uri-js":"npm:uri-js-replace@^1.0.1","node-fetch":"^3.3.2"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"6.2.0","description":"Actions cache lib","keywords":["github","actions","cache"],"homepage":"https://github.com/actions/toolkit/tree/main/packages/cache","license":"MIT","type":"module","main":"lib/cache.js","types":"lib/cache.d.ts","exports":{".":{"types":"./lib/cache.d.ts","import":"./lib/cache.js"}},"directories":{"lib":"lib","test":"__tests__"},"files":["lib","!.DS_Store"],"publishConfig":{"access":"public"},"repository":{"type":"git","url":"git+https://github.com/actions/toolkit.git","directory":"packages/cache"},"scripts":{"audit-moderate":"npm install && npm audit --json --audit-level=moderate > audit.json","test":"echo \\"Error: run tests from root\\" && exit 1","tsc":"tsc && cp src/internal/shared/package-version.cjs lib/internal/shared/"},"bugs":{"url":"https://github.com/actions/toolkit/issues"},"dependencies":{"@actions/core":"^3.0.1","@actions/exec":"^3.0.0","@actions/glob":"^0.6.1","@actions/http-client":"^4.0.1","@actions/io":"^3.0.2","@azure/core-rest-pipeline":"^1.23.0","@azure/storage-blob":"^12.31.0","@protobuf-ts/runtime-rpc":"^2.11.1","semver":"^7.7.4"},"devDependencies":{"@protobuf-ts/plugin":"^2.11.1","@types/node":"^25.6.0","@types/semver":"^7.7.1","typescript":"^5.9.3"},"overrides":{"uri-js":"npm:uri-js-replace@^1.0.1","node-fetch":"^3.3.2"}}');
 
 /***/ })
 
@@ -47799,14 +47809,269 @@ const originalStringify = JSON.stringify;
 const originalParse = JSON.parse;
 const customFormat = /^-?\d+n$/;
 
-const bigIntsStringify = /([\[:])?"(-?\d+)n"($|([\\n]|\s)*(\s|[\\n])*[,\}\]])/g;
-const noiseStringify =
-  /([\[:])?("-?\d+n+)n("$|"([\\n]|\s)*(\s|[\\n])*[,\}\]])/g;
+const bigIntsStringify = /([\[:])?"(-?\d+)n"($|\s*[,\}\]])/g;
+const noiseStringify = /([\[:])?("-?\d+n+)n("$|"\s*[,\}\]])/g;
 
 /**
  * @typedef {(this: any, key: string | number | undefined, value: any) => any} Replacer
  * @typedef {(key: string | number | undefined, value: any, context?: { source: string }) => any} Reviver
  */
+
+/**
+ * Checks if a value is unstringifiable according to native JSON.stringify rules.
+ *
+ * @param {any} val The value to check.
+ * @returns {boolean} True if the value is undefined, a function, or a symbol.
+ */
+const isUnstringifiable = (val) =>
+  val === undefined || typeof val === "function" || typeof val === "symbol";
+
+/**
+ * Checks if a value is a native JSON.rawJSON object (Node.js 22+).
+ *
+ * @param {any} val The value to check.
+ * @returns {boolean} True if the value is a RawJSON instance.
+ */
+const isRawJSON = (val) =>
+  val !== null &&
+  typeof val === "object" &&
+  val.constructor &&
+  val.constructor.name === "RawJSON";
+
+/**
+ * Iteratively converts a JS value to a JSON string.
+ * Used as a fallback when the native JSON.stringify hits the Maximum Call Stack size.
+ * Fully compliant with JSON formatting (space), replacers, and toJSON behaviors.
+ *
+ * @param {any} rootValue The value to stringify.
+ * @param {Replacer | Array<string | number> | null} [replacer] User's custom replacer function.
+ * @param {string | number} [spaceParam] Indentation for pretty-printing.
+ * @returns {string | undefined} The generated JSON string.
+ */
+const stringifyIteratively = (rootValue, replacer, spaceParam) => {
+  let space = "";
+
+  if (typeof spaceParam === "number") {
+    space = " ".repeat(Math.min(10, Math.max(0, Math.floor(spaceParam))));
+  } else if (typeof spaceParam === "string") {
+    space = spaceParam.slice(0, 10);
+  }
+
+  const isFunctionReplacer = typeof replacer === "function";
+  const propertyList = Array.isArray(replacer)
+    ? new Set(replacer.map(String))
+    : null;
+
+  /**
+   * Prepares a value for stringification by resolving toJSON, handling BigInts,
+   * applying custom replacers, and unwrapping primitive objects.
+   *
+   * @param {object|Array} parent The parent object or array holding the value.
+   * @param {string} key The key associated with the value.
+   * @param {any} val The raw value to process.
+   * @returns {any} The processed value ready for stringification.
+   */
+  const prepareVal = (parent, key, val) => {
+    const isObject = val !== null && typeof val === "object";
+    const hasToJSON = isObject && typeof val.toJSON === "function";
+
+    if (hasToJSON) {
+      val = val.toJSON(key);
+    }
+
+    const isNoise = typeof val === "string" && noiseValue.test(val);
+
+    if (isNoise) return val + "n";
+
+    const isBigInt = typeof val === "bigint";
+
+    if (isBigInt) {
+      const supportsRawJSON = "rawJSON" in JSON;
+
+      if (supportsRawJSON) return JSON.rawJSON(val.toString());
+
+      return val.toString() + "n";
+    }
+
+    if (isFunctionReplacer) {
+      val = replacer.call(parent, key, val);
+    }
+
+    const isPostReplacerObject = val !== null && typeof val === "object";
+
+    if (isPostReplacerObject) {
+      const isPrimitiveWrapper =
+        val instanceof Number ||
+        val instanceof String ||
+        val instanceof Boolean;
+
+      if (isPrimitiveWrapper) {
+        val = val.valueOf();
+      }
+    }
+
+    return val;
+  };
+
+  const rootProcessed = prepareVal({ "": rootValue }, "", rootValue);
+
+  if (isUnstringifiable(rootProcessed)) {
+    return undefined;
+  }
+
+  const isRootPrimitive =
+    rootProcessed === null || typeof rootProcessed !== "object";
+  const isRootNativeRawJSON = isRawJSON(rootProcessed);
+
+  if (isRootPrimitive || isRootNativeRawJSON) {
+    return originalStringify(rootProcessed);
+  }
+
+  const chunks = [];
+  let level = 0;
+
+  const stack = [
+    {
+      parent: { "": rootProcessed },
+      key: "",
+      val: rootProcessed,
+      isArray: Array.isArray(rootProcessed),
+      keys: Array.isArray(rootProcessed) ? null : Object.keys(rootProcessed),
+      index: 0,
+      first: true,
+    },
+  ];
+
+  const visited = new WeakSet([rootProcessed]);
+
+  while (stack.length > 0) {
+    const node = stack[stack.length - 1];
+
+    if (node.index === 0) {
+      chunks.push(node.isArray ? "[" : "{");
+      level++;
+    }
+
+    let isDone = false;
+
+    if (node.isArray) {
+      if (node.index < node.val.length) {
+        if (!node.first) chunks.push(",");
+
+        if (space) chunks.push("\n" + space.repeat(level));
+
+        const childRaw = node.val[node.index];
+        const childVal = prepareVal(node.val, String(node.index), childRaw);
+
+        if (isUnstringifiable(childVal)) {
+          chunks.push("null");
+          node.first = false;
+          node.index++;
+        } else {
+          const isComplexObject =
+            childVal !== null && typeof childVal === "object";
+          const isNativeRaw = isRawJSON(childVal);
+
+          if (isComplexObject && !isNativeRaw) {
+            if (visited.has(childVal)) {
+              throw new TypeError("Converting circular structure to JSON");
+            }
+
+            visited.add(childVal);
+
+            stack.push({
+              parent: node.val,
+              key: String(node.index),
+              val: childVal,
+              isArray: Array.isArray(childVal),
+              keys: Array.isArray(childVal) ? null : Object.keys(childVal),
+              index: 0,
+              first: true,
+            });
+
+            node.first = false;
+            node.index++;
+          } else {
+            chunks.push(originalStringify(childVal));
+            node.first = false;
+            node.index++;
+          }
+        }
+      } else {
+        isDone = true;
+      }
+    } else {
+      while (node.index < node.keys.length) {
+        const k = node.keys[node.index++];
+
+        const isFilteredOutByArray = propertyList && !propertyList.has(k);
+
+        if (isFilteredOutByArray) continue;
+
+        const childRaw = node.val[k];
+        const childVal = prepareVal(node.val, k, childRaw);
+
+        if (isUnstringifiable(childVal)) continue;
+
+        if (!node.first) chunks.push(",");
+
+        if (space) {
+          chunks.push("\n" + space.repeat(level) + originalStringify(k) + ": ");
+        } else {
+          chunks.push(originalStringify(k) + ":");
+        }
+
+        const isComplexObject =
+          childVal !== null && typeof childVal === "object";
+        const isNativeRaw = isRawJSON(childVal);
+
+        if (isComplexObject && !isNativeRaw) {
+          if (visited.has(childVal)) {
+            throw new TypeError("Converting circular structure to JSON");
+          }
+
+          visited.add(childVal);
+
+          stack.push({
+            parent: node.val,
+            key: k,
+            val: childVal,
+            isArray: Array.isArray(childVal),
+            keys: Array.isArray(childVal) ? null : Object.keys(childVal),
+            index: 0,
+            first: true,
+          });
+
+          node.first = false;
+
+          break; // Stop current loop level to process the newly pushed stack node
+        } else {
+          chunks.push(originalStringify(childVal));
+          node.first = false;
+        }
+      }
+
+      const isNodeFullyProcessed =
+        node.index >= node.keys.length && stack[stack.length - 1] === node;
+
+      if (isNodeFullyProcessed) {
+        isDone = true;
+      }
+    }
+
+    if (isDone) {
+      level--;
+
+      if (!node.first && space) chunks.push("\n" + space.repeat(level));
+
+      chunks.push(node.isArray ? "]" : "}");
+      visited.delete(node.val);
+      stack.pop();
+    }
+  }
+
+  return chunks.join("");
+};
 
 /**
  * Converts a JavaScript value to a JSON string.
@@ -47819,55 +48084,87 @@ const noiseStringify =
  *
  * @param {*} value The value to convert to a JSON string.
  * @param {Replacer | Array<string | number> | null} [replacer]
- *   A function that alters the behavior of the stringification process,
- *   or an array of strings/numbers to indicate properties to exclude.
+ * A function that alters the behavior of the stringification process,
+ * or an array of strings/numbers to indicate properties to exclude.
  * @param {string | number} [space]
- *   A string or number to specify indentation or pretty-printing.
+ * A string or number to specify indentation or pretty-printing.
  * @returns {string} The JSON string representation.
  */
 const JSONStringify = (value, replacer, space) => {
-  if ("rawJSON" in JSON) {
-    return originalStringify(
+  try {
+    const supportsRawJSON = "rawJSON" in JSON;
+
+    if (supportsRawJSON) {
+      return originalStringify(
+        value,
+        (key, val) => {
+          if (typeof val === "bigint") return JSON.rawJSON(val.toString());
+
+          const hasFunctionReplacer = typeof replacer === "function";
+
+          if (hasFunctionReplacer) return replacer(key, val);
+
+          const isKeyInArrayReplacer =
+            Array.isArray(replacer) && replacer.includes(key);
+
+          if (isKeyInArrayReplacer) return val;
+
+          return val;
+        },
+        space,
+      );
+    }
+
+    if (!value) return originalStringify(value, replacer, space);
+
+    const convertedToCustomJSON = originalStringify(
       value,
-      (key, value) => {
-        if (typeof value === "bigint") return JSON.rawJSON(value.toString());
+      (key, val) => {
+        const isNoise = typeof val === "string" && noiseValue.test(val);
 
-        if (typeof replacer === "function") return replacer(key, value);
+        if (isNoise) return val.toString() + "n"; // Mark noise values with additional "n" to offset the deletion of one "n" during the processing
 
-        if (Array.isArray(replacer) && replacer.includes(key)) return value;
+        if (typeof val === "bigint") return val.toString() + "n";
 
-        return value;
+        const hasFunctionReplacer = typeof replacer === "function";
+
+        if (hasFunctionReplacer) return replacer(key, val);
+
+        const isKeyInArrayReplacer =
+          Array.isArray(replacer) && replacer.includes(key);
+
+        if (isKeyInArrayReplacer) return val;
+
+        return val;
       },
       space,
     );
+
+    const processedJSON = convertedToCustomJSON.replace(
+      bigIntsStringify,
+      "$1$2$3",
+    ); // Delete one "n" off the end of every BigInt value
+
+    const denoisedJSON = processedJSON.replace(noiseStringify, "$1$2$3"); // Remove one "n" off the end of every noisy string
+
+    return denoisedJSON;
+  } catch (error) {
+    if (error instanceof RangeError) {
+      const convertedJSON = stringifyIteratively(value, replacer, space);
+
+      if (convertedJSON === undefined) return undefined;
+
+      const supportsRawJSON = "rawJSON" in JSON;
+
+      if (supportsRawJSON) return convertedJSON;
+
+      const processedJSON = convertedJSON.replace(bigIntsStringify, "$1$2$3");
+
+      return processedJSON.replace(noiseStringify, "$1$2$3");
+    }
+
+    throw error;
   }
-
-  if (!value) return originalStringify(value, replacer, space);
-
-  const convertedToCustomJSON = originalStringify(
-    value,
-    (key, value) => {
-      const isNoise = typeof value === "string" && noiseValue.test(value);
-
-      if (isNoise) return value.toString() + "n"; // Mark noise values with additional "n" to offset the deletion of one "n" during the processing
-
-      if (typeof value === "bigint") return value.toString() + "n";
-
-      if (typeof replacer === "function") return replacer(key, value);
-
-      if (Array.isArray(replacer) && replacer.includes(key)) return value;
-
-      return value;
-    },
-    space,
-  );
-  const processedJSON = convertedToCustomJSON.replace(
-    bigIntsStringify,
-    "$1$2$3",
-  ); // Delete one "n" off the end of every BigInt value
-  const denoisedJSON = processedJSON.replace(noiseStringify, "$1$2$3"); // Remove one "n" off the end of every noisy string
-
-  return denoisedJSON;
 };
 
 const featureCache = new Map();
@@ -47915,12 +48212,15 @@ const isContextSourceSupported = () => {
 const convertMarkedBigIntsReviver = (key, value, context, userReviver) => {
   const isCustomFormatBigInt =
     typeof value === "string" && customFormat.test(value);
+
   if (isCustomFormatBigInt) return BigInt(value.slice(0, -1));
 
   const isNoiseValue = typeof value === "string" && noiseValue.test(value);
   if (isNoiseValue) return value.slice(0, -1);
 
-  if (typeof userReviver !== "function") return value;
+  const hasUserReviver = typeof userReviver === "function";
+
+  if (!hasUserReviver) return value;
 
   return userReviver(key, value, context);
 };
@@ -47938,15 +48238,18 @@ const convertMarkedBigIntsReviver = (key, value, context, userReviver) => {
  */
 const JSONParseV2 = (text, reviver) => {
   return JSON.parse(text, (key, value, context) => {
-    const isBigNumber =
-      typeof value === "number" &&
-      (value > Number.MAX_SAFE_INTEGER || value < Number.MIN_SAFE_INTEGER);
+    const isNumber = typeof value === "number";
+    const isOutOfBounds =
+      value > Number.MAX_SAFE_INTEGER || value < Number.MIN_SAFE_INTEGER;
+    const isBigNumber = isNumber && isOutOfBounds;
     const isInt = context && intRegex.test(context.source);
     const isBigInt = isBigNumber && isInt;
 
     if (isBigInt) return BigInt(context.source);
 
-    if (typeof reviver !== "function") return value;
+    const hasCustomReviver = typeof reviver === "function";
+
+    if (!hasCustomReviver) return value;
 
     return reviver(key, value, context);
   });
@@ -47959,6 +48262,105 @@ const stringsOrLargeNumbers =
 const noiseValueWithQuotes = /^"-?\d+n+"$/; // Noise - strings that match the custom format before being converted to it
 
 /**
+ * Iteratively traverses the parsed object bottom-up (post-order),
+ * emulating the native JSON.parse reviver behavior.
+ * This avoids Call Stack overflows (RangeError) on deeply nested structures.
+ *
+ * @param {any} parsed The natively parsed JSON object.
+ * @param {Reviver} [userReviver] User's custom reviver function.
+ * @returns {any} The fully processed object.
+ */
+const applyReviverIteratively = (parsed, userReviver) => {
+  const rootHolder = { "": parsed };
+  const stack = [{ parent: rootHolder, key: "", visited: false }];
+
+  while (stack.length > 0) {
+    const node = stack[stack.length - 1];
+
+    if (!node.visited) {
+      node.visited = true;
+
+      const value = node.parent[node.key];
+      const isComplexObject = value !== null && typeof value === "object";
+
+      if (isComplexObject) {
+        const keys = Object.keys(value);
+
+        for (let i = keys.length - 1; i >= 0; i--) {
+          stack.push({ parent: value, key: keys[i], visited: false });
+        }
+      }
+    } else {
+      const { parent, key } = node;
+      let value = parent[key];
+
+      if (typeof value === "string") {
+        const isCustomFormatBigInt = customFormat.test(value);
+
+        if (isCustomFormatBigInt) {
+          value = BigInt(value.slice(0, -1));
+        } else {
+          const isNoise = noiseValue.test(value);
+
+          if (isNoise) value = value.slice(0, -1);
+        }
+      }
+
+      const hasUserReviver = typeof userReviver === "function";
+
+      if (hasUserReviver) {
+        value = userReviver.call(parent, key, value);
+      }
+
+      const isDeleted = value === undefined;
+
+      if (isDeleted) {
+        delete parent[key];
+      } else {
+        parent[key] = value;
+      }
+
+      stack.pop();
+    }
+  }
+
+  return rootHolder[""];
+};
+
+/**
+ * Pre-processes the JSON string to mark large numbers with an 'n' suffix.
+ *
+ * @param {string} text The raw JSON string.
+ * @returns {string} The serialized string with marked BigInts.
+ */
+const serializeBigInts = (text) => {
+  return text.replace(
+    stringsOrLargeNumbers,
+    (match, digits, fractional, exponential) => {
+      const isString = match[0] === '"';
+      const isNoise = isString && noiseValueWithQuotes.test(match);
+
+      if (isNoise) return match.substring(0, match.length - 1) + 'n"'; // Mark noise values with additional "n" to offset the deletion of one "n" during the processing
+
+      const hasFractionalOrExponential = fractional || exponential;
+
+      // With a fixed number of digits, we can correctly use lexicographical comparison to do a numeric comparison
+      const isLessThanMaxSafeInt =
+        digits &&
+        (digits.length < MAX_DIGITS ||
+          (digits.length === MAX_DIGITS && digits <= MAX_INT));
+
+      const isStandardValue =
+        isString || hasFractionalOrExponential || isLessThanMaxSafeInt;
+
+      if (isStandardValue) return match;
+
+      return '"' + match + 'n"';
+    },
+  );
+};
+
+/**
  * Converts a JSON string into a JavaScript value.
  *
  * Supports parsing of large integers using two strategies:
@@ -47969,42 +48371,34 @@ const noiseValueWithQuotes = /^"-?\d+n+"$/; // Noise - strings that match the cu
  *
  * @param {string} text A valid JSON string.
  * @param {Reviver} [reviver]
- *   A function that transforms the results. This function is called for each member
- *   of the object. If a member contains nested objects, the nested objects are
- *   transformed before the parent object is.
+ * A function that transforms the results. This function is called for each member
+ * of the object. If a member contains nested objects, the nested objects are
+ * transformed before the parent object is.
  * @returns {any} The parsed JavaScript value.
  * @throws {SyntaxError} If text is not valid JSON.
  */
 const JSONParse = (text, reviver) => {
   if (!text) return originalParse(text, reviver);
 
-  if (isContextSourceSupported()) return JSONParseV2(text, reviver); // Shortcut to a faster (2x) and simpler version
+  try {
+    if (isContextSourceSupported()) return JSONParseV2(text, reviver); // Shortcut to a faster (2x) and simpler version
 
-  // Find and mark big numbers with "n"
-  const serializedData = text.replace(
-    stringsOrLargeNumbers,
-    (text, digits, fractional, exponential) => {
-      const isString = text[0] === '"';
-      const isNoise = isString && noiseValueWithQuotes.test(text);
+    // Find and mark big numbers with "n"
+    const serializedData = serializeBigInts(text);
 
-      if (isNoise) return text.substring(0, text.length - 1) + 'n"'; // Mark noise values with additional "n" to offset the deletion of one "n" during the processing
+    return originalParse(serializedData, (key, value, context) =>
+      convertMarkedBigIntsReviver(key, value, context, reviver),
+    );
+  } catch (error) {
+    if (error instanceof RangeError) {
+      const serializedData = serializeBigInts(text);
+      const parsed = originalParse(serializedData);
 
-      const isFractionalOrExponential = fractional || exponential;
-      const isLessThanMaxSafeInt =
-        digits &&
-        (digits.length < MAX_DIGITS ||
-          (digits.length === MAX_DIGITS && digits <= MAX_INT)); // With a fixed number of digits, we can correctly use lexicographical comparison to do a numeric comparison
+      return applyReviverIteratively(parsed, reviver);
+    }
 
-      if (isString || isFractionalOrExponential || isLessThanMaxSafeInt)
-        return text;
-
-      return '"' + text + 'n"';
-    },
-  );
-
-  return originalParse(serializedData, (key, value, context) =>
-    convertMarkedBigIntsReviver(key, value, context, reviver),
-  );
+    throw error;
+  }
 };
 
 
@@ -48058,7 +48452,7 @@ class RequestError extends Error {
 
 
 // pkg/dist-src/version.js
-var dist_bundle_VERSION = "10.0.10";
+var dist_bundle_VERSION = "10.0.11";
 
 // pkg/dist-src/defaults.js
 var defaults_default = {
@@ -48215,9 +48609,10 @@ function toErrorMessage(data) {
   if (data instanceof ArrayBuffer) {
     return "Unknown error";
   }
-  if ("message" in data) {
-    const suffix = "documentation_url" in data ? ` - ${data.documentation_url}` : "";
-    return Array.isArray(data.errors) ? `${data.message}: ${data.errors.map((v) => JSON.stringify(v)).join(", ")}${suffix}` : `${data.message}${suffix}`;
+  if (typeof data === "object" && data !== null && "message" in data) {
+    const objectData = data;
+    const suffix = "documentation_url" in objectData ? ` - ${objectData.documentation_url}` : "";
+    return Array.isArray(objectData.errors) ? `${objectData.message}: ${objectData.errors.map((v) => JSON.stringify(v)).join(", ")}${suffix}` : `${objectData.message}${suffix}`;
   }
   return `Unknown error: ${JSON.stringify(data)}`;
 }
@@ -61650,6 +62045,10 @@ const SystemTarPathOnWindows = `${process.env['SYSTEMDRIVE']}\\Windows\\System32
 const TarFilename = 'cache.tar';
 const ManifestFilename = 'manifest.txt';
 const CacheFileSizeLimit = 10 * Math.pow(1024, 3); // 10GiB per repository
+// Prefix the cache backend embeds in a read-denial message (v2 twirp
+// GetCacheEntryDownloadURL error or the GHES v1 `_apis/artifactcache` 403 body).
+// Shared so cache.ts and cacheHttpClient.ts match the same contract value.
+const CacheReadDeniedMessagePrefix = 'cache read denied:';
 //# sourceMappingURL=constants.js.map
 ;// CONCATENATED MODULE: ./node_modules/@actions/cache/lib/internal/cacheUtils.js
 var cacheUtils_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -62353,7 +62752,7 @@ function httpHeaders_createHttpHeaders(rawHeaders) {
  * @returns RFC4122 v4 UUID.
  */
 function randomUUID() {
-    return crypto.randomUUID();
+    return globalThis.crypto.randomUUID();
 }
 //# sourceMappingURL=uuidUtils.js.map
 ;// CONCATENATED MODULE: ./node_modules/@typespec/ts-http-runtime/dist/esm/pipelineRequest.js
@@ -63354,7 +63753,7 @@ function logPolicy_logPolicy(options = {}) {
             logger(`Request: ${sanitizer.sanitize(request)}`);
             const response = await next(request);
             logger(`Response status code: ${response.status}`);
-            logger(`Headers: ${sanitizer.sanitize(response.headers)}`);
+            logger(`Headers: ${sanitizer.sanitize({ headers: response.headers })}`);
             return response;
         },
     };
@@ -63459,7 +63858,7 @@ function userAgentPolicy_userAgentPolicy(options = {}) {
  * @param min - The smallest integer value allowed.
  * @param max - The largest integer value allowed.
  */
-function random_getRandomIntegerInclusive(min, max) {
+function getRandomIntegerInclusive(min, max) {
     // Make sure inputs are integers.
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -63487,7 +63886,7 @@ function delay_calculateRetryDelay(retryAttempt, config) {
     const clampedDelay = Math.min(config.maxRetryDelayInMs, exponentialDelay);
     // Allow the final value to have some "jitter" (within 50% of the delay size) so
     // that retries across multiple clients don't occur simultaneously.
-    const retryAfterInMs = clampedDelay / 2 + random_getRandomIntegerInclusive(0, clampedDelay / 2);
+    const retryAfterInMs = clampedDelay / 2 + getRandomIntegerInclusive(0, clampedDelay / 2);
     return { retryAfterInMs };
 }
 //# sourceMappingURL=delay.js.map
@@ -63692,7 +64091,7 @@ function isSystemError(err) {
 ;// CONCATENATED MODULE: ./node_modules/@typespec/ts-http-runtime/dist/esm/constants.js
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-const constants_SDK_VERSION = "0.3.6";
+const constants_SDK_VERSION = "0.3.7";
 const constants_DEFAULT_RETRY_POLICY_COUNT = 3;
 //# sourceMappingURL=constants.js.map
 ;// CONCATENATED MODULE: ./node_modules/@typespec/ts-http-runtime/dist/esm/policies/retryPolicy.js
@@ -65483,7 +65882,7 @@ async function util_userAgentPlatform_setPlatformSpecificData(map) {
 ;// CONCATENATED MODULE: ./node_modules/@azure/core-rest-pipeline/dist/esm/constants.js
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-const esm_constants_SDK_VERSION = "1.24.0";
+const esm_constants_SDK_VERSION = "1.25.0";
 const esm_constants_DEFAULT_RETRY_POLICY_COUNT = 3;
 //# sourceMappingURL=constants.js.map
 ;// CONCATENATED MODULE: ./node_modules/@azure/core-rest-pipeline/dist/esm/util/userAgent.js
@@ -65806,20 +66205,30 @@ async function computeSha256Hash(content, encoding) {
 //# sourceMappingURL=internal.js.map
 ;// CONCATENATED MODULE: ./node_modules/@azure/abort-controller/dist/esm/AbortError.js
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 /**
  * This error is thrown when an asynchronous operation has been aborted.
  * Check for this error by testing the `name` that the name property of the
  * error matches `"AbortError"`.
  *
  * @example
- * ```ts
+ * ```ts snippet:AbortErrorSample
+ * import { AbortError } from "@azure/abort-controller";
+ *
+ * async function doAsyncWork(options: { abortSignal: AbortSignal }): Promise<void> {
+ *   if (options.abortSignal.aborted) {
+ *     throw new AbortError();
+ *   }
+ *
+ *   // do async work
+ * }
+ *
  * const controller = new AbortController();
  * controller.abort();
  * try {
- *   doAsyncWork(controller.signal)
+ *   doAsyncWork({ abortSignal: controller.signal });
  * } catch (e) {
- *   if (e.name === 'AbortError') {
+ *   if (e instanceof Error && e.name === "AbortError") {
  *     // handle abort error here.
  *   }
  * }
@@ -65834,7 +66243,7 @@ class esm_AbortError_AbortError extends Error {
 //# sourceMappingURL=AbortError.js.map
 ;// CONCATENATED MODULE: ./node_modules/@azure/abort-controller/dist/esm/index.js
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+// Licensed under the MIT License.
 
 //# sourceMappingURL=index.js.map
 ;// CONCATENATED MODULE: ./node_modules/@azure/core-util/dist/esm/createAbortablePromise.js
@@ -65884,7 +66293,6 @@ function createAbortablePromise(buildPromise, options) {
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-
 const delay_StandardAbortMessage = "The delay was aborted.";
 /**
  * A wrapper for setTimeout that resolves a promise after timeInMs milliseconds.
@@ -65902,22 +66310,6 @@ function delay_delay(timeInMs, options) {
         abortSignal,
         abortErrorMsg: abortErrorMsg ?? delay_StandardAbortMessage,
     });
-}
-/**
- * Calculates the delay interval for retry attempts using exponential delay with jitter.
- * @param retryAttempt - The current retry attempt number.
- * @param config - The exponential retry configuration.
- * @returns An object containing the calculated retry delay.
- */
-function esm_delay_calculateRetryDelay(retryAttempt, config) {
-    // Exponentially increase the delay each time
-    const exponentialDelay = config.retryDelayInMs * Math.pow(2, retryAttempt);
-    // Don't let the delay exceed the maximum
-    const clampedDelay = Math.min(config.maxRetryDelayInMs, exponentialDelay);
-    // Allow the final value to have some "jitter" (within 50% of the delay size) so
-    // that retries across multiple clients don't occur simultaneously.
-    const retryAfterInMs = clampedDelay / 2 + getRandomIntegerInclusive(0, clampedDelay / 2);
-    return { retryAfterInMs };
 }
 //# sourceMappingURL=delay.js.map
 ;// CONCATENATED MODULE: ./node_modules/@azure/core-util/dist/esm/error.js
@@ -66216,8 +66608,8 @@ class TracingContextImpl {
     }
 }
 //# sourceMappingURL=tracingContext.js.map
-// EXTERNAL MODULE: ./node_modules/@azure/core-tracing/dist/commonjs/state.js
-var commonjs_state = __nccwpck_require__(8914);
+// EXTERNAL MODULE: ./node_modules/@azure/core-tracing/dist/commonjs/state-cjs.js
+var state_cjs = __nccwpck_require__(9437);
 ;// CONCATENATED MODULE: ./node_modules/@azure/core-tracing/dist/esm/state.js
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
@@ -66227,7 +66619,7 @@ var commonjs_state = __nccwpck_require__(8914);
 /**
  * Defines the shared state between CJS and ESM by re-exporting the CJS state.
  */
-const state_state = commonjs_state/* state */.w;
+const state_state = state_cjs/* state */.w;
 //# sourceMappingURL=state.js.map
 ;// CONCATENATED MODULE: ./node_modules/@azure/core-tracing/dist/esm/instrumenter.js
 // Copyright (c) Microsoft Corporation.
@@ -66309,8 +66701,8 @@ function createTracingClient(options) {
     function startSpan(name, operationOptions, spanOptions) {
         const startSpanResult = getInstrumenter().startSpan(name, {
             ...spanOptions,
-            packageName: packageName,
-            packageVersion: packageVersion,
+            packageName,
+            packageVersion,
             tracingContext: operationOptions?.tracingOptions?.tracingContext,
         });
         let tracingContext = startSpanResult.tracingContext;
@@ -66330,7 +66722,7 @@ function createTracingClient(options) {
     async function withSpan(name, operationOptions, callback, spanOptions) {
         const { span, updatedOptions } = startSpan(name, operationOptions, spanOptions);
         try {
-            const result = await withContext(updatedOptions.tracingOptions.tracingContext, () => Promise.resolve(callback(updatedOptions, span)));
+            const result = await withContext(updatedOptions.tracingOptions.tracingContext, () => callback(updatedOptions, span));
             span.setStatus({ status: "success" });
             return result;
         }
@@ -67408,22 +67800,6 @@ function isSASCredential(credential) {
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 /**
- * @internal
- * @param accessToken - Access token
- * @returns Whether a token is bearer type or not
- */
-function isBearerToken(accessToken) {
-    return !accessToken.tokenType || accessToken.tokenType === "Bearer";
-}
-/**
- * @internal
- * @param accessToken - Access token
- * @returns Whether a token is Pop token or not
- */
-function isPopToken(accessToken) {
-    return accessToken.tokenType === "pop";
-}
-/**
  * Tests an object to determine whether it implements TokenCredential.
  *
  * @param credential - The assumed TokenCredential to be tested.
@@ -67454,7 +67830,7 @@ const disableKeepAlivePolicyName = "DisableKeepAlivePolicy";
 function createDisableKeepAlivePolicy() {
     return {
         name: disableKeepAlivePolicyName,
-        async sendRequest(request, next) {
+        sendRequest(request, next) {
             request.disableKeepAlive = true;
             return next(request);
         },
@@ -68589,7 +68965,7 @@ const MapperTypeNames = {
 };
 //# sourceMappingURL=serializer.js.map
 // EXTERNAL MODULE: ./node_modules/@azure/core-client/dist/commonjs/state-cjs.js
-var state_cjs = __nccwpck_require__(30);
+var commonjs_state_cjs = __nccwpck_require__(30);
 ;// CONCATENATED MODULE: ./node_modules/@azure/core-client/dist/esm/state.js
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
@@ -68599,7 +68975,7 @@ var state_cjs = __nccwpck_require__(30);
 /**
  * Defines the shared state between CJS and ESM by re-exporting the CJS state.
  */
-const esm_state_state = state_cjs/* state */.w;
+const esm_state_state = commonjs_state_cjs/* state */.w;
 //# sourceMappingURL=state.js.map
 ;// CONCATENATED MODULE: ./node_modules/@azure/core-client/dist/esm/operationHelpers.js
 // Copyright (c) Microsoft Corporation.
@@ -69788,6 +70164,22 @@ const util_originalRequestSymbol = Symbol("Original PipelineRequest");
 // cloned but we need to retrieve the OperationSpec and OperationArguments from the
 // original request.
 const originalClientRequestSymbol = Symbol.for("@azure/core-client original request");
+const passThroughProps = new Set([
+    "url",
+    "method",
+    "withCredentials",
+    "timeout",
+    "requestId",
+    "abortSignal",
+    "body",
+    "formData",
+    "onDownloadProgress",
+    "onUploadProgress",
+    "proxySettings",
+    "streamResponseStatusCodes",
+    "agent",
+    "requestOverrides",
+]);
 function toPipelineRequest(webResource, options = {}) {
     const compatWebResource = webResource;
     const request = compatWebResource[util_originalRequestSymbol];
@@ -69871,23 +70263,7 @@ function toWebResourceLike(request, options) {
                 if (prop === "keepAlive") {
                     request.disableKeepAlive = !value;
                 }
-                const passThroughProps = [
-                    "url",
-                    "method",
-                    "withCredentials",
-                    "timeout",
-                    "requestId",
-                    "abortSignal",
-                    "body",
-                    "formData",
-                    "onDownloadProgress",
-                    "onUploadProgress",
-                    "proxySettings",
-                    "streamResponseStatusCodes",
-                    "agent",
-                    "requestOverrides",
-                ];
-                if (typeof prop === "string" && passThroughProps.includes(prop)) {
+                if (typeof prop === "string" && passThroughProps.has(prop)) {
                     request[prop] = value;
                 }
                 return Reflect.set(target, prop, value, receiver);
@@ -70559,6 +70935,26 @@ class MatcherView {
   }
 
   /**
+   * Get the value of a "kept" attribute from the nearest ancestor (or
+   * current node) that declared it via `push(tag, attrs, ns, { keep: [...] })`.
+   * @param {string} attrName
+   * @returns {*}
+   */
+  getAnyParentAttr(attrName) {
+    return this._matcher.getAnyParentAttr(attrName);
+  }
+
+  /**
+   * Check whether any ancestor (or the current node) kept the given
+   * attribute via `push(tag, attrs, ns, { keep: [...] })`.
+   * @param {string} attrName
+   * @returns {boolean}
+   */
+  hasAnyParentAttr(attrName) {
+    return this._matcher.hasAnyParentAttr(attrName);
+  }
+
+  /**
    * Get current node's sibling position (child index in parent).
    * @returns {number}
    */
@@ -70666,6 +71062,9 @@ class Matcher {
     // Each siblingStacks entry: Map<tagName, count> tracking occurrences at each level
     this._pathStringCache = null;
     this._view = new MatcherView(this);
+
+    // Kept-attribute stack: only populated when push() is called with options.keep.
+    this._keptAttrs = [];
   }
 
   /**
@@ -70673,8 +71072,10 @@ class Matcher {
    * @param {string} tagName
    * @param {Object|null} [attrValues=null]
    * @param {string|null} [namespace=null]
+   * @param {Object|null} [options=null]
+   * @param {string[]} [options.keep] - Names of attributes (from attrValues)
    */
-  push(tagName, attrValues = null, namespace = null) {
+  push(tagName, attrValues = null, namespace = null, options = null) {
     this._pathStringCache = null;
 
     // Remove values from previous current node (now becoming ancestor)
@@ -70684,26 +71085,29 @@ class Matcher {
 
     // Get or create sibling tracking for current level
     const currentLevel = this.path.length;
-    if (!this.siblingStacks[currentLevel]) {
-      this.siblingStacks[currentLevel] = new Map();
+    let level = this.siblingStacks[currentLevel];
+    if (!level) {
+      // `counts` tells same-name siblings apart (the "counter" — nth <item>
+      // among other <item>s). `total` is every child seen at this level so
+      // far, kept as a running number instead of re-added from `counts` on
+      // every push — a parent with many differently-named children would
+      // otherwise cost more per child the more distinct names it has.
+      level = { counts: new Map(), total: 0 };
+      this.siblingStacks[currentLevel] = level;
     }
-
-    const siblings = this.siblingStacks[currentLevel];
 
     // Create a unique key for sibling tracking that includes namespace
     const siblingKey = namespace ? `${namespace}:${tagName}` : tagName;
 
     // Calculate counter (how many times this tag appeared at this level)
-    const counter = siblings.get(siblingKey) || 0;
+    const counter = level.counts.get(siblingKey) || 0;
 
-    // Calculate position (total children at this level so far)
-    let position = 0;
-    for (const count of siblings.values()) {
-      position += count;
-    }
+    // Position = total children at this level seen before this one.
+    const position = level.total;
 
-    // Update sibling count for this tag
-    siblings.set(siblingKey, counter + 1);
+    // Update sibling count for this tag, and the level's running total.
+    level.counts.set(siblingKey, counter + 1);
+    level.total++;
 
     // Create new node
     const node = {
@@ -70721,6 +71125,24 @@ class Matcher {
     }
 
     this.path.push(node);
+
+    // Depth of the node we just pushed (1-based, matches this.path.length)
+    const depth = this.path.length;
+
+    // Copy only the requested attributes into the kept-attrs stack. This is
+    // the one part of push() whose cost scales with input (O(keep.length))
+    // rather than being O(1) — by design, since the caller is explicitly
+    // opting in for specific attribute names. No options/keep => zero added
+    // cost beyond the two property reads below.
+    const keep = options !== null ? options.keep : null;
+    if (keep !== null && keep !== undefined && keep.length > 0 && attrValues) {
+      for (let i = 0; i < keep.length; i++) {
+        const name = keep[i];
+        if (attrValues[name] !== undefined) {
+          this._keptAttrs.push({ depth, name, value: attrValues[name] });
+        }
+      }
+    }
   }
 
   /**
@@ -70735,6 +71157,18 @@ class Matcher {
 
     if (this.siblingStacks.length > this.path.length + 1) {
       this.siblingStacks.length = this.path.length + 1;
+    }
+
+    // Drop any kept attributes that belonged to the popped node (or deeper).
+    // _keptAttrs is depth-ordered (push only ever appends increasing depths),
+    // so this is a backward scan that stops at the first surviving entry —
+    // typically O(1) since kept attrs are rare by design.
+    const poppedDepth = this.path.length + 1;
+    while (
+      this._keptAttrs.length > 0 &&
+      this._keptAttrs[this._keptAttrs.length - 1].depth >= poppedDepth
+    ) {
+      this._keptAttrs.pop();
     }
 
     return node;
@@ -70789,6 +71223,38 @@ class Matcher {
     if (this.path.length === 0) return false;
     const current = this.path[this.path.length - 1];
     return current.values !== undefined && attrName in current.values;
+  }
+
+  /**
+   * Get the value of a "kept" attribute from the nearest ancestor (or
+   * current node) that declared it via `push(tag, attrs, ns, { keep: [...] })`.
+   * Unlike getAttrValue(), this works regardless of how deep the path has
+   * gone since the attribute was pushed — but only for attribute names that
+   * were explicitly marked with `keep` at push time. Cost is proportional to
+   * the number of currently-kept attributes (typically 0-3), not path depth.
+   * @param {string} attrName
+   * @returns {*} the value, or undefined if no ancestor kept this attribute
+   */
+  getAnyParentAttr(attrName) {
+    const kept = this._keptAttrs;
+    for (let i = kept.length - 1; i >= 0; i--) {
+      if (kept[i].name === attrName) return kept[i].value;
+    }
+    return undefined;
+  }
+
+  /**
+   * Check whether any ancestor (or the current node) kept the given
+   * attribute via `push(tag, attrs, ns, { keep: [...] })`.
+   * @param {string} attrName
+   * @returns {boolean}
+   */
+  hasAnyParentAttr(attrName) {
+    const kept = this._keptAttrs;
+    for (let i = kept.length - 1; i >= 0; i--) {
+      if (kept[i].name === attrName) return true;
+    }
+    return false;
   }
 
   /**
@@ -70867,6 +71333,7 @@ class Matcher {
     this._pathStringCache = null;
     this.path = [];
     this.siblingStacks = [];
+    this._keptAttrs = [];
   }
 
   /**
@@ -71016,7 +71483,8 @@ class Matcher {
   snapshot() {
     return {
       path: this.path.map(node => ({ ...node })),
-      siblingStacks: this.siblingStacks.map(map => new Map(map))
+      siblingStacks: this.siblingStacks.map(level => level ? { counts: new Map(level.counts), total: level.total } : level),
+      keptAttrs: this._keptAttrs.map(entry => ({ ...entry }))
     };
   }
 
@@ -71027,7 +71495,8 @@ class Matcher {
   restore(snapshot) {
     this._pathStringCache = null;
     this.path = snapshot.path.map(node => ({ ...node }));
-    this.siblingStacks = snapshot.siblingStacks.map(map => new Map(map));
+    this.siblingStacks = snapshot.siblingStacks.map(level => level ? { counts: new Map(level.counts), total: level.total } : level);
+    this._keptAttrs = (snapshot.keptAttrs || []).map(entry => ({ ...entry }));
   }
 
   /**
@@ -71050,6 +71519,7 @@ class Matcher {
     return this._view;
   }
 }
+
 ;// CONCATENATED MODULE: ./node_modules/fast-xml-builder/src/util.js
 
 
@@ -71180,8 +71650,36 @@ const buildRegexes = (startChar, char, flags = '') => {
 const regexes10 = buildRegexes(nameStartChar10, nameChar10);       // no /u — BMP only
 const regexes11 = buildRegexes(nameStartChar11, nameChar11, 'u');  // /u — enables \u{10000}-\u{EFFFF}
 
-const getRegexes = (xmlVersion = '1.0') =>
-  xmlVersion === '1.1' ? regexes11 : regexes10;
+// ---------------------------------------------------------------------------
+// ASCII-only fast path (opt-in, off by default)
+//
+// The XML 1.0 vs 1.1 NameStartChar/NameChar productions differ *only* in
+// their non-ASCII ranges (merged vs split Latin-1 ranges, \u0487, and
+// supplementary planes). Restricted to ASCII, both versions collapse to the
+// same character classes, so a single regex pair covers both xmlVersion
+// values — no /u flag needed.
+//
+// Rationale: unicode-aware regexes (the /u flag, required for XML 1.1's
+// supplementary-plane range) are measurably slower in V8 than plain
+// non-unicode regexes on the same input, even when the input is pure ASCII.
+// For the common case — HTML/SVG ids, XML tags — names are ASCII, so callers
+// who know this can opt in to skip the unicode-aware matching path entirely.
+// This is a real but *conditional* win: mainly for XML 1.1 input (avoids /u),
+// or at scale where the larger unicode character classes add engine
+// overhead. It also changes behaviour (rejects legitimate non-ASCII XML
+// 1.0/1.1 names), so it must never be silently enabled — hence off by
+// default.
+// ---------------------------------------------------------------------------
+
+const nameStartCharAscii = ':A-Za-z_';
+const nameCharAscii = nameStartCharAscii + '\\-\\.\\d';
+
+const regexesAscii = buildRegexes(nameStartCharAscii, nameCharAscii); // no /u — ASCII only
+
+const getRegexes = (xmlVersion = '1.0', asciiOnly = false) => {
+  if (asciiOnly) return regexesAscii;
+  return xmlVersion === '1.1' ? regexes11 : regexes10;
+};
 
 // ---------------------------------------------------------------------------
 // Boolean validators
@@ -71191,57 +71689,131 @@ const getRegexes = (xmlVersion = '1.0') =>
  * Returns true if the string is a valid XML Name.
  * Colons are allowed anywhere (Name production).
  * Used for: DOCTYPE entity names, notation names, DTD element declarations.
+ *
+ * @param {{ xmlVersion?: '1.0'|'1.1', asciiOnly?: boolean }} [opts]
+ *   asciiOnly: skip unicode-aware matching, ASCII names only (default false).
  */
-const src_name = (str, { xmlVersion = '1.0' } = {}) =>
-  getRegexes(xmlVersion).name.test(str);
+const src_name = (str, { xmlVersion = '1.0', asciiOnly = false } = {}) =>
+  getRegexes(xmlVersion, asciiOnly).name.test(str);
 
 /**
  * Returns true if the string is a valid NCName (Non-Colonized Name).
  * Colons are not permitted.
  * Used for: namespace prefixes, local names, SVG id attributes.
+ *
+ * @param {{ xmlVersion?: '1.0'|'1.1', asciiOnly?: boolean }} [opts]
+ *   asciiOnly: skip unicode-aware matching, ASCII names only (default false).
  */
-const ncName = (str, { xmlVersion = '1.0' } = {}) =>
-  getRegexes(xmlVersion).ncName.test(str);
+const ncName = (str, { xmlVersion = '1.0', asciiOnly = false } = {}) =>
+  getRegexes(xmlVersion, asciiOnly).ncName.test(str);
 
 /**
  * Returns true if the string is a valid QName (Qualified Name).
  * Allows exactly one colon as a prefix separator: prefix:localName.
  * Used for: element and attribute names in namespace-aware XML/SVG.
+ *
+ * @param {{ xmlVersion?: '1.0'|'1.1', asciiOnly?: boolean }} [opts]
+ *   asciiOnly: skip unicode-aware matching, ASCII names only (default false).
  */
-const qName = (str, { xmlVersion = '1.0' } = {}) =>
-  getRegexes(xmlVersion).qName.test(str);
+const qName = (str, { xmlVersion = '1.0', asciiOnly = false } = {}) =>
+  getRegexes(xmlVersion, asciiOnly).qName.test(str);
 
 /**
  * Returns true if the string is a valid NMToken.
  * Like Name but no restriction on the first character.
  * Used for: DTD NMTOKEN attribute values.
+ *
+ * @param {{ xmlVersion?: '1.0'|'1.1', asciiOnly?: boolean }} [opts]
+ *   asciiOnly: skip unicode-aware matching, ASCII names only (default false).
  */
-const nmToken = (str, { xmlVersion = '1.0' } = {}) =>
-  getRegexes(xmlVersion).nmToken.test(str);
+const nmToken = (str, { xmlVersion = '1.0', asciiOnly = false } = {}) =>
+  getRegexes(xmlVersion, asciiOnly).nmToken.test(str);
 
 /**
  * Returns true if the string is a valid NMTokens value.
  * A whitespace-separated list of NMToken values.
  * Used for: DTD NMTOKENS attribute values.
+ *
+ * @param {{ xmlVersion?: '1.0'|'1.1', asciiOnly?: boolean }} [opts]
+ *   asciiOnly: skip unicode-aware matching, ASCII names only (default false).
  */
-const nmTokens = (str, { xmlVersion = '1.0' } = {}) =>
-  getRegexes(xmlVersion).nmTokens.test(str);
+const nmTokens = (str, { xmlVersion = '1.0', asciiOnly = false } = {}) =>
+  getRegexes(xmlVersion, asciiOnly).nmTokens.test(str);
+
+// ---------------------------------------------------------------------------
+// Memoized validator factory
+//
+// Real documents reuse a small vocabulary of tag/attribute names across many
+// siblings (e.g. `id`, `class`, `href` repeated across hundreds of elements).
+// The plain boolean validators above re-run the regex on every call
+// regardless of repeats. `createValidator` returns a closure with a private
+// string -> boolean cache, so repeated names after the first become O(1)
+// lookups instead of regex tests.
+//
+// - opts (xmlVersion, asciiOnly) are fixed at creation time, so the regex is
+//   resolved once, not on every call.
+// - The cache is private to the returned closure — no shared/global state,
+//   no cross-caller pollution.
+// - `maxCacheSize` bounds memory: once the cache reaches this many entries,
+//   it stops accepting new ones (existing entries keep serving hits; new
+//   misses just fall through to the regex, uncached). This avoids unbounded
+//   growth against adversarial/high-cardinality input (e.g. validating
+//   attacker-supplied names with no repeats) without the cost/complexity of
+//   a full LRU, and without the perf cliff of reset-and-refill thrashing.
+// - Call `.reset()` on the returned function to clear the cache manually
+//   (e.g. between unrelated parse calls).
+// ---------------------------------------------------------------------------
+
+const PRODUCTIONS = ['name', 'ncName', 'qName', 'nmToken', 'nmTokens'];
+
+/**
+ * Returns a memoized boolean validator function for a single production,
+ * with opts fixed at creation time.
+ *
+ * @param {'name'|'ncName'|'qName'|'nmToken'|'nmTokens'} production
+ * @param {{ xmlVersion?: '1.0'|'1.1', asciiOnly?: boolean, maxCacheSize?: number }} [opts]
+ *   maxCacheSize: max number of distinct strings to cache (default 2048).
+ *   Once reached, new strings are validated but not cached; existing cached
+ *   entries keep being served.
+ * @returns {((str: string) => boolean) & { reset: () => void }}
+ */
+const createValidator = (production, { xmlVersion = '1.0', asciiOnly = false, maxCacheSize = 2048 } = {}) => {
+  if (!PRODUCTIONS.includes(production)) {
+    throw new TypeError(
+      `Unknown production "${production}". Must be one of: ${PRODUCTIONS.join(', ')}`
+    );
+  }
+
+  const regex = getRegexes(xmlVersion, asciiOnly)[production];
+  let cache = new Map();
+
+  const validator = (str) => {
+    const cached = cache.get(str);
+    if (cached !== undefined) return cached;
+
+    const result = regex.test(str);
+    if (cache.size < maxCacheSize) cache.set(str, result);
+    return result;
+  };
+
+  validator.reset = () => { cache = new Map(); };
+
+  return validator;
+};
 
 // ---------------------------------------------------------------------------
 // Diagnostic validator
 // ---------------------------------------------------------------------------
-
-const PRODUCTIONS = (/* unused pure expression or super */ null && (['name', 'ncName', 'qName', 'nmToken', 'nmTokens']));
 
 /**
  * Validates a string against a named production and returns a detailed result.
  *
  * @param {string} str
  * @param {'name'|'ncName'|'qName'|'nmToken'|'nmTokens'} production
- * @param {{ xmlVersion?: '1.0'|'1.1' }} [opts]
+ * @param {{ xmlVersion?: '1.0'|'1.1', asciiOnly?: boolean }} [opts]
  * @returns {{ valid: boolean, production: string, input: string, reason?: string, position?: number }}
  */
-const validate = (str, production, { xmlVersion = '1.0' } = {}) => {
+const validate = (str, production, { xmlVersion = '1.0', asciiOnly = false } = {}) => {
   if (!PRODUCTIONS.includes(production)) {
     throw new TypeError(
       `Unknown production "${production}". Must be one of: ${PRODUCTIONS.join(', ')}`
@@ -71249,12 +71821,19 @@ const validate = (str, production, { xmlVersion = '1.0' } = {}) => {
   }
 
   const validators = { name: src_name, ncName, qName, nmToken, nmTokens };
-  const isValid = validators[production](str, { xmlVersion });
+  const isValid = validators[production](str, { xmlVersion, asciiOnly });
 
   if (isValid) return { valid: true, production, input: str };
 
   let reason = 'Does not match the production rules';
   let position;
+
+  // Diagnostic fallback char checks must mirror the same character set the
+  // boolean validator above used, or the reported reason/position could
+  // contradict the `valid: false` result (e.g. flagging a char as illegal
+  // that the unicode-aware check would have accepted).
+  const startCharPattern = asciiOnly ? /^[:A-Za-z_]/ : /^[:A-Za-z_\u00C0-\uFFFD]/;
+  const namePattern = asciiOnly ? /[\w\-\\.:]/ : /[\w\-\\.:\u00B7\u00C0-\uFFFD]/;
 
   if (str.length === 0) {
     reason = 'Input is empty';
@@ -71272,13 +71851,13 @@ const validate = (str, production, { xmlVersion = '1.0' } = {}) => {
     position = str.lastIndexOf(':');
   } else if (
     ['name', 'ncName', 'qName'].includes(production) &&
-    !/^[:A-Za-z_\u00C0-\uFFFD]/.test(str[0])
+    !startCharPattern.test(str[0])
   ) {
     reason = `First character "${str[0]}" is not a valid NameStartChar`;
     position = 0;
   } else {
     for (let i = 0; i < str.length; i++) {
-      if (!/[\w\-\\.:\u00B7\u00C0-\uFFFD]/.test(str[i])) {
+      if (!namePattern.test(str[i])) {
         reason = `Character "${str[i]}" at position ${i} is not a valid NameChar`;
         position = i;
         break;
@@ -71298,7 +71877,7 @@ const validate = (str, production, { xmlVersion = '1.0' } = {}) => {
  *
  * @param {string[]} strings
  * @param {'name'|'ncName'|'qName'|'nmToken'|'nmTokens'} production
- * @param {{ xmlVersion?: '1.0'|'1.1' }} [opts]
+ * @param {{ xmlVersion?: '1.0'|'1.1', asciiOnly?: boolean }} [opts]
  * @returns {Array<{ valid: boolean, production: string, input: string, reason?: string, position?: number }>}
  */
 const validateAll = (strings, production, opts = {}) =>
@@ -71313,10 +71892,12 @@ const validateAll = (strings, production, opts = {}) =>
  *
  * @param {string} str
  * @param {'name'|'ncName'|'qName'|'nmToken'|'nmTokens'} production
- * @param {{ replacement?: string }} [opts]
+ * @param {{ replacement?: string, asciiOnly?: boolean }} [opts]
+ *   asciiOnly: also replace any non-ASCII character, not just XML-illegal
+ *   ones (default false).
  * @returns {string}
  */
-const sanitize = (str, production = 'name', { replacement = '_' } = {}) => {
+const sanitize = (str, production = 'name', { replacement = '_', asciiOnly = false } = {}) => {
   if (!str) return replacement;
 
   let result = str;
@@ -71327,7 +71908,8 @@ const sanitize = (str, production = 'name', { replacement = '_' } = {}) => {
   }
 
   // Replace illegal characters
-  result = result.replace(/[^\w\-\.:\u00B7\u00C0-\uFFFD]/g, replacement);
+  const allowedCharPattern = asciiOnly ? /[^\w\-\.:]/g : /[^\w\-\.:\u00B7\u00C0-\uFFFD]/g;
+  result = result.replace(allowedCharPattern, replacement);
 
   // Fix invalid start character for Name / NCName / QName
   if (production !== 'nmToken' && production !== 'nmTokens') {
@@ -71377,11 +71959,11 @@ function detectXmlVersionFromArray(jArray, options) {
  * @param {boolean} isAttribute - true when resolving an attribute name
  * @param {object}  options
  * @param {Matcher} matcher     - current matcher state (readonly from callback perspective)
- * @param {string}  xmlVersion  - '1.0' or '1.1', forwarded to xml-naming
+ * @param {function} qNameValidator - function to validate tag names
  */
-function resolveTagName(name, isAttribute, options, matcher, xmlVersion) {
+function resolveTagName(name, isAttribute, options, matcher, qNameValidator) {
     if (!options.sanitizeName) return name;
-    if (qName(name, { xmlVersion })) return name;
+    if (qNameValidator(name)) return name;
     return options.sanitizeName(name, { isAttribute, matcher: matcher.readOnly() });
 }
 
@@ -71411,14 +71993,14 @@ function toXml(jArray, options) {
 
     // Detect XML version for use in name validation
     const xmlVersion = detectXmlVersionFromArray(jArray, options);
-
+    const qNameValidator = createValidator('qName', { xmlVersion });
     // Initialize matcher for path tracking
     const matcher = new Matcher();
 
-    return arrToStr(jArray, options, indentation, matcher, stopNodeExpressions, xmlVersion);
+    return arrToStr(jArray, options, indentation, matcher, stopNodeExpressions, qNameValidator);
 }
 
-function arrToStr(arr, options, indentation, matcher, stopNodeExpressions, xmlVersion) {
+function arrToStr(arr, options, indentation, matcher, stopNodeExpressions, qNameValidator) {
     let xmlStr = "";
     let isPreviousElementTag = false;
 
@@ -71451,7 +72033,7 @@ function arrToStr(arr, options, indentation, matcher, stopNodeExpressions, xmlVe
         // Resolve tag name (may transform it; may throw for invalid names)
         const tagName = isSpecialName
             ? rawTagName
-            : resolveTagName(rawTagName, false, options, matcher, xmlVersion);
+            : resolveTagName(rawTagName, false, options, matcher, qNameValidator);
 
         // Extract attributes from ":@" property
         const attrValues = extractAttributeValues(tagObj[":@"], options);
@@ -71493,7 +72075,7 @@ function arrToStr(arr, options, indentation, matcher, stopNodeExpressions, xmlVe
             matcher.pop();
             continue;
         } else if (tagName[0] === "?") {
-            const attStr = attr_to_str(tagObj[":@"], options, isStopNode, matcher, xmlVersion);
+            const attStr = attr_to_str(tagObj[":@"], options, isStopNode, matcher, qNameValidator);
             const tempInd = tagName === "?xml" ? "" : indentation;
             // Text node content on PI/XML declaration tags is intentionally ignored.
             // Only attributes are valid on these tags per the XML spec.
@@ -71509,7 +72091,7 @@ function arrToStr(arr, options, indentation, matcher, stopNodeExpressions, xmlVe
         }
 
         // Pass isStopNode to attr_to_str so attributes are also not processed for stopNodes
-        const attStr = attr_to_str(tagObj[":@"], options, isStopNode, matcher, xmlVersion);
+        const attStr = attr_to_str(tagObj[":@"], options, isStopNode, matcher, qNameValidator);
         const tagStart = indentation + `<${tagName}${attStr}`;
 
         // If this is a stopNode, get raw content without processing
@@ -71517,7 +72099,7 @@ function arrToStr(arr, options, indentation, matcher, stopNodeExpressions, xmlVe
         if (isStopNode) {
             tagValue = orderedJs2Xml_getRawContent(tagObj[rawTagName], options);
         } else {
-            tagValue = arrToStr(tagObj[rawTagName], options, newIdentation, matcher, stopNodeExpressions, xmlVersion);
+            tagValue = arrToStr(tagObj[rawTagName], options, newIdentation, matcher, stopNodeExpressions, qNameValidator);
         }
 
         if (options.unpairedTags.indexOf(tagName) !== -1) {
@@ -71646,7 +72228,7 @@ function propName(obj) {
  * Build attribute string, resolving attribute names through sanitizeName when configured.
  * Accepts matcher so the callback has path context.
  */
-function attr_to_str(attrMap, options, isStopNode, matcher, xmlVersion) {
+function attr_to_str(attrMap, options, isStopNode, matcher, qNameValidator) {
     let attrStr = "";
     if (attrMap && !options.ignoreAttributes) {
         for (let attr in attrMap) {
@@ -71656,7 +72238,7 @@ function attr_to_str(attrMap, options, isStopNode, matcher, xmlVersion) {
             const cleanAttrName = attr.substr(options.attributeNamePrefix.length);
             const resolvedAttrName = isStopNode
                 ? cleanAttrName  // stopNodes are raw — skip sanitizeName for attr names too
-                : resolveTagName(cleanAttrName, true, options, matcher, xmlVersion);
+                : resolveTagName(cleanAttrName, true, options, matcher, qNameValidator);
 
             let attrVal;
             if (isStopNode) {
@@ -71850,11 +72432,11 @@ function detectXmlVersionFromObj(jObj, options) {
  * @param {boolean} isAttribute - true when resolving an attribute name
  * @param {object}  options
  * @param {Matcher} matcher     - current matcher state (readonly from callback perspective)
- * @param {string}  xmlVersion  - '1.0' or '1.1', forwarded to xml-naming
+ * @param {function} qNameValidator - function to validate tag names
  */
-function fxb_resolveTagName(name, isAttribute, options, matcher, xmlVersion) {
+function fxb_resolveTagName(name, isAttribute, options, matcher, qNameValidator) {
   if (!options.sanitizeName) return name;
-  if (qName(name, { xmlVersion })) return name;
+  if (qNameValidator(name)) return name;
   return options.sanitizeName(name, { isAttribute, matcher: matcher.readOnly() });
 }
 
@@ -71870,11 +72452,12 @@ Builder.prototype.build = function (jObj) {
     // Initialize matcher for path tracking
     const matcher = new Matcher();
     const xmlVersion = detectXmlVersionFromObj(jObj, this.options);
-    return this.j2x(jObj, 0, matcher, xmlVersion).val;
+    const qNameValidator = createValidator('qName', { xmlVersion });
+    return this.j2x(jObj, 0, matcher, qNameValidator).val;
   }
 };
 
-Builder.prototype.j2x = function (jObj, level, matcher, xmlVersion) {
+Builder.prototype.j2x = function (jObj, level, matcher, qNameValidator) {
   let attrStr = '';
   let val = '';
   if (this.options.maxNestedTags && matcher.getDepth() >= this.options.maxNestedTags) {
@@ -71902,7 +72485,7 @@ Builder.prototype.j2x = function (jObj, level, matcher, xmlVersion) {
 
     const resolvedKey = isSpecialKey
       ? key
-      : fxb_resolveTagName(key, false, this.options, matcher, xmlVersion);
+      : fxb_resolveTagName(key, false, this.options, matcher, qNameValidator);
 
     if (typeof jObj[key] === 'undefined') {
       // supress undefined node only if it is not an attribute
@@ -71927,7 +72510,7 @@ Builder.prototype.j2x = function (jObj, level, matcher, xmlVersion) {
       const attr = this.isAttribute(key);
       if (attr && !this.ignoreAttributesFn(attr, jPath)) {
         // Resolve the attribute name through sanitizeName
-        const resolvedAttr = fxb_resolveTagName(attr, true, this.options, matcher, xmlVersion);
+        const resolvedAttr = fxb_resolveTagName(attr, true, this.options, matcher, qNameValidator);
         attrStr += this.buildAttrPairStr(resolvedAttr, '' + jObj[key], isCurrentStopNode);
       } else if (!attr) {
         //tag value
@@ -71969,7 +72552,7 @@ Builder.prototype.j2x = function (jObj, level, matcher, xmlVersion) {
           if (this.options.oneListGroup) {
             // Push tag to matcher before recursive call
             matcher.push(resolvedKey);
-            const result = this.j2x(item, level + 1, matcher, xmlVersion);
+            const result = this.j2x(item, level + 1, matcher, qNameValidator);
             // Pop tag from matcher after recursive call
             matcher.pop();
 
@@ -71978,7 +72561,7 @@ Builder.prototype.j2x = function (jObj, level, matcher, xmlVersion) {
               listTagAttr += result.attrStr
             }
           } else {
-            listTagVal += this.processTextOrObjNode(item, resolvedKey, level, matcher, xmlVersion)
+            listTagVal += this.processTextOrObjNode(item, resolvedKey, level, matcher, qNameValidator)
           }
         } else {
           if (this.options.oneListGroup) {
@@ -72016,11 +72599,11 @@ Builder.prototype.j2x = function (jObj, level, matcher, xmlVersion) {
         const L = Ks.length;
         for (let j = 0; j < L; j++) {
           // Resolve attribute names inside attributesGroupName
-          const resolvedAttr = fxb_resolveTagName(Ks[j], true, this.options, matcher, xmlVersion);
+          const resolvedAttr = fxb_resolveTagName(Ks[j], true, this.options, matcher, qNameValidator);
           attrStr += this.buildAttrPairStr(resolvedAttr, '' + jObj[key][Ks[j]], isCurrentStopNode);
         }
       } else {
-        val += this.processTextOrObjNode(jObj[key], resolvedKey, level, matcher, xmlVersion)
+        val += this.processTextOrObjNode(jObj[key], resolvedKey, level, matcher, qNameValidator)
       }
     }
   }
@@ -72037,7 +72620,7 @@ Builder.prototype.buildAttrPairStr = function (attrName, val, isStopNode) {
   } else return ' ' + attrName + '="' + escapeAttribute(val) + '"';
 }
 
-function processTextOrObjNode(object, key, level, matcher, xmlVersion) {
+function processTextOrObjNode(object, key, level, matcher, qNameValidator) {
   // Extract attributes to pass to matcher
   const attrValues = this.extractAttributes(object);
 
@@ -72055,7 +72638,7 @@ function processTextOrObjNode(object, key, level, matcher, xmlVersion) {
     return this.buildObjectNode(rawContent, key, attrStr, level);
   }
 
-  const result = this.j2x(object, level + 1, matcher, xmlVersion);
+  const result = this.j2x(object, level + 1, matcher, qNameValidator);
   // Pop tag from matcher after recursion
   matcher.pop();
 
@@ -72184,7 +72767,9 @@ Builder.prototype.buildAttributesForStopNode = function (obj) {
       if (val === true && this.options.suppressBooleanAttributes) {
         attrStr += ' ' + cleanKey;
       } else {
-        attrStr += ' ' + cleanKey + '="' + val + '"'; // No encoding for stopNode
+        // stopNode content is raw, but the quote delimiter is always escaped
+        // so a quote in the value cannot break out of the attribute (see orderedJs2Xml attr_to_str)
+        attrStr += ' ' + cleanKey + '="' + escapeAttribute(val) + '"';
       }
     }
   } else {
@@ -72197,7 +72782,9 @@ Builder.prototype.buildAttributesForStopNode = function (obj) {
         if (val === true && this.options.suppressBooleanAttributes) {
           attrStr += ' ' + attr;
         } else {
-          attrStr += ' ' + attr + '="' + val + '"'; // No encoding for stopNode
+          // stopNode content is raw, but the quote delimiter is always escaped
+          // so a quote in the value cannot break out of the attribute (see orderedJs2Xml attr_to_str)
+          attrStr += ' ' + attr + '="' + escapeAttribute(val) + '"';
         }
       }
     }
@@ -72228,7 +72815,7 @@ Builder.prototype.buildObjectNode = function (val, key, attrStr, level) {
     if ((attrStr || attrStr === '') && val.indexOf('<') === -1) {
       return (this.indentate(level) + '<' + key + attrStr + piClosingChar + '>' + val + tagEndExp);
     } else if (this.options.commentPropName !== false && key === this.options.commentPropName && piClosingChar.length === 0) {
-      return this.indentate(level) + `<!--${val}-->` + this.newLine;
+      return this.indentate(level) + `<!--${safeComment(val)}-->` + this.newLine;
     } else {
       return (
         this.indentate(level) + '<' + key + attrStr + piClosingChar + this.tagEndChar +
@@ -73925,6 +74512,9 @@ class ExpressionSet {
     /** @type {import('./Expression.js').default[]} expressions containing deep wildcard (..) */
     this._deepWildcards = [];
 
+    /** @type {Map<string, import('./Expression.js').default[]>} terminalTag → deep wildcard expressions */
+    this._deepByTerminalTag = new Map();
+
     /** @type {Set<string>} pattern strings already added — used for deduplication */
     this._patterns = new Set();
 
@@ -73956,7 +74546,14 @@ class ExpressionSet {
     this._patterns.add(expression.pattern);
 
     if (expression.hasDeepWildcard()) {
-      this._deepWildcards.push(expression);
+      const lastSeg = expression.segments[expression.segments.length - 1];
+      if (lastSeg && lastSeg.type !== 'deep-wildcard' && lastSeg.tag !== '*') {
+        const tag = lastSeg.tag;
+        if (!this._deepByTerminalTag.has(tag)) this._deepByTerminalTag.set(tag, []);
+        this._deepByTerminalTag.get(tag).push(expression);
+      } else {
+        this._deepWildcards.push(expression);
+      }
       return this;
     }
 
@@ -74090,7 +74687,13 @@ class ExpressionSet {
       }
     }
 
-    // 3. Deep wildcards — cannot be pre-filtered by depth or tag
+    // 3. Deep wildcards — indexed by terminal tag, then unindexed fallback
+    const deepBucket = this._deepByTerminalTag.get(tag);
+    if (deepBucket) {
+      for (let i = 0; i < deepBucket.length; i++) {
+        if (matcher.matches(deepBucket[i])) return deepBucket[i];
+      }
+    }
     for (let i = 0; i < this._deepWildcards.length; i++) {
       if (matcher.matches(this._deepWildcards[i])) return this._deepWildcards[i];
     }
@@ -75904,6 +76507,152 @@ class EntityDecoder {
     return this._applyNCRAction(effective, token, cp);
   }
 }
+;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/contexts/sql.js
+/**
+ * SQL context patterns — high-precision rules only.
+ *
+ * These rules have very low false-positive risk and are safe to apply to
+ * general user text (names, descriptions, search queries, etc.).
+ * All patterns are ReDoS-safe — unlike the `sql-injection` npm package
+ * which has an active CVE on its own detection regexes.
+ *
+ * For exhaustive coverage including noisier heuristics (comment sequences,
+ * hex literals, stacked queries with semicolons), use 'SQL-STRICT' instead.
+ * Apply 'SQL-STRICT' only to strings that are specifically SQL fragments,
+ * not to general free-text fields.
+ */
+
+const SQL_PATTERNS = [
+  {
+    id: 'sql-block-comment-open',
+    description: 'SQL block comment open: /* ... */ — unusual in legitimate user text',
+    pattern: /\/\*/,
+  },
+  {
+    id: 'sql-union-select',
+    description: 'UNION SELECT — most common SQL injection aggregation attack',
+    pattern: /\bUNION\s{1,20}(?:ALL\s{1,20})?SELECT\b/i,
+  },
+  {
+    id: 'sql-drop-table',
+    description: 'DROP TABLE — destructive DDL injection',
+    pattern: /\bDROP\s{1,20}TABLE\b/i,
+  },
+  {
+    id: 'sql-drop-database',
+    description: 'DROP DATABASE — destructive DDL injection',
+    pattern: /\bDROP\s{1,20}DATABASE\b/i,
+  },
+  {
+    id: 'sql-insert-into',
+    description: 'INSERT INTO — data injection',
+    pattern: /\bINSERT\s{1,20}INTO\b/i,
+  },
+  {
+    id: 'sql-delete-from',
+    description: 'DELETE FROM — data deletion injection',
+    pattern: /\bDELETE\s{1,20}FROM\b/i,
+  },
+  {
+    id: 'sql-update-set',
+    description: 'UPDATE ... SET — data modification injection',
+    // Allows arbitrary content between UPDATE and SET (table name, alias, etc.)
+    pattern: /\bUPDATE\b[\s\S]{1,60}\bSET\b/i,
+  },
+  {
+    id: 'sql-exec-xp',
+    description: 'EXEC xp_ — MSSQL extended stored procedure execution',
+    pattern: /\bEXEC(?:UTE)?\s{1,20}xp_/i,
+  },
+  {
+    id: 'sql-tautology-string',
+    description: "Classic string tautology: ' OR '1'='1 or \" OR \"1\"=\"1\"",
+    // Last quote is optional — injection may truncate it: ' OR '1'='1--
+    pattern: /'\s{0,10}OR\s{0,10}'[^']{0,20}'\s*=\s*'[^']{0,20}/i,
+  },
+  {
+    id: 'sql-tautology-numeric',
+    description: 'Numeric tautology: OR 1=1',
+    pattern: /\bOR\s{1,10}1\s*=\s*1\b/i,
+  },
+  {
+    id: 'sql-always-true-zero',
+    description: 'Numeric tautology: OR 0=0',
+    pattern: /\bOR\s{1,10}0\s*=\s*0\b/i,
+  },
+  {
+    id: 'sql-sleep-benchmark',
+    description: 'Time-based blind injection: SLEEP() or BENCHMARK()',
+    pattern: /\b(?:SLEEP|BENCHMARK)\s*\(/i,
+  },
+  {
+    id: 'sql-waitfor-delay',
+    description: 'MSSQL time-based blind injection: WAITFOR DELAY',
+    pattern: /\bWAITFOR\s{1,20}DELAY\b/i,
+  },
+  {
+    id: 'sql-char-function',
+    description: 'CHAR() function — used to obfuscate injected strings',
+    pattern: /\bCHAR\s*\(\s*\d{1,3}/i,
+  },
+  {
+    id: 'sql-information-schema',
+    description: 'INFORMATION_SCHEMA — reconnaissance query for table/column enumeration',
+    pattern: /\bINFORMATION_SCHEMA\b/i,
+  },
+];
+
+/* harmony default export */ const sql = (SQL_PATTERNS);
+
+;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/contexts/sql-strict.js
+/**
+ * SQL-STRICT context patterns.
+ *
+ * Extends the base 'SQL' context with three additional rules that are
+ * effective at detecting real injections but carry a higher false-positive
+ * risk on general free-text input.
+ *
+ * Use 'SQL-STRICT' when:
+ *   - The string is specifically a SQL fragment or database identifier
+ *   - You control the input domain (e.g. a dedicated SQL search field)
+ *   - You can tolerate occasional false positives in exchange for broader coverage
+ *
+ * Use 'SQL' (not STRICT) when:
+ *   - The field is general user text (names, descriptions, comments)
+ *   - False positives would block legitimate content (e.g. "see note -- above")
+ *
+ * Rules moved here from 'SQL' due to false-positive risk:
+ *
+ *   sql-line-comment   — "--" fires on "see note -- above", "value--", CSS var(--primary)
+ *   sql-stacked-query  — "; SELECT" fires on legitimate prose with semicolons + SQL words
+ *   sql-hex-encoding   — "0xDEAD" fires on hex values in technical docs and log output
+ */
+
+
+
+const SQL_STRICT_EXTRA = [
+  {
+    id: 'sql-line-comment',
+    description: 'SQL line comment: -- followed by whitespace or end of string',
+    pattern: /--(?:\s|$)/,
+  },
+  {
+    id: 'sql-stacked-query',
+    description: 'Stacked queries: semicolon immediately followed by a SQL keyword',
+    pattern: /;\s{0,10}(?:SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC)\b/i,
+  },
+  {
+    id: 'sql-hex-encoding',
+    description: 'Hex-encoded string injection: 0x41414141 style (MySQL)',
+    pattern: /\b0x[0-9a-f]{4,}/i,
+  },
+];
+
+// SQL-STRICT = all base SQL rules + the three noisy extras
+const SQL_STRICT_PATTERNS = [...sql, ...SQL_STRICT_EXTRA];
+
+/* harmony default export */ const sql_strict = (SQL_STRICT_PATTERNS);
+
 ;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/contexts/html.js
 /**
  * HTML context patterns.
@@ -76170,152 +76919,6 @@ const SVG_PATTERNS = [
 ];
 
 /* harmony default export */ const svg = (SVG_PATTERNS);
-
-;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/contexts/sql.js
-/**
- * SQL context patterns — high-precision rules only.
- *
- * These rules have very low false-positive risk and are safe to apply to
- * general user text (names, descriptions, search queries, etc.).
- * All patterns are ReDoS-safe — unlike the `sql-injection` npm package
- * which has an active CVE on its own detection regexes.
- *
- * For exhaustive coverage including noisier heuristics (comment sequences,
- * hex literals, stacked queries with semicolons), use 'SQL-STRICT' instead.
- * Apply 'SQL-STRICT' only to strings that are specifically SQL fragments,
- * not to general free-text fields.
- */
-
-const SQL_PATTERNS = [
-  {
-    id: 'sql-block-comment-open',
-    description: 'SQL block comment open: /* ... */ — unusual in legitimate user text',
-    pattern: /\/\*/,
-  },
-  {
-    id: 'sql-union-select',
-    description: 'UNION SELECT — most common SQL injection aggregation attack',
-    pattern: /\bUNION\s{1,20}(?:ALL\s{1,20})?SELECT\b/i,
-  },
-  {
-    id: 'sql-drop-table',
-    description: 'DROP TABLE — destructive DDL injection',
-    pattern: /\bDROP\s{1,20}TABLE\b/i,
-  },
-  {
-    id: 'sql-drop-database',
-    description: 'DROP DATABASE — destructive DDL injection',
-    pattern: /\bDROP\s{1,20}DATABASE\b/i,
-  },
-  {
-    id: 'sql-insert-into',
-    description: 'INSERT INTO — data injection',
-    pattern: /\bINSERT\s{1,20}INTO\b/i,
-  },
-  {
-    id: 'sql-delete-from',
-    description: 'DELETE FROM — data deletion injection',
-    pattern: /\bDELETE\s{1,20}FROM\b/i,
-  },
-  {
-    id: 'sql-update-set',
-    description: 'UPDATE ... SET — data modification injection',
-    // Allows arbitrary content between UPDATE and SET (table name, alias, etc.)
-    pattern: /\bUPDATE\b[\s\S]{1,60}\bSET\b/i,
-  },
-  {
-    id: 'sql-exec-xp',
-    description: 'EXEC xp_ — MSSQL extended stored procedure execution',
-    pattern: /\bEXEC(?:UTE)?\s{1,20}xp_/i,
-  },
-  {
-    id: 'sql-tautology-string',
-    description: "Classic string tautology: ' OR '1'='1 or \" OR \"1\"=\"1\"",
-    // Last quote is optional — injection may truncate it: ' OR '1'='1--
-    pattern: /'\s{0,10}OR\s{0,10}'[^']{0,20}'\s*=\s*'[^']{0,20}/i,
-  },
-  {
-    id: 'sql-tautology-numeric',
-    description: 'Numeric tautology: OR 1=1',
-    pattern: /\bOR\s{1,10}1\s*=\s*1\b/i,
-  },
-  {
-    id: 'sql-always-true-zero',
-    description: 'Numeric tautology: OR 0=0',
-    pattern: /\bOR\s{1,10}0\s*=\s*0\b/i,
-  },
-  {
-    id: 'sql-sleep-benchmark',
-    description: 'Time-based blind injection: SLEEP() or BENCHMARK()',
-    pattern: /\b(?:SLEEP|BENCHMARK)\s*\(/i,
-  },
-  {
-    id: 'sql-waitfor-delay',
-    description: 'MSSQL time-based blind injection: WAITFOR DELAY',
-    pattern: /\bWAITFOR\s{1,20}DELAY\b/i,
-  },
-  {
-    id: 'sql-char-function',
-    description: 'CHAR() function — used to obfuscate injected strings',
-    pattern: /\bCHAR\s*\(\s*\d{1,3}/i,
-  },
-  {
-    id: 'sql-information-schema',
-    description: 'INFORMATION_SCHEMA — reconnaissance query for table/column enumeration',
-    pattern: /\bINFORMATION_SCHEMA\b/i,
-  },
-];
-
-/* harmony default export */ const sql = (SQL_PATTERNS);
-
-;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/contexts/sql-strict.js
-/**
- * SQL-STRICT context patterns.
- *
- * Extends the base 'SQL' context with three additional rules that are
- * effective at detecting real injections but carry a higher false-positive
- * risk on general free-text input.
- *
- * Use 'SQL-STRICT' when:
- *   - The string is specifically a SQL fragment or database identifier
- *   - You control the input domain (e.g. a dedicated SQL search field)
- *   - You can tolerate occasional false positives in exchange for broader coverage
- *
- * Use 'SQL' (not STRICT) when:
- *   - The field is general user text (names, descriptions, comments)
- *   - False positives would block legitimate content (e.g. "see note -- above")
- *
- * Rules moved here from 'SQL' due to false-positive risk:
- *
- *   sql-line-comment   — "--" fires on "see note -- above", "value--", CSS var(--primary)
- *   sql-stacked-query  — "; SELECT" fires on legitimate prose with semicolons + SQL words
- *   sql-hex-encoding   — "0xDEAD" fires on hex values in technical docs and log output
- */
-
-
-
-const SQL_STRICT_EXTRA = [
-  {
-    id: 'sql-line-comment',
-    description: 'SQL line comment: -- followed by whitespace or end of string',
-    pattern: /--(?:\s|$)/,
-  },
-  {
-    id: 'sql-stacked-query',
-    description: 'Stacked queries: semicolon immediately followed by a SQL keyword',
-    pattern: /;\s{0,10}(?:SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC)\b/i,
-  },
-  {
-    id: 'sql-hex-encoding',
-    description: 'Hex-encoded string injection: 0x41414141 style (MySQL)',
-    pattern: /\b0x[0-9a-f]{4,}/i,
-  },
-];
-
-// SQL-STRICT = all base SQL rules + the three noisy extras
-const SQL_STRICT_PATTERNS = [...sql, ...SQL_STRICT_EXTRA];
-
-/* harmony default export */ const sql_strict = (SQL_STRICT_PATTERNS);
 
 ;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/contexts/shell.js
 /**
@@ -76702,20 +77305,22 @@ const LOG_PATTERNS = [
 
 /* harmony default export */ const contexts_log = (LOG_PATTERNS);
 
-;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/registry.js
+;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/index.js
 /**
- * Context registry — maps context name strings to their pattern arrays.
+ * is-unsafe v2
  *
- * Adding a new context: create a file in ./contexts/, export a default array
- * of pattern objects, and register it here.
+ * Zero-dependency, DOM-free, pure predicate for detecting unsafe strings
+ * across HTML, XML, SVG, SQL, SQL-STRICT, SHELL, REDOS, NOSQL, and LOG contexts.
  *
- * Context name guide:
- *   SQL        — high-precision rules; safe for general text fields
- *   SQL-STRICT — SQL + three noisier rules (line comments, stacked queries, hex);
- *                use only for SQL-specific inputs
- *   REDOS      — detects ReDoS-prone patterns when string will be compiled as RegExp
+ * v2 change: contexts are imported as named pattern arrays rather than resolved
+ * via a string-keyed registry. This makes each context independently
+ * tree-shakeable — bundlers can drop any context you never import.
+ *
+ * @module is-unsafe
  */
 
+// ─── Context pattern arrays (named exports) ────────────────────────────────
+// Import only the ones you need. Each is independently tree-shakeable.
 
 
 
@@ -76726,8 +77331,40 @@ const LOG_PATTERNS = [
 
 
 
-/** @type {Record<string, Array<{id: string, description: string, pattern: RegExp}>>} */
-const registry_CONTEXT_REGISTRY = {
+// SQL-STRICT needs a quoted identifier because of the hyphen
+
+
+
+// ─── VALID_CONTEXTS convenience re-export ─────────────────────────────────
+// Importing this pulls in ALL contexts. Use it only when you need all of them
+// (e.g. for validation UI, tooling, or exhaustive audits).
+// If you only need a subset, import the named contexts directly instead.
+
+
+
+
+
+
+
+
+
+
+// ─── Attach labels to named contexts ──────────────────────────────────────
+// Each built-in PatternList carries its canonical name so matchList can read
+// list.label directly — no registry lookup needed at match time.
+// Custom PatternLists default to 'CUSTOM' unless the caller sets list.label.
+
+html.label       = 'HTML';
+xml.label        = 'XML';
+svg.label        = 'SVG';
+sql.label        = 'SQL';
+sql_strict.label = 'SQL-STRICT';
+shell.label      = 'SHELL';
+redos.label      = 'REDOS';
+nosql.label      = 'NOSQL';
+contexts_log.label        = 'LOG';
+
+const VALID_CONTEXTS = Object.freeze({
   HTML: html,
   XML: xml,
   SVG: svg,
@@ -76737,45 +77374,29 @@ const registry_CONTEXT_REGISTRY = {
   REDOS: redos,
   NOSQL: nosql,
   LOG: contexts_log,
-};
+});
 
-/* harmony default export */ const registry = (registry_CONTEXT_REGISTRY);
+// ─── Types ────────────────────────────────────────────────────────────────
 
 /**
- * Enum of valid context names — e.g. `VALID_CONTEXTS.HTML === 'HTML'`.
- * @type {Record<string, string>}
- */
-const VALID_CONTEXTS = Object.freeze(
-  Object.fromEntries(Object.keys(registry_CONTEXT_REGISTRY).map((k) => [k, k]))
-);
-;// CONCATENATED MODULE: ./node_modules/is-unsafe/src/index.js
-/**
- * is-unsafe
- *
- * Zero-dependency, DOM-free, pure predicate for detecting unsafe strings
- * across HTML, XML, SVG, SQL, SQL-STRICT, SHELL, REDOS, NOSQL, and LOG contexts.
- *
- * @module is-unsafe
+ * @typedef {{ id: string, description: string, pattern: RegExp }} Rule
  */
 
-
-
 /**
- * @typedef {'HTML'|'XML'|'SVG'|'SQL'|'SQL-STRICT'|'SHELL'|'REDOS'|'NOSQL'|'LOG'} ContextName
+ * @typedef {Rule[]} PatternList
  */
 
 /**
  * @typedef {Object} MatchResult
- * @property {string} context   - The context in which the match was found
- * @property {string} id        - Rule identifier
+ * @property {string} context     - Label identifying which context matched ('HTML', 'CUSTOM', etc.)
+ * @property {string} id          - Rule identifier
  * @property {string} description - Human-readable description of what was matched
- * @property {RegExp} pattern   - The pattern that matched
+ * @property {RegExp} pattern     - The pattern that matched
  */
 
-// ─── Validation helpers ────────────────────────────────────────────────────
+// ─── Internal helpers ──────────────────────────────────────────────────────
 
 /**
- * Validate that `value` is a string. Throws TypeError if not.
  * @param {unknown} value
  */
 function src_assertString(value) {
@@ -76787,56 +77408,61 @@ function src_assertString(value) {
 }
 
 /**
- * Validate that `context` is a recognised context name, an array of them,
- * or a RegExp instance. Throws TypeError if not.
- * @param {ContextName|ContextName[]|RegExp} context
+ * @param {unknown} context
  */
 function assertContext(context) {
   if (context instanceof RegExp) return;
 
-  if (typeof context === 'string') {
-    if (!registry[context]) {
-      throw new TypeError(
-        `is-unsafe: unknown context "${context}". Valid contexts: ${Object.keys(VALID_CONTEXTS).join(', ')}`
-      );
-    }
-    return;
-  }
-
   if (Array.isArray(context)) {
     if (context.length === 0) {
-      throw new TypeError('is-unsafe: context array must not be empty');
+      throw new TypeError('is-unsafe: context must not be an empty array');
     }
-    for (const c of context) {
-      if (typeof c !== 'string' || !registry[c]) {
-        throw new TypeError(
-          `is-unsafe: unknown context "${c}" in array. Valid contexts: ${Object.keys(VALID_CONTEXTS).join(', ')}`
-        );
+    // Detect array-of-arrays vs flat pattern list
+    if (Array.isArray(context[0])) {
+      // Array of PatternLists
+      for (const list of context) {
+        if (!Array.isArray(list) || list.length === 0) {
+          throw new TypeError(
+            'is-unsafe: each context in the array must be a non-empty pattern array (PatternList)'
+          );
+        }
       }
     }
+    // else: flat PatternList — trust it, no deep validation needed
     return;
   }
 
   throw new TypeError(
-    `is-unsafe: second argument must be a context string, array of context strings, or RegExp. Got: ${typeof context}`
+    `is-unsafe: second argument must be a PatternList (e.g. HTML), ` +
+    `an array of PatternLists (e.g. [HTML, XML]), or a RegExp. Got: ${typeof context}`
   );
 }
 
-// ─── Core matching logic ───────────────────────────────────────────────────
+/**
+ * Normalise any valid context arg into an array of PatternLists.
+ *
+ * @param {Rule[]|Rule[][]|RegExp} context
+ * @returns {{ lists: Rule[][]|null, regex: RegExp|null }}
+ */
+function normalise(context) {
+  if (context instanceof RegExp) return { lists: null, regex: context };
+  // Distinguish PatternList (array of rule objects) from array of PatternLists
+  if (Array.isArray(context[0])) return { lists: context, regex: null };
+  return { lists: [context], regex: null };
+}
 
 /**
- * Test a single value against one named context's patterns.
- * Returns the first matching MatchResult, or null if nothing matched.
+ * Test value against a single PatternList. Returns the first MatchResult or null.
  *
  * @param {string} value
- * @param {string} contextName
+ * @param {Rule[]} list
  * @returns {MatchResult|null}
  */
-function matchContext(value, contextName) {
-  const patterns = registry[contextName];
-  for (const rule of patterns) {
+function matchList(value, list) {
+  const label = list.label ?? 'CUSTOM';
+  for (const rule of list) {
     if (rule.pattern.test(value)) {
-      return { context: contextName, id: rule.id, description: rule.description, pattern: rule.pattern };
+      return { context: label, id: rule.id, description: rule.description, pattern: rule.pattern };
     }
   }
   return null;
@@ -76847,103 +77473,95 @@ function matchContext(value, contextName) {
 /**
  * Returns `true` if `value` is unsafe in the given context(s), `false` otherwise.
  *
- * @param {string} value           - The string to test
- * @param {ContextName|ContextName[]|RegExp} context
- *   - A named context ('HTML', 'XML', 'SVG', 'SQL', 'SQL-STRICT', 'SHELL', 'REDOS', 'NOSQL', 'LOG')
- *   - An array of named contexts — returns true if unsafe in **any** of them
+ * @param {string} value - The string to test
+ * @param {PatternList | PatternList[] | RegExp} context
+ *   - A PatternList imported from is-unsafe (e.g. `HTML`, `XML`)
+ *   - An array of PatternLists — returns true if unsafe in **any** of them
  *   - A custom RegExp — returns true if the pattern matches
  * @returns {boolean}
  *
  * @example
- * isUnsafe('<script>alert(1)</script>', 'HTML')  // true
- * isUnsafe('hello world', 'HTML')                // false
- * isUnsafe('value', ['HTML', 'SQL'])             // false
- * isUnsafe('value', /my-pattern/i)               // false
+ * import { isUnsafe, HTML, SQL } from 'is-unsafe';
+ *
+ * isUnsafe('<script>alert(1)</script>', HTML)       // true
+ * isUnsafe('hello world', HTML)                     // false
+ * isUnsafe('value', [HTML, SQL])                    // false
+ * isUnsafe('value', /my-pattern/i)                  // false
  */
 function isUnsafe(value, context) {
   src_assertString(value);
   assertContext(context);
 
-  // Custom RegExp — caller-supplied pattern
-  if (context instanceof RegExp) {
-    return context.test(value);
-  }
+  const { lists, regex } = normalise(context);
 
-  // Single named context
-  if (typeof context === 'string') {
-    return matchContext(value, context) !== null;
-  }
+  if (regex) return regex.test(value);
 
-  // Array of named contexts — unsafe if ANY context matches
-  for (const c of context) {
-    if (matchContext(value, c) !== null) return true;
+  for (const list of lists) {
+    if (matchList(value, list) !== null) return true;
   }
   return false;
 }
 
 /**
- * Like `isUnsafe`, but instead of a boolean returns the first `MatchResult`
- * describing **why** the value was flagged, or `null` if it is safe.
- *
- * Useful for logging, error messages, or policy reporting.
+ * Like `isUnsafe`, but returns the first `MatchResult` describing **why**
+ * the value was flagged, or `null` if it is safe.
  *
  * @param {string} value
- * @param {ContextName|ContextName[]|RegExp} context
+ * @param {PatternList | PatternList[] | RegExp} context
  * @returns {MatchResult|null}
  *
  * @example
- * whyUnsafe('<script>alert(1)</script>', 'HTML')
+ * import { whyUnsafe, HTML } from 'is-unsafe';
+ *
+ * whyUnsafe('<script>alert(1)</script>', HTML)
  * // { context: 'HTML', id: 'html-script-open', description: '...', pattern: /.../ }
  */
 function whyUnsafe(value, context) {
   src_assertString(value);
   assertContext(context);
 
-  if (context instanceof RegExp) {
-    return context.test(value)
-      ? { context: 'CUSTOM', id: 'custom-regex', description: 'Matched caller-supplied pattern', pattern: context }
+  const { lists, regex } = normalise(context);
+
+  if (regex) {
+    return regex.test(value)
+      ? { context: 'CUSTOM', id: 'custom-regex', description: 'Matched caller-supplied pattern', pattern: regex }
       : null;
   }
 
-  if (typeof context === 'string') {
-    return matchContext(value, context);
-  }
-
-  for (const c of context) {
-    const result = matchContext(value, c);
+  for (const list of lists) {
+    const result = matchList(value, list);
     if (result !== null) return result;
   }
   return null;
 }
 
 /**
- * Returns all matching rules across the given context(s), or an empty array
- * if the value is safe. Useful for comprehensive auditing.
+ * Returns **all** matching rules across the given context(s), or an empty
+ * array if the value is safe. Useful for comprehensive auditing.
  *
  * @param {string} value
- * @param {ContextName|ContextName[]|RegExp} context
+ * @param {PatternList | PatternList[] | RegExp} context
  * @returns {MatchResult[]}
  */
 function allUnsafe(value, context) {
   src_assertString(value);
   assertContext(context);
 
+  const { lists, regex } = normalise(context);
   const results = [];
 
-  if (context instanceof RegExp) {
-    if (context.test(value)) {
-      results.push({ context: 'CUSTOM', id: 'custom-regex', description: 'Matched caller-supplied pattern', pattern: context });
+  if (regex) {
+    if (regex.test(value)) {
+      results.push({ context: 'CUSTOM', id: 'custom-regex', description: 'Matched caller-supplied pattern', pattern: regex });
     }
     return results;
   }
 
-  const contexts = typeof context === 'string' ? [context] : context;
-
-  for (const c of contexts) {
-    const patterns = CONTEXT_REGISTRY[c];
-    for (const rule of patterns) {
+  for (const list of lists) {
+    const label = list.label ?? 'CUSTOM';
+    for (const rule of list) {
       if (rule.pattern.test(value)) {
-        results.push({ context: c, id: rule.id, description: rule.description, pattern: rule.pattern });
+        results.push({ context: label, id: rule.id, description: rule.description, pattern: rule.pattern });
       }
     }
   }
@@ -76953,6 +77571,7 @@ function allUnsafe(value, context) {
 
 
 /* harmony default export */ const src = ((/* unused pure expression or super */ null && (isUnsafe)));
+
 ;// CONCATENATED MODULE: ./node_modules/fast-xml-parser/src/xmlparser/OrderedObjParser.js
 
 ///@ts-check
@@ -77060,8 +77679,7 @@ class OrderedObjParser {
         // onExternalEntity: (name, value) => isUnsafe(value) ? 'block' : 'allow',
         onInputEntity: (name, value) =>
           //TODO: VALID_CONTEXTS.HTML should be set only if this.options.htmlEntities
-          isUnsafe(value, [VALID_CONTEXTS.HTML, VALID_CONTEXTS.XML])
-            ? ENTITY_ACTION.BLOCK : ENTITY_ACTION.ALLOW,
+          isUnsafe(value, [html, xml]) ? ENTITY_ACTION.BLOCK : ENTITY_ACTION.ALLOW,
 
         //postCheck: resolved => resolved
       });
@@ -78132,7 +78750,8 @@ async function parseXML(str, opts = {}) {
         delete parsedXml["?xml"];
     }
     if (!opts.includeRoot) {
-        for (const key of Object.keys(parsedXml)) {
+        const key = Object.keys(parsedXml)[0];
+        if (key !== undefined) {
             const value = parsedXml[key];
             return typeof value === "object" ? { ...value } : value;
         }
@@ -78762,6 +79381,7 @@ function logExceptionOnExit(e) {
 
 if (ENVIRONMENT_IS_NODE) {
   if (typeof process == 'undefined' || !process.release || process.release.name !== 'node') throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
+// NODE-READ-START (this block is replaced with a no-op in dist/browser and dist/react-native by copyJSFiles.cjs)
   // `require()` is no-op in an ESM module, use `createRequire()` to construct
   // the require()` function.  This is only necessary for multi-environment
   // builds, `-sENVIRONMENT=node` emits a static import declaration instead.
@@ -78806,6 +79426,7 @@ readAsync = (filename, onload, onerror) => {
 };
 
 // end include: node_shell_read.js
+// NODE-READ-END
   if (process['argv'].length > 1) {
     thisProgram = process['argv'][1].replace(/\\/g, '/');
   }
@@ -84041,8 +84662,8 @@ class UserDelegationKeyCredential {
 ;// CONCATENATED MODULE: ./node_modules/@azure/storage-blob/dist/esm/utils/constants.js
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-const esm_utils_constants_SDK_VERSION = "12.32.0";
-const SERVICE_VERSION = "2026-04-06";
+const esm_utils_constants_SDK_VERSION = "12.33.0";
+const SERVICE_VERSION = "2026-06-06";
 const BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES = 256 * 1024 * 1024; // 256MB
 const BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES = 4000 * 1024 * 1024; // 4000MB
 const BLOCK_BLOB_MAX_BLOCKS = 50000;
@@ -86125,6 +86746,7 @@ const BlobPropertiesInternal = {
                         "Cool",
                         "Archive",
                         "Cold",
+                        "Smart",
                     ],
                 },
             },
@@ -86144,6 +86766,32 @@ const BlobPropertiesInternal = {
                         "rehydrate-pending-to-hot",
                         "rehydrate-pending-to-cool",
                         "rehydrate-pending-to-cold",
+                        "rehydrate-pending-to-smart",
+                    ],
+                },
+            },
+            smartAccessTier: {
+                serializedName: "SmartAccessTier",
+                xmlName: "SmartAccessTier",
+                type: {
+                    name: "Enum",
+                    allowedValues: [
+                        "P4",
+                        "P6",
+                        "P10",
+                        "P15",
+                        "P20",
+                        "P30",
+                        "P40",
+                        "P50",
+                        "P60",
+                        "P70",
+                        "P80",
+                        "Hot",
+                        "Cool",
+                        "Archive",
+                        "Cold",
+                        "Smart",
                     ],
                 },
             },
@@ -89287,6 +89935,13 @@ const BlobGetPropertiesHeaders = {
                 xmlName: "x-ms-access-tier-change-time",
                 type: {
                     name: "DateTimeRfc1123",
+                },
+            },
+            smartAccessTier: {
+                serializedName: "x-ms-smart-access-tier",
+                xmlName: "x-ms-smart-access-tier",
+                type: {
+                    name: "String",
                 },
             },
             versionId: {
@@ -93283,7 +93938,7 @@ const timeoutInSeconds = {
 const version = {
     parameterPath: "version",
     mapper: {
-        defaultValue: "2026-04-06",
+        defaultValue: "2026-06-06",
         isConstant: true,
         serializedName: "x-ms-version",
         type: {
@@ -94190,6 +94845,7 @@ const tier = {
                 "Cool",
                 "Archive",
                 "Cold",
+                "Smart",
             ],
         },
     },
@@ -94428,6 +95084,7 @@ const tier1 = {
                 "Cool",
                 "Archive",
                 "Cold",
+                "Smart",
             ],
         },
     },
@@ -98136,7 +98793,7 @@ class StorageClient extends ExtendedServiceClient {
         const defaults = {
             requestContentType: "application/json; charset=utf-8",
         };
-        const packageDetails = `azsdk-js-azure-storage-blob/12.32.0`;
+        const packageDetails = `azsdk-js-azure-storage-blob/12.33.0`;
         const userAgentPrefix = options.userAgentOptions && options.userAgentOptions.userAgentPrefix
             ? `${options.userAgentOptions.userAgentPrefix} ${packageDetails}`
             : `${packageDetails}`;
@@ -98152,7 +98809,7 @@ class StorageClient extends ExtendedServiceClient {
         // Parameter assignments
         this.url = url;
         // Assigning values to Constant parameters
-        this.version = options.version || "2026-04-06";
+        this.version = options.version || "2026-06-06";
         this.service = new ServiceImpl(this);
         this.container = new ContainerImpl(this);
         this.blob = new BlobImpl(this);
@@ -98205,6 +98862,13 @@ class StorageContextClient extends StorageClient {
 
 
 
+const accountNameSuffixes = [
+    "-secondary-ipv6",
+    "-secondary-dualstack",
+    "-ipv6",
+    "-dualstack",
+    "-secondary",
+];
 /**
  * Reserved URL characters must be properly escaped for Storage services like Blob or File.
  *
@@ -98681,7 +99345,15 @@ function utils_common_getAccountNameFromUrl(url) {
     try {
         if (parsedUrl.hostname.split(".")[1] === "blob") {
             // `${defaultEndpointsProtocol}://${accountName}.blob.${endpointSuffix}`;
+            // `${defaultEndpointsProtocol}://${accountName}-suffix.blob.${endpointSuffix}`;
             accountName = parsedUrl.hostname.split(".")[0];
+            for (let i = 0; i < accountNameSuffixes.length; ++i) {
+                const suffix = accountNameSuffixes[i];
+                if (accountName.endsWith(suffix)) {
+                    accountName = accountName.substring(0, accountName.length - suffix.length);
+                    break;
+                }
+            }
         }
         else if (utils_common_isIpEndpointStyle(parsedUrl)) {
             // IPv4/IPv6 address hosts... Example - http://192.0.0.10:10001/devstoreaccount1/
@@ -99655,6 +100327,10 @@ class SASQueryParameters {
      * Keys for request query parameters required in the SAS token
      */
     requestQueryParameterKeys;
+    /** To indicate the depth of the virtual blob directory specified
+     * in the canonicalizedresource field of the string-to-sign.
+     */
+    directoryDepth;
     /**
      * Optional. IP range allowed for this SAS.
      *
@@ -99669,7 +100345,7 @@ class SASQueryParameters {
         }
         return undefined;
     }
-    constructor(version, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType, userDelegationKey, preauthorizedAgentObjectId, correlationId, encryptionScope, delegatedUserObjectId, requestHeaderKeys, requestQueryParameterKeys) {
+    constructor(version, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType, userDelegationKey, preauthorizedAgentObjectId, correlationId, encryptionScope, delegatedUserObjectId, requestHeaderKeys, requestQueryParameterKeys, directoryDepth) {
         this.version = version;
         this.signature = signature;
         if (permissionsOrOptions !== undefined && typeof permissionsOrOptions !== "string") {
@@ -99692,6 +100368,7 @@ class SASQueryParameters {
             this.contentType = permissionsOrOptions.contentType;
             this.requestHeaderKeys = permissionsOrOptions.requestHeaderKeys;
             this.requestQueryParameterKeys = permissionsOrOptions.requestQueryParameterKeys;
+            this.directoryDepth = permissionsOrOptions.directoryDepth;
             if (permissionsOrOptions.userDelegationKey) {
                 this.signedOid = permissionsOrOptions.userDelegationKey.signedObjectId;
                 this.signedTenantId = permissionsOrOptions.userDelegationKey.signedTenantId;
@@ -99724,6 +100401,7 @@ class SASQueryParameters {
             this.contentType = contentType;
             this.requestHeaderKeys = requestHeaderKeys;
             this.requestQueryParameterKeys = requestQueryParameterKeys;
+            this.directoryDepth = directoryDepth;
             if (userDelegationKey) {
                 this.signedOid = userDelegationKey.signedObjectId;
                 this.signedTenantId = userDelegationKey.signedTenantId;
@@ -99767,6 +100445,7 @@ class SASQueryParameters {
             "rsct",
             "saoid",
             "scid",
+            "sdd",
             "sduoid", // Signed key user delegation object ID
             "skdutid", // Signed key user delegation tenant ID
             "srh", // Request Headers
@@ -99863,6 +100542,9 @@ class SASQueryParameters {
                 case "srq": // Request headers
                     this.tryAppendQueryParameter(queries, param, this.requestQueryParameterKeys);
                     break;
+                case "sdd": // Directory depth
+                    this.tryAppendQueryParameter(queries, param, this.directoryDepth !== undefined ? this.directoryDepth.toString() : "");
+                    break;
             }
         }
         return queries.join("&");
@@ -99934,7 +100616,13 @@ function generateBlobSASQueryParametersInternal(blobSASSignatureValues, sharedKe
     // https://learn.microsoft.com/rest/api/storageservices/constructing-a-service-sas#constructing-the-signature-string
     if (version >= "2018-11-09") {
         if (sharedKeyCredential !== undefined) {
-            return generateBlobSASQueryParameters20181109(blobSASSignatureValues, sharedKeyCredential);
+            // Version 2020-02-10 delegation SAS signature construction supports blob name as a virtual directory.
+            if (version >= "2020-02-10") {
+                return generateBlobSASQueryParameters20200210(blobSASSignatureValues, sharedKeyCredential);
+            }
+            else {
+                return generateBlobSASQueryParameters20181109(blobSASSignatureValues, sharedKeyCredential);
+            }
         }
         else {
             // Version 2020-02-10 delegation SAS signature construction includes preauthorizedAgentObjectId, agentObjectId, correlationId.
@@ -100092,6 +100780,85 @@ function generateBlobSASQueryParameters20181109(blobSASSignatureValues, sharedKe
 }
 /**
  * ONLY AVAILABLE IN NODE.JS RUNTIME.
+ * IMPLEMENTATION FOR API VERSION FROM 2020-02-10.
+ *
+ * Creates an instance of SASQueryParameters.
+ *
+ * Only accepts required settings needed to create a SAS. For optional settings please
+ * set corresponding properties directly, such as permissions, startsOn and identifier.
+ *
+ * WARNING: When identifier is not provided, permissions and expiresOn are required.
+ * You MUST assign value to identifier or expiresOn & permissions manually if you initial with
+ * this constructor.
+ *
+ * @param blobSASSignatureValues -
+ * @param sharedKeyCredential -
+ */
+function generateBlobSASQueryParameters20200210(blobSASSignatureValues, sharedKeyCredential) {
+    blobSASSignatureValues = SASSignatureValuesSanityCheckAndAutofill(blobSASSignatureValues);
+    if (!blobSASSignatureValues.identifier &&
+        !(blobSASSignatureValues.permissions && blobSASSignatureValues.expiresOn)) {
+        throw new RangeError("Must provide 'permissions' and 'expiresOn' for Blob SAS generation when 'identifier' is not provided.");
+    }
+    let resource = "c";
+    let timestamp = blobSASSignatureValues.snapshotTime;
+    let directoryDepth = undefined;
+    if (blobSASSignatureValues.blobName) {
+        if (blobSASSignatureValues.isDirectory === true) {
+            resource = "d";
+            directoryDepth = trimBlobName(blobSASSignatureValues.blobName).split("/").length;
+        }
+        else {
+            resource = "b";
+            if (blobSASSignatureValues.snapshotTime) {
+                resource = "bs";
+            }
+            else if (blobSASSignatureValues.versionId) {
+                resource = "bv";
+                timestamp = blobSASSignatureValues.versionId;
+            }
+        }
+    }
+    // Calling parse and toString guarantees the proper ordering and throws on invalid characters.
+    let verifiedPermissions;
+    if (blobSASSignatureValues.permissions) {
+        if (blobSASSignatureValues.blobName) {
+            verifiedPermissions = BlobSASPermissions.parse(blobSASSignatureValues.permissions.toString()).toString();
+        }
+        else {
+            verifiedPermissions = ContainerSASPermissions.parse(blobSASSignatureValues.permissions.toString()).toString();
+        }
+    }
+    // Signature is generated on the un-url-encoded values.
+    const stringToSign = [
+        verifiedPermissions ? verifiedPermissions : "",
+        blobSASSignatureValues.startsOn
+            ? utils_common_truncatedISO8061Date(blobSASSignatureValues.startsOn, false)
+            : "",
+        blobSASSignatureValues.expiresOn
+            ? utils_common_truncatedISO8061Date(blobSASSignatureValues.expiresOn, false)
+            : "",
+        getCanonicalName(sharedKeyCredential.accountName, blobSASSignatureValues.containerName, blobSASSignatureValues.blobName),
+        blobSASSignatureValues.identifier,
+        blobSASSignatureValues.ipRange ? ipRangeToString(blobSASSignatureValues.ipRange) : "",
+        blobSASSignatureValues.protocol ? blobSASSignatureValues.protocol : "",
+        blobSASSignatureValues.version,
+        resource,
+        timestamp,
+        blobSASSignatureValues.cacheControl ? blobSASSignatureValues.cacheControl : "",
+        blobSASSignatureValues.contentDisposition ? blobSASSignatureValues.contentDisposition : "",
+        blobSASSignatureValues.contentEncoding ? blobSASSignatureValues.contentEncoding : "",
+        blobSASSignatureValues.contentLanguage ? blobSASSignatureValues.contentLanguage : "",
+        blobSASSignatureValues.contentType ? blobSASSignatureValues.contentType : "",
+    ].join("\n");
+    const signature = sharedKeyCredential.computeHMACSHA256(stringToSign);
+    return {
+        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, undefined, undefined, undefined, undefined, undefined, undefined, undefined, directoryDepth),
+        stringToSign: stringToSign,
+    };
+}
+/**
+ * ONLY AVAILABLE IN NODE.JS RUNTIME.
  * IMPLEMENTATION FOR API VERSION FROM 2020-12-06.
  *
  * Creates an instance of SASQueryParameters.
@@ -100114,14 +100881,21 @@ function generateBlobSASQueryParameters20201206(blobSASSignatureValues, sharedKe
     }
     let resource = "c";
     let timestamp = blobSASSignatureValues.snapshotTime;
+    let directoryDepth = undefined;
     if (blobSASSignatureValues.blobName) {
-        resource = "b";
-        if (blobSASSignatureValues.snapshotTime) {
-            resource = "bs";
+        if (blobSASSignatureValues.isDirectory === true) {
+            resource = "d";
+            directoryDepth = trimBlobName(blobSASSignatureValues.blobName).split("/").length;
         }
-        else if (blobSASSignatureValues.versionId) {
-            resource = "bv";
-            timestamp = blobSASSignatureValues.versionId;
+        else {
+            resource = "b";
+            if (blobSASSignatureValues.snapshotTime) {
+                resource = "bs";
+            }
+            else if (blobSASSignatureValues.versionId) {
+                resource = "bv";
+                timestamp = blobSASSignatureValues.versionId;
+            }
         }
     }
     // Calling parse and toString guarantees the proper ordering and throws on invalid characters.
@@ -100159,7 +100933,7 @@ function generateBlobSASQueryParameters20201206(blobSASSignatureValues, sharedKe
     ].join("\n");
     const signature = sharedKeyCredential.computeHMACSHA256(stringToSign);
     return {
-        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, undefined, undefined, undefined, blobSASSignatureValues.encryptionScope),
+        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, undefined, undefined, undefined, blobSASSignatureValues.encryptionScope, undefined, undefined, undefined, directoryDepth),
         stringToSign: stringToSign,
     };
 }
@@ -100264,14 +101038,21 @@ function generateBlobSASQueryParametersUDK20200210(blobSASSignatureValues, userD
     }
     let resource = "c";
     let timestamp = blobSASSignatureValues.snapshotTime;
+    let directoryDepth = undefined;
     if (blobSASSignatureValues.blobName) {
-        resource = "b";
-        if (blobSASSignatureValues.snapshotTime) {
-            resource = "bs";
+        if (blobSASSignatureValues.isDirectory === true) {
+            resource = "d";
+            directoryDepth = trimBlobName(blobSASSignatureValues.blobName).split("/").length;
         }
-        else if (blobSASSignatureValues.versionId) {
-            resource = "bv";
-            timestamp = blobSASSignatureValues.versionId;
+        else {
+            resource = "b";
+            if (blobSASSignatureValues.snapshotTime) {
+                resource = "bs";
+            }
+            else if (blobSASSignatureValues.versionId) {
+                resource = "bv";
+                timestamp = blobSASSignatureValues.versionId;
+            }
         }
     }
     // Calling parse and toString guarantees the proper ordering and throws on invalid characters.
@@ -100320,7 +101101,7 @@ function generateBlobSASQueryParametersUDK20200210(blobSASSignatureValues, userD
     ].join("\n");
     const signature = userDelegationKeyCredential.computeHMACSHA256(stringToSign);
     return {
-        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId),
+        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, undefined, undefined, undefined, undefined, directoryDepth),
         stringToSign: stringToSign,
     };
 }
@@ -100346,14 +101127,21 @@ function generateBlobSASQueryParametersUDK20201206(blobSASSignatureValues, userD
     }
     let resource = "c";
     let timestamp = blobSASSignatureValues.snapshotTime;
+    let directoryDepth = undefined;
     if (blobSASSignatureValues.blobName) {
-        resource = "b";
-        if (blobSASSignatureValues.snapshotTime) {
-            resource = "bs";
+        if (blobSASSignatureValues.isDirectory === true) {
+            resource = "d";
+            directoryDepth = trimBlobName(blobSASSignatureValues.blobName).split("/").length;
         }
-        else if (blobSASSignatureValues.versionId) {
-            resource = "bv";
-            timestamp = blobSASSignatureValues.versionId;
+        else {
+            resource = "b";
+            if (blobSASSignatureValues.snapshotTime) {
+                resource = "bs";
+            }
+            else if (blobSASSignatureValues.versionId) {
+                resource = "bv";
+                timestamp = blobSASSignatureValues.versionId;
+            }
         }
     }
     // Calling parse and toString guarantees the proper ordering and throws on invalid characters.
@@ -100403,7 +101191,7 @@ function generateBlobSASQueryParametersUDK20201206(blobSASSignatureValues, userD
     ].join("\n");
     const signature = userDelegationKeyCredential.computeHMACSHA256(stringToSign);
     return {
-        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope),
+        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope, undefined, undefined, undefined, directoryDepth),
         stringToSign: stringToSign,
     };
 }
@@ -100429,14 +101217,21 @@ function generateBlobSASQueryParametersUDK20250705(blobSASSignatureValues, userD
     }
     let resource = "c";
     let timestamp = blobSASSignatureValues.snapshotTime;
+    let directoryDepth = undefined;
     if (blobSASSignatureValues.blobName) {
-        resource = "b";
-        if (blobSASSignatureValues.snapshotTime) {
-            resource = "bs";
+        if (blobSASSignatureValues.isDirectory === true) {
+            resource = "d";
+            directoryDepth = trimBlobName(blobSASSignatureValues.blobName).split("/").length;
         }
-        else if (blobSASSignatureValues.versionId) {
-            resource = "bv";
-            timestamp = blobSASSignatureValues.versionId;
+        else {
+            resource = "b";
+            if (blobSASSignatureValues.snapshotTime) {
+                resource = "bs";
+            }
+            else if (blobSASSignatureValues.versionId) {
+                resource = "bv";
+                timestamp = blobSASSignatureValues.versionId;
+            }
         }
     }
     // Calling parse and toString guarantees the proper ordering and throws on invalid characters.
@@ -100488,7 +101283,7 @@ function generateBlobSASQueryParametersUDK20250705(blobSASSignatureValues, userD
     ].join("\n");
     const signature = userDelegationKeyCredential.computeHMACSHA256(stringToSign);
     return {
-        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope, blobSASSignatureValues.delegatedUserObjectId),
+        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope, blobSASSignatureValues.delegatedUserObjectId, undefined, undefined, directoryDepth),
         stringToSign: stringToSign,
     };
 }
@@ -100514,14 +101309,21 @@ function generateBlobSASQueryParametersUDK20260406(blobSASSignatureValues, userD
     }
     let resource = "c";
     let timestamp = blobSASSignatureValues.snapshotTime;
+    let directoryDepth = undefined;
     if (blobSASSignatureValues.blobName) {
-        resource = "b";
-        if (blobSASSignatureValues.snapshotTime) {
-            resource = "bs";
+        if (blobSASSignatureValues.isDirectory === true) {
+            resource = "d";
+            directoryDepth = trimBlobName(blobSASSignatureValues.blobName).split("/").length;
         }
-        else if (blobSASSignatureValues.versionId) {
-            resource = "bv";
-            timestamp = blobSASSignatureValues.versionId;
+        else {
+            resource = "b";
+            if (blobSASSignatureValues.snapshotTime) {
+                resource = "bs";
+            }
+            else if (blobSASSignatureValues.versionId) {
+                resource = "bv";
+                timestamp = blobSASSignatureValues.versionId;
+            }
         }
     }
     // Calling parse and toString guarantees the proper ordering and throws on invalid characters.
@@ -100575,7 +101377,7 @@ function generateBlobSASQueryParametersUDK20260406(blobSASSignatureValues, userD
     ].join("\n");
     const signature = userDelegationKeyCredential.computeHMACSHA256(stringToSign);
     return {
-        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope, blobSASSignatureValues.delegatedUserObjectId, getKeysOfRequestHeaders(blobSASSignatureValues.requestHeaders), getKeysOfRequestHeaders(blobSASSignatureValues.requestQueryParameters)),
+        sasQueryParameters: new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope, blobSASSignatureValues.delegatedUserObjectId, getKeysOfRequestHeaders(blobSASSignatureValues.requestHeaders), getKeysOfRequestHeaders(blobSASSignatureValues.requestQueryParameters), directoryDepth),
         stringToSign: stringToSign,
     };
 }
@@ -100682,6 +101484,16 @@ function SASSignatureValuesSanityCheckAndAutofill(blobSASSignatureValues) {
     }
     blobSASSignatureValues.version = version;
     return blobSASSignatureValues;
+}
+function trimBlobName(blobName) {
+    let internalName = blobName;
+    while (internalName.startsWith("/")) {
+        internalName = internalName.substring(1);
+    }
+    while (internalName.endsWith("/")) {
+        internalName = internalName.substring(0, internalName.length - 1);
+    }
+    return internalName;
 }
 //# sourceMappingURL=BlobSASSignatureValues.js.map
 ;// CONCATENATED MODULE: ./node_modules/@azure/storage-blob/dist/esm/BlobLeaseClient.js
@@ -104533,6 +105345,7 @@ class BlobClient extends StorageClient_StorageClient {
      * ```ts snippet:ReadmeSampleDownloadBlob_Node
      * import { BlobServiceClient } from "@azure/storage-blob";
      * import { DefaultAzureCredential } from "@azure/identity";
+     * import { buffer } from "node:stream/consumers";
      *
      * const account = "<account>";
      * const blobServiceClient = new BlobServiceClient(
@@ -104549,22 +105362,10 @@ class BlobClient extends StorageClient_StorageClient {
      * // In Node.js, get downloaded data by accessing downloadBlockBlobResponse.readableStreamBody
      * const downloadBlockBlobResponse = await blobClient.download();
      * if (downloadBlockBlobResponse.readableStreamBody) {
-     *   const downloaded = await streamToString(downloadBlockBlobResponse.readableStreamBody);
-     *   console.log(`Downloaded blob content: ${downloaded}`);
-     * }
-     *
-     * async function streamToString(stream: NodeJS.ReadableStream): Promise<string> {
-     *   const result = await new Promise<Buffer<ArrayBuffer>>((resolve, reject) => {
-     *     const chunks: Buffer[] = [];
-     *     stream.on("data", (data) => {
-     *       chunks.push(Buffer.isBuffer(data) ? data : Buffer.from(data));
-     *     });
-     *     stream.on("end", () => {
-     *       resolve(Buffer.concat(chunks));
-     *     });
-     *     stream.on("error", reject);
-     *   });
-     *   return result.toString();
+     *   // Download the raw bytes of the blob. Use `text` from "node:stream/consumers"
+     *   // instead if you want to read the content as a string directly.
+     *   const downloaded = await buffer(downloadBlockBlobResponse.readableStreamBody);
+     *   console.log(`Downloaded blob content: ${downloaded.toString()}`);
      * }
      * ```
      *
@@ -105936,6 +106737,7 @@ class BlockBlobClient extends BlobClient {
      * ```ts snippet:ClientsQuery
      * import { BlobServiceClient } from "@azure/storage-blob";
      * import { DefaultAzureCredential } from "@azure/identity";
+     * import { buffer } from "node:stream/consumers";
      *
      * const account = "<account>";
      * const blobServiceClient = new BlobServiceClient(
@@ -105951,22 +106753,10 @@ class BlockBlobClient extends BlobClient {
      * // Query and convert a blob to a string
      * const queryBlockBlobResponse = await blockBlobClient.query("select from BlobStorage");
      * if (queryBlockBlobResponse.readableStreamBody) {
-     *   const downloadedBuffer = await streamToBuffer(queryBlockBlobResponse.readableStreamBody);
-     *   const downloaded = downloadedBuffer.toString();
-     *   console.log(`Query blob content: ${downloaded}`);
-     * }
-     *
-     * async function streamToBuffer(readableStream: NodeJS.ReadableStream): Promise<Buffer> {
-     *   return new Promise((resolve, reject) => {
-     *     const chunks: Buffer[] = [];
-     *     readableStream.on("data", (data) => {
-     *       chunks.push(data instanceof Buffer ? data : Buffer.from(data));
-     *     });
-     *     readableStream.on("end", () => {
-     *       resolve(Buffer.concat(chunks));
-     *     });
-     *     readableStream.on("error", reject);
-     *   });
+     *   // Read the response bytes. Use `text` from "node:stream/consumers" instead
+     *   // if you want the response as a string directly.
+     *   const downloadedBuffer = await buffer(queryBlockBlobResponse.readableStreamBody);
+     *   console.log(`Query blob content: ${downloadedBuffer.toString()}`);
      * }
      * ```
      *
@@ -111224,6 +112014,24 @@ function config_getCacheServiceVersion() {
         return 'v1';
     return process.env['ACTIONS_CACHE_SERVICE_V2'] ? 'v2' : 'v1';
 }
+// The cache-mode lattice: readable = {read, write}, writable = {write,
+// write-only}, none = neither.
+const KNOWN_CACHE_MODES = ['none', 'read', 'write', 'write-only'];
+// The effective cache-mode exported by the runner, or '' when not set.
+function getCacheMode() {
+    return (process.env['ACTIONS_CACHE_MODE'] || '').trim().toLowerCase();
+}
+// Unset or unrecognized modes are permissive so behavior matches today.
+function isCacheReadable(mode) {
+    if (!KNOWN_CACHE_MODES.includes(mode))
+        return true;
+    return mode === 'read' || mode === 'write';
+}
+function isCacheWritable(mode) {
+    if (!KNOWN_CACHE_MODES.includes(mode))
+        return true;
+    return mode === 'write' || mode === 'write-only';
+}
 function getCacheServiceURL() {
     const version = config_getCacheServiceVersion();
     // Based on the version of the cache service, we will determine which
@@ -111273,6 +112081,7 @@ var cacheHttpClient_awaiter = (undefined && undefined.__awaiter) || function (th
 
 
 
+
 function getCacheApiUrl(resource) {
     const baseUrl = getCacheServiceURL();
     if (!baseUrl) {
@@ -111300,6 +112109,7 @@ function createHttpClient() {
 }
 function getCacheEntry(keys, paths, options) {
     return cacheHttpClient_awaiter(this, void 0, void 0, function* () {
+        var _a;
         const httpClient = createHttpClient();
         const version = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
         const resource = `cache?keys=${encodeURIComponent(keys.join(','))}&version=${version}`;
@@ -111313,6 +112123,12 @@ function getCacheEntry(keys, paths, options) {
             return null;
         }
         if (!isSuccessStatusCode(response.statusCode)) {
+            // Only surface the receiver's body for a `cache read denied:` policy denial
+            // so callers can dispatch on it; keep the generic message otherwise.
+            const errorMessage = (_a = response.error) === null || _a === void 0 ? void 0 : _a.message;
+            if (errorMessage === null || errorMessage === void 0 ? void 0 : errorMessage.includes(CacheReadDeniedMessagePrefix)) {
+                throw new Error(errorMessage);
+            }
             throw new Error(`Cache service responded with ${response.statusCode}`);
         }
         const cacheResult = response.result;
@@ -112573,6 +113389,7 @@ var cache_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _ar
 
 
 
+
 class ValidationError extends Error {
     constructor(message) {
         super(message);
@@ -112588,19 +113405,20 @@ class ReserveCacheError extends Error {
     }
 }
 /**
- * Stable prefix the receiver writes into the cache reservation response when
- * the issuer downgraded the cache token to read-only (for example, because
+ * Stable prefix the cache service writes into the cache reservation response
+ * when the issuer downgraded the cache token to read-only (for example, because
  * the run was triggered by an untrusted event). saveCacheV1 / saveCacheV2
- * dispatch on this prefix to re-classify the failure as a
- * CacheWriteDeniedError so consumers (and the outer catch arm) can
- * distinguish a policy denial from other reservation failures.
+ * dispatch on this prefix to re-classify the failure as a CacheWriteDeniedError
+ * so consumers and tests can distinguish a policy denial from other reservation
+ * failures. Internally it is logged as a non-fatal warning like other
+ * best-effort save failures.
  */
 const CACHE_WRITE_DENIED_PREFIX = 'cache write denied:';
 /**
  * Raised when the cache backend refuses to reserve a writable cache entry
  * because the JWT issued for this run was scoped read-only (for example, the
  * run was triggered by an event the repository administrator classified as
- * untrusted). The receiver-supplied detail message always begins with
+ * untrusted). The service-supplied detail message always begins with
  * `cache write denied:` (the full error message includes additional context
  * like the cache key).
  *
@@ -112614,6 +113432,19 @@ class CacheWriteDeniedError extends ReserveCacheError {
         super(message);
         this.name = 'CacheWriteDeniedError';
         Object.setPrototypeOf(this, CacheWriteDeniedError.prototype);
+    }
+}
+// Re-exported from constants so consumers keep referencing it here; the shared
+// value also drives detection in cacheHttpClient without duplicating the string.
+const CACHE_READ_DENIED_PREFIX = CacheReadDeniedMessagePrefix;
+// Raised when the cache backend denies a download URL because the run's token
+// has no readable cache scopes. Caching is best-effort, so restoreCache logs a
+// warning and reports a cache miss rather than rethrowing this.
+class CacheReadDeniedError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'CacheReadDeniedError';
+        Object.setPrototypeOf(this, CacheReadDeniedError.prototype);
     }
 }
 class FinalizeCacheError extends Error {
@@ -112670,6 +113501,12 @@ function restoreCache(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         const cacheServiceVersion = config_getCacheServiceVersion();
         debug(`Cache service version: ${cacheServiceVersion}`);
         checkPaths(paths);
+        const cacheMode = getCacheMode();
+        if (!isCacheReadable(cacheMode)) {
+            info(`Cache restore skipped: the effective cache-mode '${cacheMode}' does not permit reads.`);
+            debug(`Skipped restore for paths [${paths.join(', ')}] with primary key '${primaryKey}'.`);
+            return undefined;
+        }
         switch (cacheServiceVersion) {
             case 'v2':
                 return yield restoreCacheV2(paths, primaryKey, restoreKeys, options, enableCrossOsArchive);
@@ -112691,6 +113528,7 @@ function restoreCache(paths_1, primaryKey_1, restoreKeys_1, options_1) {
  */
 function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
     return cache_awaiter(this, arguments, void 0, function* (paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false) {
+        var _a;
         restoreKeys = restoreKeys || [];
         const keys = [primaryKey, ...restoreKeys];
         debug('Resolved Keys:');
@@ -112705,10 +113543,26 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         let archivePath = '';
         try {
             // path are needed to compute version
-            const cacheEntry = yield getCacheEntry(keys, paths, {
-                compressionMethod,
-                enableCrossOsArchive
-            });
+            let cacheEntry;
+            try {
+                cacheEntry = yield getCacheEntry(keys, paths, {
+                    compressionMethod,
+                    enableCrossOsArchive
+                });
+            }
+            catch (error) {
+                // The v1 artifact cache service returns HTTP 403 with a
+                // `cache read denied:` body when the run's token has no readable cache
+                // scopes. getCacheEntry lives in a dependency-free internal module and
+                // cannot import CacheReadDeniedError without a circular dependency, so it
+                // only surfaces the raw denial message; we classify it into the typed
+                // error here so the outer catch and consumers can dispatch on it.
+                const errorMessage = (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : '';
+                if (errorMessage.includes(CACHE_READ_DENIED_PREFIX)) {
+                    throw new CacheReadDeniedError(errorMessage);
+                }
+                throw error;
+            }
             if (!(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.archiveLocation)) {
                 // Cache not found
                 return undefined;
@@ -112737,7 +113591,9 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
             }
             else {
                 // warn on cache restore failure and continue build
-                // Log server errors (5xx) as errors, all other errors as warnings
+                // Log server errors (5xx) as errors, all other errors as warnings.
+                // A read denied by policy (CacheReadDeniedError) is not an HttpClientError
+                // so it falls here and is warned, treated as a cache miss.
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
@@ -112772,6 +113628,7 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
  */
 function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
     return cache_awaiter(this, arguments, void 0, function* (paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false) {
+        var _a;
         // Override UploadOptions to force the use of Azure
         options = Object.assign(Object.assign({}, options), { useAzureSdk: true });
         restoreKeys = restoreKeys || [];
@@ -112793,7 +113650,20 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 restoreKeys,
                 version: getCacheVersion(paths, compressionMethod, enableCrossOsArchive)
             };
-            const response = yield twirpClient.GetCacheEntryDownloadURL(request);
+            let response;
+            try {
+                response = yield twirpClient.GetCacheEntryDownloadURL(request);
+            }
+            catch (error) {
+                // The receiver returns twirp PermissionDenied (403) when the run's token
+                // has no readable cache scopes. The client wraps that 403, so the stable
+                // prefix is embedded in the message rather than leading it.
+                const errorMessage = (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : '';
+                if (errorMessage.includes(CACHE_READ_DENIED_PREFIX)) {
+                    throw new CacheReadDeniedError(errorMessage);
+                }
+                throw error;
+            }
             if (!response.ok) {
                 debug(`Cache not found for version ${request.version} of keys: ${keys.join(', ')}`);
                 return undefined;
@@ -112828,8 +113698,10 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 throw error;
             }
             else {
-                // Supress all non-validation cache related errors because caching should be optional
-                // Log server errors (5xx) as errors, all other errors as warnings
+                // Suppress all non-validation cache related errors because caching should be optional
+                // Log server errors (5xx) as errors, all other errors as warnings.
+                // A read denied by policy (CacheReadDeniedError) is not an HttpClientError
+                // so it falls here and is warned, treated as a cache miss.
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
@@ -112868,6 +113740,12 @@ function cache_saveCache(paths_1, key_1, options_1) {
         debug(`Cache service version: ${cacheServiceVersion}`);
         checkPaths(paths);
         checkKey(key);
+        const cacheMode = getCacheMode();
+        if (!isCacheWritable(cacheMode)) {
+            info(`Cache save skipped: the effective cache-mode '${cacheMode}' does not permit writes.`);
+            debug(`Skipped save for paths [${paths.join(', ')}] with key '${key}'.`);
+            return -1;
+        }
         switch (cacheServiceVersion) {
             case 'v2':
                 return yield saveCacheV2(paths, key, options, enableCrossOsArchive);
@@ -112945,17 +113823,14 @@ function saveCacheV1(paths_1, key_1, options_1) {
             if (typedError.name === ValidationError.name) {
                 throw error;
             }
-            else if (typedError.name === CacheWriteDeniedError.name) {
-                // Cache write was denied by policy (read-only token). Surface to the
-                // customer at warning level so it is visible in the workflow log
-                // without failing the run.
-                warning(`Failed to save: ${typedError.message}`);
-            }
             else if (typedError.name === ReserveCacheError.name) {
                 info(`Failed to save: ${typedError.message}`);
             }
             else {
-                // Log server errors (5xx) as errors, all other errors as warnings
+                // Log server errors (5xx) as errors, all other errors as warnings.
+                // A write denied by policy (CacheWriteDeniedError) is not an
+                // HttpClientError and its name does not match the ReserveCacheError arm,
+                // so it falls here and is warned without failing the run.
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
@@ -113066,12 +113941,6 @@ function saveCacheV2(paths_1, key_1, options_1) {
             if (typedError.name === ValidationError.name) {
                 throw error;
             }
-            else if (typedError.name === CacheWriteDeniedError.name) {
-                // Cache write was denied by policy (read-only token). Surface to the
-                // customer at warning level so it is visible in the workflow log
-                // without failing the run.
-                warning(`Failed to save: ${typedError.message}`);
-            }
             else if (typedError.name === ReserveCacheError.name) {
                 info(`Failed to save: ${typedError.message}`);
             }
@@ -113079,7 +113948,10 @@ function saveCacheV2(paths_1, key_1, options_1) {
                 warning(typedError.message);
             }
             else {
-                // Log server errors (5xx) as errors, all other errors as warnings
+                // Log server errors (5xx) as errors, all other errors as warnings.
+                // A write denied by policy (CacheWriteDeniedError) is not an
+                // HttpClientError and its name does not match the ReserveCacheError arm,
+                // so it falls here and is warned without failing the run.
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
