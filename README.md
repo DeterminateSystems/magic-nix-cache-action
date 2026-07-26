@@ -114,7 +114,7 @@ cat action.yml| nix run nixpkgs#yq-go -- '[[ "Parameter", "Description", "Requir
 | `source-url`                | A URL pointing to a `magic-nix-cache` binary. Overrides all other `source-*` options.                           |          |                                                          |
 | `startup-notification-port` | The port magic-nix-cache uses for daemon startup notification.                                                  |          | 41239                                                    |
 | `upstream-cache`            | Your preferred upstream cache. Store paths in this store aren't cached in GitHub Actions' cache.                |          | https://cache.nixos.org                                  |
-| `use-flakehub`              | Whether to upload build results to FlakeHub Cache (private beta).                                               |          | true                                                     |
+| `use-flakehub`              | Whether to upload build results to FlakeHub Cache (private beta).                                               |          |                                                          |
 | `use-gha-cache`             | Whether to upload build results to the GitHub Actions cache.                                                    |          | true                                                     |
 
 [action]: https://github.com/DeterminateSystems/magic-nix-cache-action
