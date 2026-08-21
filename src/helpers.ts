@@ -1,4 +1,5 @@
 import * as actionsCore from "@actions/core";
+import { log } from "@determinate-systems/detsys-ts";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import path from "node:path";
@@ -32,12 +33,12 @@ export function getTrinaryInput(
 }
 
 export function tailLog(daemonDir: string): Tail {
-  const log = new Tail(path.join(daemonDir, "daemon.log"));
-  actionsCore.debug(`tailing daemon.log...`);
-  log.on("line", (line) => {
-    actionsCore.info(line);
+  const tail = new Tail(path.join(daemonDir, "daemon.log"));
+  log.debug(`tailing daemon.log...`);
+  tail.on("line", (line) => {
+    log.info(line);
   });
-  return log;
+  return tail;
 }
 
 export async function netrcPath(): Promise<string> {
@@ -57,13 +58,11 @@ export async function netrcPath(): Promise<string> {
     try {
       await flakeHubLogin(destinedNetrcPath);
     } catch (e) {
-      actionsCore.info(
-        "FlakeHub Cache is disabled due to missing or invalid token",
-      );
-      actionsCore.info(
+      log.info("FlakeHub Cache is disabled due to missing or invalid token");
+      log.info(
         `If you're signed up for FlakeHub Cache, make sure that your Actions config has a \`permissions\` block with \`id-token\` set to "write" and \`contents\` set to "read"`,
       );
-      actionsCore.debug(`Error while logging into FlakeHub: ${e}`);
+      log.debug(`Error while logging into FlakeHub: ${e}`);
     }
     return destinedNetrcPath;
   }
@@ -81,5 +80,5 @@ async function flakeHubLogin(netrc: string): Promise<void> {
     ].join("\n"),
   );
 
-  actionsCore.info("Logged in to FlakeHub.");
+  log.info("Logged in to FlakeHub.");
 }

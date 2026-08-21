@@ -3,9 +3,8 @@
  * is now unused, although we should keep it around in case GitHub once again
  * makes a major change.
  */
-import * as actionsCore from "@actions/core";
 import * as glob from "@actions/glob";
-import { stringifyError } from "@determinate-systems/detsys-ts";
+import { log, stringifyError } from "@determinate-systems/detsys-ts";
 import * as fs from "node:fs/promises";
 
 export async function warnOnMnc(): Promise<void> {
@@ -43,7 +42,7 @@ export async function warnOnMnc(): Promise<void> {
             /DeterminateSystems\/magic-nix-cache-action/gi,
             "DeterminateSystems/flakehub-cache-action",
           );
-          actionsCore.warning(
+          log.warning(
             [
               "Magic Nix Cache has been deprecated due to a change in the underlying GitHub APIs and will stop working on 1 February 2025.",
               "To continue caching Nix builds in GitHub Actions, use FlakeHub Cache instead.",
@@ -67,7 +66,7 @@ export async function warnOnMnc(): Promise<void> {
         }
       }
     } catch (err) {
-      actionsCore.debug(stringifyError(err));
+      log.debug(stringifyError(err));
     }
   }
 }
