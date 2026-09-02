@@ -5,7 +5,7 @@
  */
 import * as actionsCore from "@actions/core";
 import * as glob from "@actions/glob";
-import { stringifyError } from "detsys-ts";
+import { stringifyError } from "@determinate-systems/detsys-ts";
 import * as fs from "node:fs/promises";
 
 export async function warnOnMnc(): Promise<void> {

@@ -2,7 +2,11 @@ import { getTrinaryInput, netrcPath, tailLog } from "./helpers.js";
 //import { warnOnMnc } from "./mnc-warn.js";
 import * as actionsCore from "@actions/core";
 import * as actionsGithub from "@actions/github";
-import { DetSysAction, inputs, stringifyError } from "detsys-ts";
+import {
+  DetSysAction,
+  inputs,
+  stringifyError,
+} from "@determinate-systems/detsys-ts";
 import got, { Got, Response } from "got";
 import * as http from "http";
 import { SpawnOptions, spawn } from "node:child_process";
