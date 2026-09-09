@@ -170392,21 +170392,21 @@ function githubSemconvAttributes(context = github_context) {
 	const pullRequest = context.payload.pull_request;
 	const head = pullRequest?.head;
 	const attributes = {
-		[index_incubating.ATTR_CICD_PIPELINE_NAME]: dist_text(context.workflow),
+		[index_incubating.ATTR_CICD_PIPELINE_NAME]: text$1(context.workflow),
 		[index_incubating.ATTR_CICD_PIPELINE_RUN_ID]: numericString(context.runId),
 		[index_incubating.ATTR_CICD_PIPELINE_RUN_URL_FULL]: pipelineRunUrl(context, repository),
-		[index_incubating.ATTR_CICD_PIPELINE_TASK_NAME]: dist_text(context.job),
-		[index_incubating.ATTR_CICD_WORKER_NAME]: dist_text(process.env["RUNNER_NAME"]),
+		[index_incubating.ATTR_CICD_PIPELINE_TASK_NAME]: text$1(context.job),
+		[index_incubating.ATTR_CICD_WORKER_NAME]: text$1(process.env["RUNNER_NAME"]),
 		[index_incubating.ATTR_VCS_PROVIDER_NAME]: index_incubating.VCS_PROVIDER_NAME_VALUE_GITHUB,
 		[index_incubating.ATTR_VCS_OWNER_NAME]: repository?.owner,
 		[index_incubating.ATTR_VCS_REPOSITORY_NAME]: repository?.repo,
 		[index_incubating.ATTR_VCS_REPOSITORY_URL_FULL]: repositoryUrl(context, repository),
-		[index_incubating.ATTR_VCS_REF_HEAD_NAME]: dist_text(head?.ref) ?? refName(context.ref),
-		[index_incubating.ATTR_VCS_REF_HEAD_TYPE]: head === void 0 ? refType(dist_text(context.ref)) : index_incubating.VCS_REF_HEAD_TYPE_VALUE_BRANCH,
-		[index_incubating.ATTR_VCS_REF_HEAD_REVISION]: dist_text(head?.sha) ?? dist_text(context.sha),
-		[index_incubating.ATTR_VCS_REF_BASE_NAME]: dist_text(pullRequest?.base?.ref),
+		[index_incubating.ATTR_VCS_REF_HEAD_NAME]: text$1(head?.ref) ?? refName(context.ref),
+		[index_incubating.ATTR_VCS_REF_HEAD_TYPE]: head === void 0 ? refType(text$1(context.ref)) : index_incubating.VCS_REF_HEAD_TYPE_VALUE_BRANCH,
+		[index_incubating.ATTR_VCS_REF_HEAD_REVISION]: text$1(head?.sha) ?? text$1(context.sha),
+		[index_incubating.ATTR_VCS_REF_BASE_NAME]: text$1(pullRequest?.base?.ref),
 		[index_incubating.ATTR_VCS_REF_BASE_TYPE]: pullRequest?.base?.ref === void 0 ? void 0 : index_incubating.VCS_REF_BASE_TYPE_VALUE_BRANCH,
-		[index_incubating.ATTR_VCS_REF_BASE_REVISION]: dist_text(pullRequest?.base?.sha),
+		[index_incubating.ATTR_VCS_REF_BASE_REVISION]: text$1(pullRequest?.base?.sha),
 		[index_incubating.ATTR_VCS_CHANGE_ID]: numericString(pullRequest?.number)
 	};
 	return Object.fromEntries(Object.entries(attributes).filter(([, value]) => value !== void 0));
@@ -170415,7 +170415,7 @@ function githubSemconvAttributes(context = github_context) {
 function repositoryOf(context) {
 	try {
 		const { owner, repo } = context.repo;
-		return dist_text(owner) === void 0 || dist_text(repo) === void 0 ? void 0 : {
+		return text$1(owner) === void 0 || text$1(repo) === void 0 ? void 0 : {
 			owner,
 			repo
 		};
@@ -170426,7 +170426,7 @@ function repositoryOf(context) {
 /** The address of the repository in a browser. */
 function repositoryUrl(context, repository) {
 	if (repository === void 0) return;
-	const server = dist_text(context.serverUrl)?.replace(/\/+$/, "");
+	const server = text$1(context.serverUrl)?.replace(/\/+$/, "");
 	return server === void 0 ? void 0 : `${server}/${repository.owner}/${repository.repo}`;
 }
 /**
@@ -170449,7 +170449,7 @@ function pipelineRunUrl(context, repository) {
 * A reference that is not a branch and not a tag keeps its full name.
 */
 function refName(ref) {
-	return dist_text(ref)?.replace(/^refs\/(heads|tags)\//, "");
+	return text$1(ref)?.replace(/^refs\/(heads|tags)\//, "");
 }
 /** Whether a reference is a branch or a tag. */
 function refType(ref) {
@@ -170462,7 +170462,7 @@ function refType(ref) {
 * The toolkit says each of these is a string.
 * A run that does not set the variable makes it undefined all the same.
 */
-function dist_text(value) {
+function text$1(value) {
 	return value === void 0 || value === "" ? void 0 : value;
 }
 /**
@@ -170500,6 +170500,15 @@ function stringifyError(e) {
 */
 /** The instrumentation scope name for everything this library emits. */
 const SCOPE_NAME = "detsys-ts";
+/**
+* The version reported as the instrumentation scope's version.
+*
+* Honeycomb shows it as `library.version`, thus a query can say which release
+* of this library made a span. It read `1.0` until 2026-09, which is the
+* `$lib_version` that the PostHog instrumentation reported, and which told
+* nobody anything.
+*/
+const LIBRARY_VERSION = "2.1.2";
 /**
 * The OTLP/HTTP collector for all Actions.
 * The exporters add `/v1/traces` and `/v1/logs` to this URL.
@@ -170731,14 +170740,14 @@ var Telemetry = class {
 * Telemetry.start} has run, so this is always safe to call.
 */
 function getTracer() {
-	return src.trace.getTracer(SCOPE_NAME, "1.0");
+	return src.trace.getTracer(SCOPE_NAME, LIBRARY_VERSION);
 }
 /**
 * The logger for this library. Returns a no-op logger until {@link
 * Telemetry.start} has run, so this is always safe to call.
 */
 function getLogger() {
-	return build_src.logs.getLogger(SCOPE_NAME, "1.0");
+	return build_src.logs.getLogger(SCOPE_NAME, LIBRARY_VERSION);
 }
 /**
 * Emit a log record at `level`, correlated to whatever span is currently
@@ -171170,18 +171179,25 @@ function dist_setFailed(message, attributes) {
 	setFailed(message);
 }
 /**
-* Run `fn` inside both a collapsible group in the workflow log and an active
-* OpenTelemetry span of the same name.
+* Run a callback inside both a collapsible group in the workflow log and an active
+* OpenTelemetry span.
 *
-* This is the replacement for a `startGroup`/`endGroup` pair: the group closes
+* This replaces `startGroup`/`endGroup`: the group closes
 * and the span ends even if `fn` throws, and a throwing `fn` marks the span
 * failed before re-throwing.
+*
+* `name` is the span name and `label` is the console heading
+*
+* @param name - The span name, such as `install_nix`.
+* @param label - The heading of the group in the workflow log.
+* @param fn - The work of the group. It receives the group's span.
+* @param attributes - Attributes for the span.
 */
-async function dist_group(name, fn, attributes) {
-	return await withSpan(name, async () => {
-		startGroup(name);
+async function dist_group(name, label, fn, attributes) {
+	return await withSpan(name, async (span) => {
+		startGroup(label);
 		try {
-			return await fn();
+			return await fn({ span });
 		} finally {
 			endGroup();
 		}
@@ -171268,7 +171284,6 @@ function noisilyGetInput(suffix, legacyPrefix) {
 const EVENT_IDS_FAILOVER = "detsys.ids_failover";
 const EVENT_PREFLIGHT_REQUIRE_NIX_DENIED = "detsys.preflight_require_nix_denied";
 const EVENT_REQUEST_TIMEOUT = "detsys.request_timeout";
-const EVENT_STORE_IDENTITY_FAILED = "detsys.store_identity_failed";
 const ATTR_PROJECT = "detsys.project";
 const ATTR_IDS_PROJECT = "detsys.ids_project";
 const ATTR_EXECUTION_PHASE = "detsys.execution_phase";
@@ -171519,10 +171534,10 @@ var DetSysAction = class {
 				const correlationHashes = JSON.stringify(this.getCorrelationHashes());
 				process.env.DETSYS_CORRELATION = correlationHashes;
 				try {
-					await writeCorrelationHashes(correlationHashes);
-				} catch (error) {
-					this.addEvent(EVENT_STORE_IDENTITY_FAILED, { [semantic_conventions_build_src.ATTR_EXCEPTION_MESSAGE]: stringifyError$1(error) });
-				}
+					await withSpan("store_identity", async () => {
+						await writeCorrelationHashes(correlationHashes);
+					});
+				} catch {}
 				if (!await this.preflightRequireNix()) {
 					this.addEvent(EVENT_PREFLIGHT_REQUIRE_NIX_DENIED);
 					return;
@@ -171571,7 +171586,7 @@ var DetSysAction = class {
 	async startTelemetry() {
 		this.telemetry.start({
 			serviceName: `${this.actionOptions.name}-action`,
-			serviceVersion: process.env["GITHUB_ACTION_REF"],
+			serviceVersion: dist_text(process.env["GITHUB_ACTION_REF"]),
 			resourceAttributes: await this.telemetryResourceAttributes()
 		});
 	}
@@ -171604,10 +171619,13 @@ var DetSysAction = class {
 	*
 	* The run and the repository are in the standard `cicd.*` and `vcs.*`
 	* attributes, with the values themselves and not a hash of them.
+	*
+	* An attribute the run does not supply is absent. See {@link
+	* withoutEmptyValues}.
 	*/
 	async telemetryResourceAttributes() {
 		const details = await this.systemDetails;
-		return {
+		return withoutEmptyValues({
 			[index_incubating.ATTR_OS_TYPE]: osType(),
 			[index_incubating.ATTR_HOST_ARCH]: hostArch(),
 			...details?.name === void 0 || details.name === "unknown" ? {} : { [index_incubating.ATTR_OS_NAME]: details.name },
@@ -171624,7 +171642,7 @@ var DetSysAction = class {
 			[ATTR_GITHUB_EVENT_NAME]: process.env["GITHUB_EVENT_NAME"],
 			[ATTR_GITHUB_ACTION_REPOSITORY]: process.env["GITHUB_ACTION_REPOSITORY"],
 			...githubSemconvAttributes()
-		};
+		});
 	}
 	/**
 	* The W3C `traceparent` identifying the span currently in progress.
@@ -171720,8 +171738,8 @@ var DetSysAction = class {
 	async checkInPersonProperties() {
 		const properties = {
 			ci: "github",
-			$lib: "idslib",
-			$lib_version: "1.0",
+			$lib: "detsys-ts",
+			$lib_version: LIBRARY_VERSION,
 			$app_name: `${this.actionOptions.name}/action`,
 			project: this.actionOptions.name,
 			ids_project: this.actionOptions.idsProjectName,
@@ -172032,7 +172050,7 @@ var DetSysAction = class {
 					debug(`Nix not at ${candidateNix}`);
 				}
 			}
-			this.setAttribute(ATTR_NIX_LOCATION, nixLocation || "");
+			if (nixLocation !== void 0) this.setAttribute(ATTR_NIX_LOCATION, nixLocation);
 			if (this.actionOptions.requireNix === "ignore") return true;
 			if (getState(STATE_KEY_NIX_NOT_FOUND) === STATE_NOT_FOUND) return false;
 			if (nixLocation !== void 0) return true;
@@ -172081,7 +172099,7 @@ var DetSysAction = class {
 				if (parsed.trusted === true || parsed.trusted === 1) this.nixStoreTrust = "trusted";
 				else if (parsed.trusted === false || parsed.trusted === 0) this.nixStoreTrust = "untrusted";
 				else if (parsed.trusted !== void 0) this.setAttribute(ATTR_NIX_STORE_CHECK_ERROR, `Mysterious trusted value: ${JSON.stringify(parsed.trusted)}`);
-				this.setAttribute(ATTR_NIX_STORE_VERSION, JSON.stringify(parsed.version));
+				if (typeof parsed.version === "string") this.setAttribute(ATTR_NIX_STORE_VERSION, parsed.version);
 			} catch (e) {
 				this.setAttribute(ATTR_NIX_STORE_CHECK_ERROR, stringifyError$1(e));
 			}
@@ -172102,6 +172120,26 @@ var DetSysAction = class {
 };
 function stringifyError$1(error) {
 	return error instanceof Error || typeof error == "string" ? error.toString() : JSON.stringify(error);
+}
+/**
+* A value the run supplies, or undefined.
+*
+* A variable the run does not set is undefined.
+* A variable the run sets to nothing is empty.
+* Neither one is a value, thus both become undefined here.
+*/
+function dist_text(value) {
+	return value === void 0 || value === "" ? void 0 : value;
+}
+/**
+* The attributes that have a value.
+*
+* An attribute with no value is not an attribute.
+* It makes a column that says nothing, and it hides the difference between a
+* value the run did not supply and a value that is empty.
+*/
+function withoutEmptyValues(attributes) {
+	return Object.fromEntries(Object.entries(attributes).filter(([, value]) => value !== void 0 && value !== ""));
 }
 /**
 * The runner's operating system, as `os.type` spells it.
