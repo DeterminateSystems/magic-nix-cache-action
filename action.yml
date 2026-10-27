@@ -46,6 +46,11 @@ inputs:
     description: "Whether or not to diff the store before and after Magic Nix Cache runs"
     default: false
     required: false
+  timeout-request:
+    description: |
+      The timeout, in milliseconds, for downloading the `magic-nix-cache` binary. This covers the whole download, not just the connection.
+      Each retry gets the full timeout again. Increase this on runners with slow network connections. Defaults to 10000 (10 seconds).
+    required: false
 
   source-binary:
     description: Run a version of the cache binary from somewhere already on disk. Conflicts with all other `source-*` options.
