@@ -39,6 +39,12 @@ inputs:
     description: "The name of your flake on FlakeHub. The empty string will autodetect your FlakeHub flake."
     default: ""
     required: false
+  max-concurrent-uploads:
+    description: |
+      Maximum simultaneous FlakeHub Cache uploads, configured at startup.
+      Must be positive. Does not affect GitHub Actions Cache.
+      Leave unset to use the binary's default without passing a concurrency flag.
+    required: false
   startup-notification-port:
     description: "The port magic-nix-cache uses for daemon startup notification."
     default: 41239
