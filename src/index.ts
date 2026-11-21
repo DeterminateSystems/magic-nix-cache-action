@@ -288,6 +288,9 @@ class MagicNixCacheAction extends DetSysAction {
       const flakeHubCacheServer = inputs.getString("flakehub-cache-server");
       const flakeHubApiServer = inputs.getString("flakehub-api-server");
       const flakeHubFlakeName = inputs.getString("flakehub-flake-name");
+      const maxConcurrentUploads = inputs.getStringOrUndefined(
+        "max-concurrent-uploads",
+      );
       const useGhaCache = getTrinaryInput("use-gha-cache");
 
       span.setAttribute(ATTR_USE_FLAKEHUB, useFlakeHub);
@@ -325,6 +328,9 @@ class MagicNixCacheAction extends DetSysAction {
                       netrc,
                       "--flakehub-flake-name",
                       flakeHubFlakeName,
+                      ...(maxConcurrentUploads
+                        ? ["--max-concurrent-uploads", maxConcurrentUploads]
+                        : []),
                     ]
                   : [],
               );
